@@ -71,7 +71,7 @@ FREE_CHANGES          = "2"
 MODIFICATION_FORM_PREFILL = ""
 # Marca usada en asuntos/cuerpos/footers de los correos.
 BRAND_NAME            = "The Catalog Link"
-BRAND_TAGLINE          = "{{BRAND_TAGLINE}}"
+BRAND_TAGLINE          = "Digital catalogs, already built"
 # Estilos válidos con los que el worker acepta el intake (coma-separado). Debe
 # coincidir con styles.catalog de vertical.yaml — export_vertical.py lo llena
 # desde ahí, así el YAML sigue siendo la fuente de verdad. Vacío = cae a los 12
@@ -89,8 +89,13 @@ TEMPLATE              = "catalog"
 # por coma — p.ej. el link USD y el MXN — para que todas las compras de esta
 # vertical se procesen, ignorando ventas de otros productos de la cuenta.
 # Vacío = filtro apagado (el worker loguea el plink observado para capturarlo).
-STRIPE_PAYMENT_LINK_ID = "{{STRIPE_PAYMENT_LINK_ID}}"
-GITHUB_REPO          = "{{GITHUB_REPO}}"
+# Allowlist REGISTRADA en catalogo/1 (2026-07-25): venta $99 USD, venta
+# $1,699 MXN y la prueba de $1 (vive desactivada; se reactiva el día del E2E).
+# Los plink_ de $6/$59 (cambio extra MANUAL) NO entran aquí a propósito: el
+# retoque se cobra al vuelo en /buy-correction con metadata catalog_correction;
+# si entraran, un pago de $6 se procesaría como venta completa de catálogo.
+STRIPE_PAYMENT_LINK_ID = "plink_1TxIjsG4Nw60erBPnXsLGjyr,plink_1TxIlyG4Nw60erBPYUjCe3IN,plink_1TxJ1uG4Nw60erBPYPesVk9F"
+GITHUB_REPO          = "yuyitov/thecataloglink"
 GITHUB_ACTIONS_EVENT = "new-catalog-service-menu"
 TALLY_FORM_URL_EN    = "{{TALLY_FORM_URL_EN}}"
 TALLY_FORM_URL_ES    = "{{TALLY_FORM_URL_ES}}"
@@ -100,18 +105,20 @@ TALLY_FORM_URL_ES    = "{{TALLY_FORM_URL_ES}}"
 # vertical.yaml. Vacío = "en" (comportamiento histórico). Solo lo necesita una
 # vertical con un formulario por idioma y sin pregunta de idioma.
 DEFAULT_INTAKE_LANGUAGE = ""
-FROM_EMAIL           = "{{FROM_EMAIL}}"
-# hello@ no suele ser un buzón real; las respuestas (p.ej. corrección gratuita)
-# deben llegar a un correo monitoreado.
-REPLY_TO_EMAIL       = "{{REPLY_TO_EMAIL}}"
-PUBLIC_BOOK_BASE_URL = "{{PUBLIC_BOOK_BASE_URL}}"
+FROM_EMAIL           = "The Catalog Link <hello@thecataloglink.com>"
+# hello@thecataloglink.com SÍ recibe: Email Routing de Cloudflare al Gmail de
+# Vero, creado y probado el 2026-07-25 (catalogo/9).
+REPLY_TO_EMAIL       = "hello@thecataloglink.com"
+PUBLIC_BOOK_BASE_URL = "https://www.thecataloglink.com"
 # URL pública de este worker — la usan los links de "comprar corrección
 # adicional" (/buy-correction) que van en correos y en la página /correct/.
-WORKER_PUBLIC_URL    = "{{WORKER_PUBLIC_URL}}"
+WORKER_PUBLIC_URL    = "https://catalog-worker.veronica-perezarroyo.workers.dev"
 # OPCIONAL — Prefill de prospecto (Cory → worker, Fase 2.4). Base pública donde
 # el prospector publica el prefill.json de cada prospecto: el worker lee
 # `${base}/${slug}/prefill.json` y prellena los campos visibles del formulario de
 # Tally con los datos que ya recolectó, cuando la compra llegó por un link
 # rastreado (client_reference_id=<slug>). Déjala SIN definir si esta vertical no
 # tiene un prospector alimentándola — el prefill se apaga y el post-pago no cambia.
-# PROSPECT_PREFILL_BASE_URL = "https://tu-prospector.pages.dev/<vertical>/p"
+# Mismo valor que PROSPECT_PAYLOAD_BASE_URL del repo (sale del vertical.json
+# de Cory: preview_base_url + pages_project=catalogo-prospector, runbook B8.4).
+PROSPECT_PREFILL_BASE_URL = "https://catalogo-prospector.pages.dev/p"

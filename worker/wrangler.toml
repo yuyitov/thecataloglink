@@ -97,8 +97,8 @@ TEMPLATE              = "catalog"
 STRIPE_PAYMENT_LINK_ID = "plink_1TxIjsG4Nw60erBPnXsLGjyr,plink_1TxIlyG4Nw60erBPYUjCe3IN,plink_1TxJ1uG4Nw60erBPYPesVk9F"
 GITHUB_REPO          = "yuyitov/thecataloglink"
 GITHUB_ACTIONS_EVENT = "new-catalog-service-menu"
-TALLY_FORM_URL_EN    = "{{TALLY_FORM_URL_EN}}"
-TALLY_FORM_URL_ES    = "{{TALLY_FORM_URL_ES}}"
+TALLY_FORM_URL_EN    = "https://tally.so/r/kdX6L1?order_id="
+TALLY_FORM_URL_ES    = "https://tally.so/r/Bzqkv5?order_id="
 # Idioma principal de esta vertical: el ÚLTIMO recurso para el idioma de la
 # página, cuando el formulario no pregunta el idioma y su form_id no coincide
 # con ninguna de las dos URLs de arriba. Espejo de `intake.default_language` en

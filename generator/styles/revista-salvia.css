@@ -1,0 +1,17 @@
+/* Revista · paleta "salvia" — verde salvia pálido, tinta bosque, acento salvia.
+   Nicho tipo: gourmet natural, orgánico, plantas. Sereno y editorial. */
+:root{
+  --bg:#ebf1e8;
+  --surface:#fbfdf9;
+  --ink:#1d2820;
+  --soft:#5f6f60;
+  --hair:#d6e1d1;
+  --accent:#47764c;
+  --accent-ink:#f5faf2;
+  --accent-soft:#dae8d8;
+  --price-bg:#e0ebdd;
+  --price-ink:#5c7160;
+  --shadow:28px 52px -34px rgba(30,54,32,.36);
+  --hero-a:#dde8d7;
+  --hero-b:#ebf1e8;
+}

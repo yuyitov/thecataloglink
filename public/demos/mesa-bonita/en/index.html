@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mesa Bonita">
+<meta property="og:description" content="Made-to-order charcuterie and cheese boards.">
+<meta property="og:url" content="https://www.thecataloglink.com/demos/mesa-bonita/en/">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<title>Mesa Bonita · Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   The Catalog Link — layout "Revista" (editorial, foto grande, F4).
+   Estructura compartida por las 4 paletas luminosas; cada paleta
+   inyecta solo sus variables de color. A diferencia de Vitrina
+   (grid denso), Revista da PROTAGONISMO a la foto: pocas columnas,
+   imagen vertical grande, tipografía serif de portada. La tarjeta
+   (DOM) es la misma que Vitrina/Elegante — cambia solo el CSS.
+   Realidad del nicho: casi ningún producto trae precio, así que
+   "Preguntar precio" es una pastilla INTENCIONAL (afordancia de
+   conversación), no un hueco. Mejora progresiva: sin JS todo el
+   catálogo es visible; el JS solo agrega buscador + filtro.
+   ============================================================ */
+
+/* ---- Paleta por estilo (inyectada: una de las paletas de revista) ---- */
+/* Revista · paleta "salvia" — verde salvia pálido, tinta bosque, acento salvia.
+   Nicho tipo: gourmet natural, orgánico, plantas. Sereno y editorial. */
+:root{
+  --bg:#ebf1e8;
+  --surface:#fbfdf9;
+  --ink:#1d2820;
+  --soft:#5f6f60;
+  --hair:#d6e1d1;
+  --accent:#47764c;
+  --accent-ink:#f5faf2;
+  --accent-soft:#dae8d8;
+  --price-bg:#e0ebdd;
+  --price-ink:#5c7160;
+  --shadow:28px 52px -34px rgba(30,54,32,.36);
+  --hero-a:#dde8d7;
+  --hero-b:#ebf1e8;
+}
+
+
+:root{
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Outfit","Segoe UI",sans-serif;
+  --maxw:1080px;
+  --radius:6px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-weight:400;line-height:1.6;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+.shell{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 22px}
+
+.skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:0 0 10px 0;z-index:200}
+.skip:focus{left:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* ---- Topbar delgada, pegajosa ---- */
+.topbar{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--bg) 90%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
+.topbar__in{display:flex;align-items:center;gap:12px;height:60px}
+.monogram{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;
+  display:grid;place-items:center;border:1px solid var(--hair);background:var(--surface);
+  font-family:var(--serif);font-weight:600;font-size:1rem;color:var(--accent)}
+.topbar__spacer{flex:1}
+.lang-switch a{font-size:.78rem;color:var(--soft);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:1px;white-space:nowrap}
+.lang-switch a:hover{color:var(--ink)}
+
+/* botón de venta (sólido, acento) */
+.btn-sale{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:var(--accent-ink);
+  font-weight:500;font-size:.92rem;text-decoration:none;padding:10px 16px;border-radius:999px;
+  border:none;cursor:pointer;transition:transform .15s ease,filter .15s ease}
+.btn-sale:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.btn-sale svg{width:16px;height:16px;flex:none}
+.topbar .btn-sale{padding:8px 14px;font-size:.85rem}
+@media (max-width:560px){.topbar .btn-sale span{display:none}.topbar .btn-sale{padding:9px}}
+
+/* ---- Hero editorial: título enorme, regla fina, generoso ---- */
+.hero{padding:60px 0 34px;background:linear-gradient(180deg,var(--hero-a),var(--hero-b))}
+.hero__eyebrow{font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);
+  margin:0 0 18px;font-weight:600}
+.hero__eyebrow::before{content:"";display:inline-block;width:28px;height:1px;background:var(--accent);
+  vertical-align:middle;margin-right:10px}
+.hero__title{font-family:var(--serif);font-weight:600;line-height:1;letter-spacing:-.015em;
+  font-size:clamp(2.9rem,9vw,5.6rem);margin:0}
+.hero__title em{font-style:italic;color:var(--accent)}
+.hero__desc{max-width:46ch;margin:22px 0 0;color:var(--soft);font-size:1.14rem;font-weight:300}
+.hero__meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin:22px 0 0;font-size:.86rem;color:var(--soft)}
+.hero__meta span{display:inline-flex;align-items:center;gap:6px}
+.hero__cta{margin:30px 0 4px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.hero__cta .count{font-size:.86rem;color:var(--soft);letter-spacing:.02em}
+
+/* ---- Barra de búsqueda + filtros, pegajosa bajo la topbar ---- */
+.controls{position:sticky;top:60px;z-index:50;background:color-mix(in srgb,var(--bg) 93%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--hair);padding:14px 0}
+.search{position:relative;max-width:440px}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--soft);pointer-events:none}
+.search input{width:100%;font-family:var(--sans);font-size:.98rem;color:var(--ink);
+  background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:12px 16px 12px 40px}
+.search input::placeholder{color:var(--soft)}
+.filters{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:2px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;font-family:var(--sans);font-size:.86rem;font-weight:500;color:var(--soft);
+  background:transparent;border:1px solid var(--hair);border-radius:999px;padding:8px 15px;cursor:pointer;
+  white-space:nowrap;transition:all .15s ease}
+.chip:hover{color:var(--ink);border-color:var(--soft)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* ---- Grid editorial: pocas columnas, foto grande y vertical ---- */
+.catalog{padding:34px 0 70px}
+.grid{display:grid;grid-template-columns:1fr;gap:40px 28px}
+@media (min-width:620px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:980px){.grid{grid-template-columns:repeat(3,1fr);gap:48px 30px}}
+
+/* La tarjeta es "portada": foto vertical dominante, texto debajo sin caja. */
+.card{background:transparent;border:none;border-radius:0;overflow:visible;
+  display:flex;flex-direction:column;transition:transform .25s ease}
+.card:hover{transform:translateY(-4px)}
+.card__media{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:var(--radius);
+  background:var(--accent-soft);box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.card:hover .card__media{box-shadow:var(--shadow)}
+.card__img{width:100%;height:100%;object-fit:cover;transform:scale(1.02);
+  animation:kenburns 24s ease-in-out infinite alternate}
+.card:nth-child(3n) .card__img{animation-delay:-8s}
+.card:nth-child(3n+1) .card__img{animation-delay:-15s}
+@keyframes kenburns{
+  from{transform:scale(1.03) translate(0,0)}
+  to{transform:scale(1.13) translate(-2%,-1.5%)}
+}
+/* Categoría como etiqueta editorial sobre la foto */
+.card__cat{position:absolute;left:12px;top:12px;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:600;color:var(--ink);background:color-mix(in srgb,var(--surface) 88%,transparent);
+  backdrop-filter:blur(4px);padding:5px 10px;border-radius:2px}
+.card__body{padding:16px 2px 0;display:flex;flex-direction:column;gap:8px;flex:1}
+.card__name{font-family:var(--serif);font-weight:600;font-size:1.36rem;line-height:1.15;margin:0;letter-spacing:-.01em}
+.card__desc{font-size:.92rem;color:var(--soft);margin:0;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* El pie envuelve: en la columna angosta a 375px el precio y el botón no caben
+   lado a lado, así que el botón baja a línea completa en vez de desbordar. */
+.card__foot{margin-top:auto;padding-top:14px;display:flex;flex-wrap:wrap;
+  align-items:center;gap:10px 12px;justify-content:space-between}
+.price{font-family:var(--serif);font-weight:600;font-size:1.18rem;color:var(--ink);flex:0 1 auto}
+.price--ask{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:500;font-size:.82rem;
+  color:var(--price-ink);background:var(--price-bg);border-radius:999px;padding:5px 12px;flex:0 1 auto}
+.price--ask::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+.card__cta{flex:1 1 auto;text-align:center;white-space:normal;font-size:.8rem;font-weight:600;
+  text-decoration:none;color:var(--accent);border:1px solid var(--accent-soft);border-radius:999px;
+  padding:8px 12px;line-height:1.2;transition:all .15s ease}
+.card__cta:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+.noresults{display:none;text-align:center;color:var(--soft);padding:56px 0;font-size:1.05rem}
+.noresults.is-visible{display:block}
+
+/* ---- Compartir / QR ---- */
+.share{padding:52px 0;border-top:1px solid var(--hair);text-align:center}
+.share__eyebrow{font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--soft);margin:0 0 10px}
+.share__title{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,4vw,2.4rem);margin:0 0 8px}
+.share__title em{font-style:italic;color:var(--accent)}
+.share__lead{color:var(--soft);margin:0 auto 20px;max-width:40ch}
+.qrbox{display:inline-block;background:#fff;padding:14px;border-radius:12px;border:1px solid var(--hair)}
+.share__url{display:inline-block;margin-top:16px;color:var(--accent);text-decoration:none;font-weight:500;border-bottom:1px solid var(--accent-soft)}
+.share__actions{margin-top:16px}
+
+/* ---- Footer ---- */
+.footer{padding:34px 0 44px;border-top:1px solid var(--hair);text-align:center;color:var(--soft);font-size:.86rem}
+.footer .serif{font-family:var(--serif);font-weight:600;color:var(--ink);font-size:1.05rem;display:block;margin-bottom:8px}
+.footer__link{color:var(--soft);text-decoration:underline;text-underline-offset:2px}
+.footer__link:hover{color:var(--ink)}
+.footer__disclaimers{margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85;max-width:60ch;margin-left:auto;margin-right:auto}
+
+/* ---- Dock inferior fijo (aparece al hacer scroll) ---- */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:70;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--bg) 93%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--hair);
+  display:flex;justify-content:center;transform:translateY(120%);transition:transform .3s ease}
+.dock.is-visible{transform:translateY(0)}
+.dock .btn-sale{width:100%;max-width:440px;justify-content:center;padding:13px}
+@media (min-width:620px){.dock{display:none}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .card__img{transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+
+<header class="topbar">
+  <div class="shell topbar__in">
+    <div class="monogram" aria-hidden="true">MB</div>
+    <span class="topbar__spacer"></span>
+    <div class="lang-switch"><a href="../" lang="es">Ver esta página en español</a></div>
+    <a class="btn-sale" href="https://wa.me/5215555550202" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.9c0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.39a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.9C21.95 6.45 17.5 2 12.04 2Zm5.8 14.16c-.24.68-1.42 1.32-1.95 1.36-.5.05-.5.4-3.15-.66-2.66-1.06-4.3-3.8-4.43-3.97-.13-.17-1.05-1.4-1.05-2.67 0-1.27.66-1.9.9-2.16.24-.26.53-.32.7-.32l.5.01c.16.01.38-.06.6.46.24.56.8 1.94.87 2.08.07.14.12.3.02.48-.1.18-.14.29-.29.44-.14.14-.3.32-.43.43-.14.14-.3.29-.13.57.17.28.75 1.24 1.62 2 1.11.99 2.05 1.3 2.33 1.44.28.14.44.12.6-.07.17-.2.7-.81.88-1.09.18-.28.36-.23.6-.14.24.09 1.55.73 1.82.86.28.14.46.2.53.32.07.11.07.65-.17 1.32Z"/></svg><span>Order on WhatsApp</span></a>
+  </div>
+</header>
+
+<main id="content">
+  <section class="hero">
+    <div class="shell">
+      <p class="hero__eyebrow">Catalog</p>
+      <h1 class="hero__title">Mesa <em>Bonita</em></h1>
+      <p class="hero__desc">Made-to-order charcuterie and cheese boards.</p>
+      <div class="hero__meta"><span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>Providencia</span></div>
+      <div class="hero__cta">
+        <a class="btn-sale" href="https://wa.me/5215555550202" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.9c0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.39a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.9C21.95 6.45 17.5 2 12.04 2Zm5.8 14.16c-.24.68-1.42 1.32-1.95 1.36-.5.05-.5.4-3.15-.66-2.66-1.06-4.3-3.8-4.43-3.97-.13-.17-1.05-1.4-1.05-2.67 0-1.27.66-1.9.9-2.16.24-.26.53-.32.7-.32l.5.01c.16.01.38-.06.6.46.24.56.8 1.94.87 2.08.07.14.12.3.02.48-.1.18-.14.29-.29.44-.14.14-.3.32-.43.43-.14.14-.3.29-.13.57.17.28.75 1.24 1.62 2 1.11.99 2.05 1.3 2.33 1.44.28.14.44.12.6-.07.17-.2.7-.81.88-1.09.18-.28.36-.23.6-.14.24.09 1.55.73 1.82.86.28.14.46.2.53.32.07.11.07.65-.17 1.32Z"/></svg>Order on WhatsApp</a>
+        <span class="count" id="count">8 products</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls" aria-label="Search products">
+    <div class="shell">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" id="q" placeholder="Search the catalog…" aria-label="Search products" autocomplete="off">
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Catalog">
+        <button class="chip" type="button" data-cat="all" aria-pressed="true">All</button><button class="chip" type="button" data-cat="tablas" aria-pressed="false">Boards</button><button class="chip" type="button" data-cat="quesos" aria-pressed="false">Cheeses</button><button class="chip" type="button" data-cat="cajas" aria-pressed="false">Boxes</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="catalog">
+    <div class="shell">
+      <div class="grid" id="grid">
+        <article class="card" data-cat="tablas" data-search="large sharing board for 6 to 8 people. cheeses, cured meats, seasonal fruit, nuts and bread. tablas boards"><div class="card__media"><img class="card__img" src="../img/tabla-grande.webp" alt="Large sharing board" loading="lazy"><span class="card__cat">Boards</span></div><div class="card__body"><h3 class="card__name">Large sharing board</h3><p class="card__desc">For 6 to 8 people. Cheeses, cured meats, seasonal fruit, nuts and bread.</p><div class="card__foot"><span class="price">$1,250</span><a class="card__cta" href="https://wa.me/5215555550202?text=Large%20sharing%20board" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article><article class="card" data-cat="tablas" data-search="honey and grape board soft cheeses with honey, fresh grapes and crackers. serves 4. tablas boards"><div class="card__media"><img class="card__img" src="../img/tabla-miel.webp" alt="Honey and grape board" loading="lazy"><span class="card__cat">Boards</span></div><div class="card__body"><h3 class="card__name">Honey and grape board</h3><p class="card__desc">Soft cheeses with honey, fresh grapes and crackers. Serves 4.</p><div class="card__foot"><span class="price">$890</span><a class="card__cta" href="https://wa.me/5215555550202?text=Honey%20and%20grape%20board" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article><article class="card" data-cat="tablas" data-search="grape and burrata board fresh burrata, black grapes, walnuts and olive oil. assembled same day. tablas boards"><div class="card__media"><img class="card__img" src="../img/tabla-uvas.webp" alt="Grape and burrata board" loading="lazy"><span class="card__cat">Boards</span></div><div class="card__body"><h3 class="card__name">Grape and burrata board</h3><p class="card__desc">Fresh burrata, black grapes, walnuts and olive oil. Assembled same day.</p><div class="card__foot"><span class="price price--ask">Ask for price</span><a class="card__cta" href="https://wa.me/5215555550202?text=Grape%20and%20burrata%20board" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article><article class="card" data-cat="tablas" data-search="white board with fruit light presentation with fresh cheeses, fruit and edible flowers. for events. tablas boards"><div class="card__media"><img class="card__img" src="../img/tabla-blanca-frutas.webp" alt="White board with fruit" loading="lazy"><span class="card__cat">Boards</span></div><div class="card__body"><h3 class="card__name">White board with fruit</h3><p class="card__desc">Light presentation with fresh cheeses, fruit and edible flowers. For events.</p><div class="card__foot"><span class="price price--ask">Ask for price</span><a class="card__cta" href="https://wa.me/5215555550202?text=White%20board%20with%20fruit" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article><article class="card" data-cat="quesos" data-search="aged cheese selection three aged cheeses with pairings. cut to order. quesos cheeses"><div class="card__media"><img class="card__img" src="../img/quesos-seleccion.webp" alt="Aged cheese selection" loading="lazy"><span class="card__cat">Cheeses</span></div><div class="card__body"><h3 class="card__name">Aged cheese selection</h3><p class="card__desc">Three aged cheeses with pairings. Cut to order.</p><div class="card__foot"><span class="price price--ask">Ask for price</span><a class="card__cta" href="https://wa.me/5215555550202?text=Aged%20cheese%20selection" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article><article class="card" data-cat="quesos" data-search="cheese with artisan preserves hard cheeses with fig or tomato preserve. ask about this month&#x27;s flavor. quesos cheeses"><div class="card__media"><img class="card__img" src="../img/quesos-mermelada.webp" alt="Cheese with artisan preserves" loading="lazy"><span class="card__cat">Cheeses</span></div><div class="card__body"><h3 class="card__name">Cheese with artisan preserves</h3><p class="card__desc">Hard cheeses with fig or tomato preserve. Ask about this month&#x27;s flavor.</p><div class="card__foot"><span class="price price--ask">Ask for price</span><a class="card__cta" href="https://wa.me/5215555550202?text=Cheese%20with%20artisan%20preserves" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article><article class="card" data-cat="quesos" data-search="cheese and olives small cheese board with marinated olives. ideal for two. quesos cheeses"><div class="card__media"><img class="card__img" src="../img/quesos-olivas.webp" alt="Cheese and olives" loading="lazy"><span class="card__cat">Cheeses</span></div><div class="card__body"><h3 class="card__name">Cheese and olives</h3><p class="card__desc">Small cheese board with marinated olives. Ideal for two.</p><div class="card__foot"><span class="price">$540</span><a class="card__cta" href="https://wa.me/5215555550202?text=Cheese%20and%20olives" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article><article class="card" data-cat="cajas" data-search="tapas box to go individual box with cheese, olives and bread. for a gift or a picnic. cajas boxes"><div class="card__media"><img class="card__img" src="../img/quesos-tapas.webp" alt="Tapas box to go" loading="lazy"><span class="card__cat">Boxes</span></div><div class="card__body"><h3 class="card__name">Tapas box to go</h3><p class="card__desc">Individual box with cheese, olives and bread. For a gift or a picnic.</p><div class="card__foot"><span class="price">$380</span><a class="card__cta" href="https://wa.me/5215555550202?text=Tapas%20box%20to%20go" target="_blank" rel="noopener noreferrer">Ask about this</a></div></div></article>
+      </div>
+      <p class="noresults" id="noresults">No products match that search.</p>
+    </div>
+  </section>
+
+  <section class="share" id="compartir"><p class="share__eyebrow">Share</p><h2 class="share__title">Take us <em>with you</em></h2><p class="share__lead">Scan the code or share the direct link.</p><div class="qrbox"><img src="../qr.svg" alt="QR code for https://www.thecataloglink.com/demos/mesa-bonita/" width="180" height="180"></div><div><a class="share__url" href="https://www.thecataloglink.com/demos/mesa-bonita/" target="_blank" rel="noopener noreferrer">thecataloglink.com/demos/mesa-bonita</a></div><div class="share__actions"><button class="btn-sale share-btn" type="button" data-share-url="https://www.thecataloglink.com/demos/mesa-bonita/" data-share-title="https://www.thecataloglink.com/demos/mesa-bonita/" data-copied="Link copied">Share link</button></div></section>
+</main>
+
+<footer class="footer"><div class="shell"><span class="serif">Mesa Bonita</span><a class="footer__link" href="https://www.thecataloglink.com/" target="_blank" rel="noopener">Demo made with The Catalog Link</a><span aria-hidden="true"> · </span><a class="footer__link" href="https://www.thecataloglink.com/privacy/" target="_blank" rel="noopener">Privacy</a><div class="footer__disclaimers" style="margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85"><p style="margin:0 0 4px">Informational catalog. Products, availability and prices are confirmed directly with the business; this is not an online store.</p></div></div></footer>
+<div class="dock" id="dock"><a class="btn-sale" href="https://wa.me/5215555550202" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.9c0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.39a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.9C21.95 6.45 17.5 2 12.04 2Zm5.8 14.16c-.24.68-1.42 1.32-1.95 1.36-.5.05-.5.4-3.15-.66-2.66-1.06-4.3-3.8-4.43-3.97-.13-.17-1.05-1.4-1.05-2.67 0-1.27.66-1.9.9-2.16.24-.26.53-.32.7-.32l.5.01c.16.01.38-.06.6.46.24.56.8 1.94.87 2.08.07.14.12.3.02.48-.1.18-.14.29-.29.44-.14.14-.3.32-.43.43-.14.14-.3.29-.13.57.17.28.75 1.24 1.62 2 1.11.99 2.05 1.3 2.33 1.44.28.14.44.12.6-.07.17-.2.7-.81.88-1.09.18-.28.36-.23.6-.14.24.09 1.55.73 1.82.86.28.14.46.2.53.32.07.11.07.65-.17 1.32Z"/></svg>Order on WhatsApp</a></div>
+
+<script>
+(function(){
+  "use strict";
+  var STR = {"one": "1 product", "many": "{n} products", "noResults": "No products match that search."};
+  var norm = function(s){
+    return (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+  };
+  var grid = document.getElementById("grid");
+  if(!grid) return;
+  var cards = Array.prototype.slice.call(grid.querySelectorAll(".card"));
+  var input = document.getElementById("q");
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+  var countEl = document.getElementById("count");
+  var noResults = document.getElementById("noresults");
+  var activeCat = "all";
+  var query = "";
+
+  function apply(){
+    var q = norm(query.trim());
+    var shown = 0;
+    cards.forEach(function(card){
+      var matchCat = activeCat === "all" || card.getAttribute("data-cat") === activeCat;
+      // Match por SUBSTRING de cada palabra (no por palabra exacta): "queso"
+      // encuentra "quesos", y con varias palabras TODAS deben aparecer
+      // ("queso frutas" -> tarjetas que contengan ambas). data-search ya
+      // incluye nombre + descripción + categoría (normalizados).
+      var hay = card.getAttribute("data-search") || "";
+      var matchQ = !q || q.split(/\s+/).every(function(t){ return hay.indexOf(t) !== -1; });
+      var ok = matchCat && matchQ;
+      card.style.display = ok ? "" : "none";
+      if(ok) shown++;
+    });
+    if(noResults) noResults.classList.toggle("is-visible", shown === 0);
+    if(countEl){
+      countEl.textContent = shown === 1
+        ? STR.one
+        : STR.many.replace("{n}", shown);
+    }
+  }
+
+  if(input){
+    input.addEventListener("input", function(){ query = input.value; apply(); });
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener("click", function(){
+      activeCat = chip.getAttribute("data-cat");
+      chips.forEach(function(c){ c.setAttribute("aria-pressed", c === chip ? "true" : "false"); });
+      apply();
+    });
+  });
+
+  // Dock inferior: aparece cuando el hero sale de vista.
+  var dock = document.getElementById("dock");
+  var hero = document.querySelector(".hero");
+  if(dock && hero && "IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      dock.classList.toggle("is-visible", !entries[0].isIntersecting);
+    }, {rootMargin:"-40px 0px 0px 0px"});
+    io.observe(hero);
+  }
+
+  // Compartir (Web Share API con copia como respaldo).
+  var shareBtn = document.querySelector(".share-btn");
+  if(shareBtn){
+    shareBtn.addEventListener("click", function(){
+      var url = shareBtn.getAttribute("data-share-url");
+      var title = shareBtn.getAttribute("data-share-title");
+      if(navigator.share){ navigator.share({title:title, url:url}).catch(function(){}); }
+      else if(navigator.clipboard){
+        navigator.clipboard.writeText(url).then(function(){
+          var old = shareBtn.textContent;
+          shareBtn.textContent = shareBtn.getAttribute("data-copied");
+          setTimeout(function(){ shareBtn.textContent = old; }, 1600);
+        });
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

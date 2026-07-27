@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>¡Pago recibido! — The Catalog Link</title>
+<meta name="theme-color" content="#FBF6EF">
+<link rel="icon" type="image/svg+xml" href="../../assets/brand/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..800&amp;family=Outfit:wght@400..700&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+  --brand: #A8452F;
+  --brand-deep: #6E2A1B;
+  --brand-soft: #F7E2D9;
+  --accent: #2F6156;
+  --accent-deep: #1C3D36;
+  --accent-soft: #DBE8E3;
+  --highlight: #D99A2B;
+  --highlight-deep: #8C5F12;
+  --highlight-soft: #FAEBCF;
+  --paper: #FBF6EF;
+  --card: #FFFFFF;
+  --ink: #2A2320;
+  --muted: #6B5F58;
+  --line: #EAE0D4;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 64px;
+    background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); line-height: 1.6;
+    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+  }
+  a { color: var(--brand-deep); }
+  a:focus-visible { outline: 3px solid var(--brand-deep); outline-offset: 2px; }
+  .logo {
+    font-family: var(--font-display); font-weight: 800; font-size: 1.4rem;
+    color: var(--ink); text-decoration: none; margin: 8px 0 24px; display: inline-block;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+    max-width: 560px; width: 100%; padding: 36px 28px; text-align: center;
+    box-shadow: 0 10px 30px rgba(31, 45, 39, 0.07);
+  }
+  h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 8px 0; }
+  .icon { font-size: 2.6rem; }
+  .muted { color: var(--muted); font-size: 0.92rem; }
+  footer { margin-top: 28px; font-size: 0.8rem; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<a class="logo" href="/">The Catalog Link</a>
+<div class="card">
+  <div class="icon">✅</div>
+  <h1 id="title">¡Pago recibido!</h1>
+  <p id="body">Te enviamos un correo con tu enlace personal para pedir la corrección. Revisa tu bandeja (y la pestaña Promociones) — llega en unos minutos.</p>
+  <p class="muted" id="alt">¿No llega el correo? Escríbenos a <a href="mailto:hello@thecataloglink.com">hello@thecataloglink.com</a>.</p>
+</div>
+<footer id="footer-bottom">© 2026 The Catalog Link · Los catálogos de ejemplo usan datos ficticios.</footer>
+<script>
+(function () {
+  var BRAND = 'The Catalog Link';
+  var SUPPORT_EMAIL = 'hello@thecataloglink.com';
+  var lang = new URLSearchParams(window.location.search).get('l') === 'en' ? 'en' : 'es';
+  document.title = (lang === 'en' ? 'Payment received! — ' : '¡Pago recibido! — ') + BRAND;
+  if (lang === 'en') {
+    document.documentElement.lang = 'en';
+    document.getElementById('title').textContent = 'Payment received!';
+    document.getElementById('body').textContent =
+      'We sent you an email with your personal link to request the correction. Check your inbox (and the Promotions tab) — it arrives within a few minutes.';
+    document.getElementById('alt').innerHTML =
+      'Email not arriving? Write to <a href="mailto:' + SUPPORT_EMAIL + '">' + SUPPORT_EMAIL + '</a>.';
+    document.getElementById('footer-bottom').textContent = '© 2026 The Catalog Link · Example catalogs use fictional data.';
+  }
+})();
+</script>
+</body>
+</html>

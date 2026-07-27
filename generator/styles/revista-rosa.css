@@ -1,0 +1,17 @@
+/* Revista · paleta "rosa" — blanco rosado, tinta vino, acento rosa profundo.
+   Nicho tipo: florería, arreglos, regalos. Fresco, romántico y editorial. */
+:root{
+  --bg:#faedf0;
+  --surface:#fffbfc;
+  --ink:#35202a;
+  --soft:#8a6270;
+  --hair:#efdae1;
+  --accent:#bd355c;
+  --accent-ink:#fff5f8;
+  --accent-soft:#f6d7e0;
+  --price-bg:#f4dce4;
+  --price-ink:#9c5a72;
+  --shadow:28px 52px -34px rgba(120,30,60,.36);
+  --hero-a:#f6d6e0;
+  --hero-b:#faedf0;
+}

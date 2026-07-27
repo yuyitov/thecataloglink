@@ -1,0 +1,183 @@
+# Intake del CLAIM de The Catalog Link (F6 bloque 2).
+#
+# Este formulario NO es "el cuestionario del negocio" de las verticales de
+# service-menu. Es el último paso después de pagar, y tiene DOS caminos en UN
+# solo formulario (decisión de Vero, 07-24), resueltos con `show_when`:
+#
+#   PRELLENADO — el negocio recibió su vista previa por WhatsApp o correo, la
+#   vio y la compró. Sus ~20 productos con fotos NO se vuelven a capturar: ya
+#   existen en Cory y el workflow los baja por slug (transporte "opción A",
+#   decidido el 07-25). Aquí solo confirma su nombre y elige su botón de venta.
+#   Es el camino corto a propósito: pedirle que reescriba lo que ya vio hecho
+#   es la forma más rápida de perder una venta ya cobrada.
+#
+#   ORGÁNICO — llegó por la tienda sin vista previa. Ahí sí captura lo suyo:
+#   estilo, productos y fotos. Todo eso vive detrás de `show_when` sobre la
+#   primera pregunta, así que quien viene del camino prellenado ni lo ve.
+#
+# Reglas de la casa que aplican aquí:
+# - Cada título fue verificado contra engine/worker/tally-field-aliases.json
+#   calculando nk(título) y confirmando que está literalmente en el array de
+#   alias de su campo. `python scripts/create_tally_forms.py catalog
+#   --check-mapping` no debe reportar NINGUNA pregunta requerida en [!].
+# - Cada pregunta declara `name:` estable (idéntico en ES y EN). Es lo único que
+#   hace posible el prellenado: Tally NO prellena una pregunta visible por su
+#   nombre — el dato viaja a un HIDDEN FIELD y cada pregunta visible lo toma con
+#   "default answer", cableado a mano en el editor (lección PawContact 07-21).
+# - El texto de las opciones de estilo lleva ESPACIOS, no guiones
+#   ("Vitrina crema — …", no "vitrina-crema — …"): el worker corta la opción en
+#   el primer guion/raya y luego la convierte a slug, así que un nombre con
+#   guion se trunca a la primera palabra y el estilo cae al fallback.
+
+form_title:
+  es: "The Catalog Link — Último paso de tu catálogo"
+  en: "The Catalog Link — Last step for your catalog"
+
+# EXTRA sobre los 4 base (order_id, customer_email, client_slug,
+# correction_token). Son los datos que Cory ya recolectó del prospecto y que el
+# worker mete en la URL del formulario post-pago para que llegue prellenado.
+# `prospect_slug` NO está aquí a propósito: el slug de la vista previa lo pone
+# el worker desde el client_reference_id de Stripe, no el formulario — si
+# viajara como hidden field, cualquiera con la URL podría reclamar el catálogo
+# de otro negocio.
+hidden_fields:
+  - business_name
+  - short_description
+  - address
+  - sale_button_value
+
+questions:
+  # --- La bifurcación. Va primero porque decide qué ve el resto del formulario.
+  - id: catalog_mode
+    type: multiple_choice
+    name: catalog_mode
+    required: true
+    title:
+      es: "¿Ya tienes tu catálogo de muestra?"
+      en: "Do you already have your sample catalog?"
+    options:
+      - {es: "Sí — ya vi mi vista previa", en: "Yes — I already saw my preview"}
+      - {es: "No — empiezo de cero", en: "No — I am starting from scratch"}
+
+  # --- Lo que se pregunta SIEMPRE (los dos caminos) ---
+  - id: business_name
+    type: text
+    name: business_name
+    required: true
+    title: {es: "Nombre del negocio", en: "Business name"}
+
+  # El botón de venta es LO ÚNICO que el camino prellenado tiene que decidir:
+  # el catálogo no vende en la página (no es e-commerce, decisión cerrada), así
+  # que cada tarjeta lleva a una conversación. Sin esto, las tarjetas no llevan
+  # a ningún lado y el worker rechaza el intake por incompleto.
+  - id: sale_button_kind
+    type: multiple_choice
+    name: sale_button_kind
+    required: true
+    title:
+      es: "¿Cómo quieres que te hagan los pedidos?"
+      en: "How should customers place orders?"
+    options:
+      - {es: "WhatsApp — te escriben por chat", en: "WhatsApp — they message your chat"}
+      - {es: "Mensaje de texto (SMS)", en: "Text message (SMS)"}
+      - {es: "Llamada telefónica", en: "Phone call"}
+
+  - id: sale_button_value
+    type: phone
+    name: sale_button_value
+    required: true
+    title: {es: "Número para ese botón", en: "Number for that button"}
+    placeholder:
+      es: "Con lada del país. Ej: +52 33 1234 5678"
+      en: "Include the country code. E.g.: +1 305 123 4567"
+
+  - id: default_language
+    type: multiple_choice
+    name: default_language
+    required: true
+    title:
+      es: "¿En qué idioma debe aparecer primero?"
+      en: "What language should show first?"
+    options:
+      - {es: "Español", en: "Spanish"}
+      - {es: "Inglés", en: "English"}
+
+  - id: short_description
+    type: textarea
+    name: short_description
+    title:
+      es: "Describe tu negocio en 1-2 frases"
+      en: "Describe your business in 1-2 sentences"
+    placeholder:
+      es: "Sale bajo el nombre de tu catálogo. Si ya viste tu vista previa, esto ya viene lleno."
+      en: "Appears under your catalog name. If you already saw your preview, this comes filled in."
+
+  - id: address
+    type: text
+    name: address
+    title: {es: "Dirección pública", en: "Public address"}
+    placeholder:
+      es: "Opcional. Solo la ciudad también sirve."
+      en: "Optional. Just the city works too."
+
+  - id: logo_url
+    type: file
+    name: logo_url
+    title: {es: "Sube tu logo", en: "Upload your logo"}
+
+  # --- Camino ORGÁNICO: solo para quien contestó "No" arriba (opción 1) ---
+  # Quien viene de una vista previa no ve ninguna de estas cuatro: su estilo ya
+  # lo eligió la fábrica por nicho y color, y sus productos ya están en Cory.
+  - id: brand_style
+    type: dropdown
+    name: pick_your_style
+    show_when: {question: catalog_mode, option: 1}
+    title: {es: "Elige tu estilo", en: "Pick your style"}
+    options:
+      - {es: "Vitrina crema — rejilla luminosa, neutra", en: "Vitrina crema — bright grid, neutral"}
+      - {es: "Vitrina durazno — rejilla luminosa, cálida", en: "Vitrina durazno — bright grid, warm"}
+      - {es: "Vitrina rosa — rejilla luminosa, suave", en: "Vitrina rosa — bright grid, soft"}
+      - {es: "Vitrina salvia — rejilla luminosa, natural", en: "Vitrina salvia — bright grid, natural"}
+      - {es: "Revista crema — editorial, foto grande", en: "Revista crema — editorial, large photo"}
+      - {es: "Revista durazno — editorial, cálida", en: "Revista durazno — editorial, warm"}
+      - {es: "Revista rosa — editorial, floral", en: "Revista rosa — editorial, floral"}
+      - {es: "Revista salvia — editorial, natural", en: "Revista salvia — editorial, natural"}
+      - {es: "Elegante onix — oscuro, premium", en: "Elegante onix — dark, premium"}
+      - {es: "Elegante vino — oscuro, cálido", en: "Elegante vino — dark, warm"}
+      - {es: "Elegante esmeralda — oscuro, joyería", en: "Elegante esmeralda — dark, jewelry"}
+      - {es: "Elegante medianoche — oscuro, nocturno", en: "Elegante medianoche — dark, night"}
+
+  - id: products_text
+    type: textarea
+    name: products_text
+    show_when: {question: catalog_mode, option: 1}
+    title:
+      es: "Tus productos, uno por línea"
+      en: "Your products, one per line"
+    placeholder:
+      es: "Categoría — Nombre — Descripción — $precio\nEj: Pasteles — Pastel de chocolate — Ganache, por encargo — $680\nSi no sabes el precio, déjalo fuera: sale como \"Preguntar precio\"."
+      en: "Category — Name — Description — $price\nE.g.: Cakes — Chocolate cake — Ganache, made to order — $38\nNo price? Leave it out: it shows as \"Ask for price\"."
+
+  - id: product_image_urls
+    type: file
+    name: product_image_urls
+    multiple: true
+    max_files: 20
+    show_when: {question: catalog_mode, option: 1}
+    title: {es: "Fotos de tus productos", en: "Photos of your products"}
+
+  # No mapea a ningún campo del worker Y NO es requerida, a propósito: es una
+  # confirmación interna, no un dato de la página. Requerida saldría en el [!]
+  # de --check-mapping, que es la señal de "esta respuesta se pierde" y no debe
+  # gastarse en algo que sí puede perderse sin consecuencia (Tally y el registro
+  # de KV la conservan igual). En el camino prellenado las fotos son las del
+  # propio Instagram del negocio, así que la pregunta solo muerde aquí.
+  - id: photo_rights
+    type: checkboxes
+    name: photo_rights_confirmed
+    show_when: {question: catalog_mode, option: 1}
+    title:
+      es: "Confirmo que las fotos que subo son mías o tengo derecho de usarlas"
+      en: "I confirm the photos I upload are mine or I have the right to use them"
+    options:
+      - {es: "Sí", en: "Yes"}

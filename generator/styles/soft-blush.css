@@ -1,0 +1,12 @@
+/* soft-blush - femenino, estetico, delicado. Estetica / lashes / brows / nails / faciales.
+   Paleta WOW: blush / nude rosado + vino rosado profundo. Base clara, alt vino. */
+:root{
+  --base-bg:#fbf1f0; --base-ink:#4a2c30; --base-soft:rgba(74,44,48,.7);
+  --base-hair:rgba(189,110,125,.3); --base-accent:#ae4f61; --base-accent-ink:#fffafa;
+  --alt-bg:#371820; --alt-ink:#fbeef0; --alt-soft:rgba(251,238,240,.65);
+  --alt-hair:rgba(230,163,175,.28); --alt-accent:#e6a3af; --alt-accent-ink:#371820;
+  --panel-bg:#371820; --panel-ink:#fbeef0; --panel-soft:rgba(251,238,240,.66);
+  --panel-hair:rgba(230,163,175,.4); --panel-accent:#e6a3af;
+  --blob-a:#f3c6ce; --blob-b:#e39aa8; --blob-c:#f7e3d8; --blob-opacity:.55;
+  --dock-glow:rgba(189,110,125,.35); --dock-glow-strong:rgba(189,110,125,.55);
+}

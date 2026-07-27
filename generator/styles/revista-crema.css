@@ -1,0 +1,17 @@
+/* Revista · paleta "crema" — papel marfil, tinta espresso, acento terracota.
+   Nicho tipo: charcutería, gourmet, panadería. Editorial y apetitoso. */
+:root{
+  --bg:#f5efe4;
+  --surface:#fffdf9;
+  --ink:#25201a;
+  --soft:#786a58;
+  --hair:#e4dac7;
+  --accent:#a8482a;
+  --accent-ink:#fff8f3;
+  --accent-soft:#efdfd0;
+  --price-bg:#ece2d0;
+  --price-ink:#836247;
+  --shadow:28px 52px -34px rgba(60,38,20,.5);
+  --hero-a:#efe0cd;
+  --hero-b:#f5efe4;
+}

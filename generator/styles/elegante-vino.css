@@ -1,0 +1,17 @@
+/* Elegante · paleta "vino" — ciruela profundo, tinta rosada, acento vino/rosa.
+   Nicho tipo: velas, perfumería, joyería en oro rosa. Cálido y romántico oscuro. */
+:root{
+  --bg:#181012;
+  --surface:#221619;
+  --ink:#f2e6e6;
+  --soft:#b39aa0;
+  --hair:#392830;
+  --accent:#c76b83;
+  --accent-ink:#1a0f12;
+  --accent-soft:#3d262e;
+  --price-bg:#271a1f;
+  --price-ink:#d29aab;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.82);
+  --hero-a:#20151a;
+  --hero-b:#181012;
+}

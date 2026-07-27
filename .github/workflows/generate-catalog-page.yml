@@ -1,0 +1,157 @@
+name: Generate The Catalog Link Service Menu Page
+
+# Triggered by service-menu-worker via repository_dispatch after it validates
+# a paid order + Tally intake. The full sanitized public payload arrives in
+# client_payload (the workflow never reads KV, Tally or Stripe).
+#
+# The same event also carries corrections (client_payload.is_correction=true,
+# dispatched by the worker's POST /correct): apply_correction.py edits the
+# existing data/clients/<slug>.client.json via gpt-4o-mini and regenerates the
+# page; on any problem it reports correction_status=manual and touches nothing.
+
+on:
+  repository_dispatch:
+    types: [new-catalog-service-menu]
+
+concurrency:
+  group: generate-hmu-page
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  # Necesario para disparar el workflow de pages: los push hechos con el
+  # GITHUB_TOKEN por defecto no disparan otros workflows (anti-recursión),
+  # así que el deploy se lanza explícitamente vía workflow_dispatch.
+  actions: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build client page from intake
+        id: build
+        if: ${{ github.event.client_payload.is_correction != true }}
+        env:
+          INTAKE_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Solo la plantilla `catalog` la usa: es de donde se baja el catálogo
+          # ya armado de una vista previa (`<base>/<slug>/payload.json` y sus
+          # fotos), y además es el allowlist de descarga. Es una variable, no un
+          # secreto: es una URL pública, la misma que ya sirve las vistas
+          # previas. Sin ella, un intake que venga de una vista previa FALLA —
+          # a propósito: el cliente ya pagó y sus productos están ahí.
+          PROSPECT_PAYLOAD_BASE_URL: ${{ vars.PROSPECT_PAYLOAD_BASE_URL }}
+        run: python generator/build_client_from_intake.py
+
+      - name: Apply correction to existing page
+        id: correct
+        if: ${{ github.event.client_payload.is_correction == true }}
+        env:
+          CORRECTION_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python generator/apply_correction.py
+
+      - name: Commit and push generated page
+        env:
+          SLUG: ${{ steps.build.outputs.slug || steps.correct.outputs.slug }}
+          IS_CORRECTION: ${{ github.event.client_payload.is_correction == true }}
+        run: |
+          git config user.name "catalog-link-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/clients/ public/links/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          if [ "$IS_CORRECTION" = "true" ]; then
+            git commit -m "fix: apply correction to The Catalog Link page $SLUG"
+          else
+            git commit -m "feat: publish The Catalog Link page $SLUG"
+          fi
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Deploy pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages --repo ${{ github.repository }}
+
+      - name: Notify delivery
+        env:
+          WORKER_URL: ${{ secrets.SERVICE_MENU_WORKER_URL }}
+          NOTIFY_SECRET: ${{ secrets.NOTIFY_SECRET }}
+          SLUG: ${{ steps.build.outputs.slug || steps.correct.outputs.slug }}
+          SUBMISSION_ID: ${{ github.event.client_payload.submission_id }}
+          CORRECTION_ID: ${{ github.event.client_payload.correction_id }}
+          CORRECTION_STATUS: ${{ steps.correct.outputs.correction_status }}
+        run: |
+          if [ -z "$WORKER_URL" ] || [ -z "$NOTIFY_SECRET" ]; then
+            echo "WORKER_URL or NOTIFY_SECRET not configured — skipping notify"
+            exit 0
+          fi
+          # Build the JSON with jq so worker/Tally-supplied values are escaped,
+          # not string-interpolated into the body.
+          if [ -n "$CORRECTION_ID" ]; then
+            payload=$(jq -nc --arg slug "$SLUG" --arg cid "$CORRECTION_ID" --arg st "${CORRECTION_STATUS:-manual}" \
+              '{slug:$slug,correction_id:$cid,correction_status:$st}')
+          else
+            # QR en base64 para que el worker lo adjunte inline en el correo de
+            # entrega. Va por el body y no por URL porque cuando se dispara
+            # /notify, Cloudflare Pages todavía no publicó el asset: el worker no
+            # podría descargarlo. Si el archivo no existe, QR_B64 queda vacío y el
+            # correo sale sin QR (fail-open, nunca bloquea la entrega).
+            QR_B64=""
+            if [ -f "public/links/$SLUG/qr.png" ]; then
+              QR_B64=$(base64 -w0 "public/links/$SLUG/qr.png")
+            fi
+            payload=$(jq -nc --arg slug "$SLUG" --arg sid "$SUBMISSION_ID" --arg qr "$QR_B64" \
+              '{slug:$slug,submission_id:$sid,qr_png_base64:$qr}')
+          fi
+          curl -sS -X POST "$WORKER_URL/notify" \
+            -H "Authorization: Bearer $NOTIFY_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
+
+      # Alerta de embudo muerto (Bloque A.3): si CUALQUIER paso anterior falló,
+      # el cliente ya pagó y llenó el formulario pero su página no se generó.
+      # Sin esto, "pagó pero falló la generación" quedaba invisible. Avisa al
+      # worker (mismo NOTIFY_SECRET) para que mande el correo a ALERT_EMAIL.
+      - name: Alert on generation failure
+        if: failure()
+        env:
+          WORKER_URL: ${{ secrets.SERVICE_MENU_WORKER_URL }}
+          NOTIFY_SECRET: ${{ secrets.NOTIFY_SECRET }}
+          SLUG: ${{ steps.build.outputs.slug || steps.correct.outputs.slug }}
+          SUBMISSION_ID: ${{ github.event.client_payload.submission_id }}
+          CORRECTION_ID: ${{ github.event.client_payload.correction_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WORKER_URL" ] || [ -z "$NOTIFY_SECRET" ]; then
+            echo "WORKER_URL or NOTIFY_SECRET not configured — cannot alert"
+            exit 0
+          fi
+          payload=$(jq -nc \
+            --arg slug "$SLUG" \
+            --arg sid "$SUBMISSION_ID" \
+            --arg cid "$CORRECTION_ID" \
+            --arg run "$RUN_URL" \
+            --arg reason "Un paso del workflow de generación falló (ver el run)." \
+            '{slug:$slug, submission_id:$sid, correction_id:$cid, run_url:$run, reason:$reason}')
+          curl -sS -X POST "$WORKER_URL/alert-generation-failed" \
+            -H "Authorization: Bearer $NOTIFY_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "$payload" || true

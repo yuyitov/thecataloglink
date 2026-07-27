@@ -1,0 +1,117 @@
+name = "catalog-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# ─── KV Namespace ────────────────────────────────────────────────────────────
+# Para obtener el id desde Cloudflare Dashboard:
+# → Workers & Pages → KV → SERVICE_MENU_KV → Copy ID
+# O en terminal: npx wrangler kv namespace list
+#
+# PASOS:
+# 1. Crea el namespace en Cloudflare: https://dash.cloudflare.com/?to=/:account/workers/kv/namespaces
+# 2. Copia el namespace ID aquí
+[[kv_namespaces]]
+binding = "SERVICE_MENU_KV"
+id      = "{{KV_NAMESPACE_ID}}"
+
+# ─── Secrets (NO van aquí — se configura con: wrangler secret put) ────────────
+# Estos secrets deben configurarse después via:
+#   npx wrangler secret put STRIPE_WEBHOOK_SECRET
+#   npx wrangler secret put TALLY_SIGNING_SECRET_EN
+#   npx wrangler secret put TALLY_SIGNING_SECRET_ES
+#   npx wrangler secret put GITHUB_TOKEN
+#   npx wrangler secret put SENDGRID_API_KEY
+#   npx wrangler secret put NOTIFY_SECRET
+#
+# Secrets requeridos:
+# - STRIPE_WEBHOOK_SECRET — obtén de: Stripe Dashboard → Webhooks → Signing secret
+# - TALLY_SIGNING_SECRET_EN — signing secret del webhook del form ES de Tally
+# - TALLY_SIGNING_SECRET_ES — signing secret del webhook del form EN de Tally
+#   (cada form de Tally genera el suyo)
+# - GITHUB_TOKEN — GitHub Personal Access Token (repo dispatch scope)
+# - SENDGRID_API_KEY — obtén de: https://sendgrid.com/login → API Keys
+# - NOTIFY_SECRET — genera uno: openssl rand -base64 32 (solo para ti, guardar seguro)
+# - STRIPE_SECRET_KEY — OPCIONAL: activa la compra de correcciones adicionales
+#   (/buy-correction crea Checkout Sessions al vuelo). Crear en Stripe una key
+#   RESTRINGIDA con permiso Write solo en "Checkout Sessions" y subirla con:
+#     npx wrangler secret put STRIPE_SECRET_KEY
+#   Sin esta key, el botón de compra cae a la página de contacto (WhatsApp).
+
+# ─── Environment Variables (no-secret) ────────────────────────────────────────
+[vars]
+# Identidad de ESTE worker (no la marca pública): responde en GET /health y va
+# como User-Agent al despachar GitHub Actions. Mismo valor que el `name =` de
+# arriba — export_vertical.py llena los dos con el mismo placeholder.
+WORKER_NAME           = "catalog-worker"
+# Prefijo de esta vertical para TODAS las KV keys del worker (hmu_order,
+# hmu_correction, …) Y para la metadata de Stripe con la que se marcan y
+# detectan las compras de corrección adicional (<PRODUCT_ID>_correction=1 —
+# la cuenta de Stripe se comparte entre productos, así que esta key es lo
+# único que evita que dos verticales se procesen las correcciones mutuamente).
+# Distinto por vertical aunque cada una tenga su propio
+# KV namespace — así el prefijo nunca es ambiguo si alguna vez se comparte uno.
+PRODUCT_ID           = "catalog"
+# Modificaciones GRATIS incluidas en la compra. Lo llena export_vertical.py
+# desde `legal.free_changes` de vertical.yaml (default de la casa: 2), que es el
+# MISMO número que imprimen los Términos generados — si los dos no coinciden, el
+# producto promete por escrito algo que el worker no entrega. Vacío = 2.
+FREE_CHANGES          = "2"
+# Modificacion por FORMULARIO PRELLENADO (Ola 1c). Apagado por default a
+# proposito: Tally NO prellena una pregunta visible por su `name` — el valor
+# llega en la URL pero el campo se renderiza vacio (verificado 2026-07-21).
+# Para que funcione, los 2 formularios de la vertical necesitan el dato en un
+# HIDDEN FIELD y cada pregunta visible tomandolo con "default answer", cableado
+# a mano en el editor de Tally. Sin eso, el cliente recibe un formulario vacio y
+# al enviarlo borra lo que no reescriba. Con el interruptor apagado, la
+# modificacion usa la pagina /correct/ de texto libre, que funciona.
+# Ponlo en "1" SOLO cuando los dos formularios esten cableados y probados.
+# El TEXTO del correo de entrega sigue este mismo interruptor (modificationCopy
+# en worker.js): apagado describe la pagina /correct/ de texto libre, encendido
+# promete el formulario prellenado. No hace falta tocar copy al prenderlo.
+MODIFICATION_FORM_PREFILL = ""
+# Marca usada en asuntos/cuerpos/footers de los correos.
+BRAND_NAME            = "The Catalog Link"
+BRAND_TAGLINE          = "{{BRAND_TAGLINE}}"
+# Estilos válidos con los que el worker acepta el intake (coma-separado). Debe
+# coincidir con styles.catalog de vertical.yaml — export_vertical.py lo llena
+# desde ahí, así el YAML sigue siendo la fuente de verdad. Vacío = cae a los 12
+# de HMU. Un estilo elegido fuera de esta lista cae al fallback (warm-sand si
+# está, si no el primero) marcado style_unmapped.
+VALID_BRAND_STYLES    = "vitrina-crema,vitrina-durazno,vitrina-rosa,vitrina-salvia,revista-crema,revista-durazno,revista-rosa,revista-salvia,elegante-onix,elegante-vino,elegante-esmeralda,elegante-medianoche"
+# Plantilla base que renderiza esta vertical: "service-menu" (tarjeta/menú de
+# servicios) o "catalog" (catálogo de productos). Espejo de `template:` en
+# vertical.yaml, que es la fuente de verdad del lado Python — export_vertical.py
+# llena esta var desde ahí. Decide QUÉ campos extrae el worker del intake y qué
+# cuenta como intake completo. Vacío o desconocido = "service-menu", así que los
+# workers ya desplegados (que no la declaran) no cambian de comportamiento.
+TEMPLATE              = "catalog"
+# ID(s) del Payment Link de esta vertical (plink_...). Acepta varios separados
+# por coma — p.ej. el link USD y el MXN — para que todas las compras de esta
+# vertical se procesen, ignorando ventas de otros productos de la cuenta.
+# Vacío = filtro apagado (el worker loguea el plink observado para capturarlo).
+STRIPE_PAYMENT_LINK_ID = "{{STRIPE_PAYMENT_LINK_ID}}"
+GITHUB_REPO          = "{{GITHUB_REPO}}"
+GITHUB_ACTIONS_EVENT = "new-catalog-service-menu"
+TALLY_FORM_URL_EN    = "{{TALLY_FORM_URL_EN}}"
+TALLY_FORM_URL_ES    = "{{TALLY_FORM_URL_ES}}"
+# Idioma principal de esta vertical: el ÚLTIMO recurso para el idioma de la
+# página, cuando el formulario no pregunta el idioma y su form_id no coincide
+# con ninguna de las dos URLs de arriba. Espejo de `intake.default_language` en
+# vertical.yaml. Vacío = "en" (comportamiento histórico). Solo lo necesita una
+# vertical con un formulario por idioma y sin pregunta de idioma.
+DEFAULT_INTAKE_LANGUAGE = ""
+FROM_EMAIL           = "{{FROM_EMAIL}}"
+# hello@ no suele ser un buzón real; las respuestas (p.ej. corrección gratuita)
+# deben llegar a un correo monitoreado.
+REPLY_TO_EMAIL       = "{{REPLY_TO_EMAIL}}"
+PUBLIC_BOOK_BASE_URL = "{{PUBLIC_BOOK_BASE_URL}}"
+# URL pública de este worker — la usan los links de "comprar corrección
+# adicional" (/buy-correction) que van en correos y en la página /correct/.
+WORKER_PUBLIC_URL    = "{{WORKER_PUBLIC_URL}}"
+# OPCIONAL — Prefill de prospecto (Cory → worker, Fase 2.4). Base pública donde
+# el prospector publica el prefill.json de cada prospecto: el worker lee
+# `${base}/${slug}/prefill.json` y prellena los campos visibles del formulario de
+# Tally con los datos que ya recolectó, cuando la compra llegó por un link
+# rastreado (client_reference_id=<slug>). Déjala SIN definir si esta vertical no
+# tiene un prospector alimentándola — el prefill se apaga y el post-pago no cambia.
+# PROSPECT_PREFILL_BASE_URL = "https://tu-prospector.pages.dev/<vertical>/p"

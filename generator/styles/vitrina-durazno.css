@@ -1,0 +1,17 @@
+/* Vitrina · paleta "durazno" — durazno suave, tinta ciruela, acento coral.
+   Nicho tipo: repostería, pastelería, postres. Dulce y luminoso. */
+:root{
+  --bg:#fdeee8;
+  --surface:#fffaf8;
+  --ink:#3a2230;
+  --soft:#8a6472;
+  --hair:#f4dcd2;
+  --accent:#d9557a;
+  --accent-ink:#fff6f8;
+  --accent-soft:#fadce4;
+  --price-bg:#f8e0d8;
+  --price-ink:#a4657a;
+  --shadow:24px 40px -32px rgba(120,44,68,.38);
+  --hero-a:#fbdccb;
+  --hero-b:#fdeee8;
+}

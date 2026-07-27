@@ -1,0 +1,96 @@
+{
+  "_note": "DEMO FICTICIA de la tienda (layout Elegante). Negocio inventado; fotos CC0 / dominio publico via Openverse — procedencia y licencia en data/demo_photos/casa-cacao/LICENSES.json. Telefono ficticio (patron 555).",
+  "public_slug": "casa-cacao",
+  "default_language": "es",
+  "brand_style": "elegante-onix",
+  "business_name": "Casa Cacao",
+  "sale_button": { "kind": "whatsapp", "value": "5215555550303" },
+  "photo_source_dir": "../demo_photos/casa-cacao",
+  "address": "Chapalita, Guadalajara, Jal.",
+  "content": {
+    "es": { "short_description": "Chocolatería artesanal y regalos por encargo." },
+    "en": { "short_description": "Small-batch chocolate and made-to-order gifts." }
+  },
+  "products": [
+    {
+      "category": "Bombones",
+      "name_es": "Bombones rellenos",
+      "name_en": "Filled bonbons",
+      "description_es": "Relleno de praliné de avellana, cubierta de chocolate con leche. Caja de 9 o 16.",
+      "description_en": "Hazelnut praline filling, milk chocolate shell. Box of 9 or 16.",
+      "price_label": "$420",
+      "ask_price": false,
+      "image": "bombones-rellenos.webp"
+    },
+    {
+      "category": "Bombones",
+      "name_es": "Bombones decorados",
+      "name_en": "Decorated bonbons",
+      "description_es": "Surtido de temporada, decorado a mano pieza por pieza.",
+      "description_en": "Seasonal assortment, hand-decorated piece by piece.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "bombones-decorados.webp"
+    },
+    {
+      "category": "Bombones",
+      "name_es": "Surtido de la casa",
+      "name_en": "House assortment",
+      "description_es": "Doce piezas, una de cada relleno. Es el que la mayoría pide de regalo.",
+      "description_en": "Twelve pieces, one of each filling. The one most people give as a gift.",
+      "price_label": "$560",
+      "ask_price": false,
+      "image": "surtido-chocolates.webp"
+    },
+    {
+      "category": "Bombones",
+      "name_es": "Chocolates en plato para evento",
+      "name_en": "Event platter",
+      "description_es": "Presentación en charola para mesa de postres. Se cotiza por número de invitados.",
+      "description_en": "Tray presentation for a dessert table. Quoted by number of guests.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "chocolates-plato.webp"
+    },
+    {
+      "category": "Tabletas",
+      "name_es": "Tableta artesanal",
+      "name_en": "Small-batch bar",
+      "description_es": "Chocolate amargo con frambuesa liofilizada. Hecho en lotes chicos.",
+      "description_en": "Dark chocolate with freeze-dried raspberry. Made in small batches.",
+      "price_label": "$180",
+      "ask_price": false,
+      "image": "tableta-artesanal.webp"
+    },
+    {
+      "category": "Tabletas",
+      "name_es": "Tableta con especias",
+      "name_en": "Spiced bar",
+      "description_es": "Chocolate oscuro con canela y anís estrella. Intenso, poco dulce.",
+      "description_en": "Dark chocolate with cinnamon and star anise. Intense, barely sweet.",
+      "price_label": "$180",
+      "ask_price": false,
+      "image": "chocolate-especias.webp"
+    },
+    {
+      "category": "Postres",
+      "name_es": "Postres individuales",
+      "name_en": "Individual desserts",
+      "description_es": "Porción individual de mousse y ganache. Por pieza, con 48 horas de anticipación.",
+      "description_en": "Individual mousse and ganache portions. By the piece, 48 hours ahead.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "postres-individuales.webp"
+    },
+    {
+      "category": "Postres",
+      "name_es": "Fuente de chocolate",
+      "name_en": "Chocolate fountain",
+      "description_es": "Servicio de chocolate fundido para eventos. Se cotiza por horas y personas.",
+      "description_en": "Melted chocolate service for events. Quoted by hours and guests.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "chocolate-fundido.webp"
+    }
+  ]
+}

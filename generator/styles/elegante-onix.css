@@ -1,0 +1,17 @@
+/* Elegante · paleta "ónix" — negro cálido, tinta marfil, acento oro.
+   Nicho tipo: joyería fina, relojería, piezas de autor. Oscuro y premium. */
+:root{
+  --bg:#141110;
+  --surface:#1e1a17;
+  --ink:#f3ece1;
+  --soft:#a99e8d;
+  --hair:#332c26;
+  --accent:#c9a35e;
+  --accent-ink:#1a1512;
+  --accent-soft:#3a3025;
+  --price-bg:#26201a;
+  --price-ink:#cbb389;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.82);
+  --hero-a:#1c1815;
+  --hero-b:#141110;
+}

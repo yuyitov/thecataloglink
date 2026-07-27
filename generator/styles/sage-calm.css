@@ -1,0 +1,12 @@
+/* sage-calm - natural, relajante, organico. Wellness / yoga / masajes / terapias holisticas.
+   Paleta WOW: salvia / marfil + verde bosque. Base marfil, alt bosque. */
+:root{
+  --base-bg:#f3f1e7; --base-ink:#2b331f; --base-soft:rgba(43,51,31,.68);
+  --base-hair:rgba(85,112,64,.3); --base-accent:#557040; --base-accent-ink:#f6f8f0;
+  --alt-bg:#26301f; --alt-ink:#edf2e7; --alt-soft:rgba(237,242,231,.65);
+  --alt-hair:rgba(169,196,158,.28); --alt-accent:#a9c49e; --alt-accent-ink:#26301f;
+  --panel-bg:#26301f; --panel-ink:#edf2e7; --panel-soft:rgba(237,242,231,.66);
+  --panel-hair:rgba(169,196,158,.4); --panel-accent:#a9c49e;
+  --blob-a:#c9d8bf; --blob-b:#8aa87e; --blob-c:#e4ead8; --blob-opacity:.5;
+  --dock-glow:rgba(85,112,64,.32); --dock-glow-strong:rgba(85,112,64,.5);
+}

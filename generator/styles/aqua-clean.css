@@ -1,0 +1,12 @@
+/* aqua-clean - limpio, fresco, moderno. Wellness / servicios neutrales / negocios modernos.
+   Paleta WOW: blanco aqua + turquesa. Base clara, alt teal profundo. */
+:root{
+  --base-bg:#f2f7f8; --base-ink:#123a40; --base-soft:rgba(18,58,64,.7);
+  --base-hair:rgba(18,166,166,.3); --base-accent:#0e7d7d; --base-accent-ink:#f4fcfc;
+  --alt-bg:#0d3a3f; --alt-ink:#e8f6f7; --alt-soft:rgba(232,246,247,.65);
+  --alt-hair:rgba(127,212,218,.28); --alt-accent:#7fd4da; --alt-accent-ink:#0d3a3f;
+  --panel-bg:#0d3a3f; --panel-ink:#e8f6f7; --panel-soft:rgba(232,246,247,.66);
+  --panel-hair:rgba(127,212,218,.4); --panel-accent:#7fd4da;
+  --blob-a:#9fdde2; --blob-b:#12a6a6; --blob-c:#cdeef0; --blob-opacity:.5;
+  --dock-glow:rgba(18,166,166,.32); --dock-glow-strong:rgba(18,166,166,.5);
+}

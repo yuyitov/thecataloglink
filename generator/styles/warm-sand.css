@@ -1,0 +1,12 @@
+/* warm-sand - calido, cercano, boutique. Nails / salones / wellness calido.
+   Paleta WOW: arena / crema + terracota. Base clara, alt espresso calido. */
+:root{
+  --base-bg:#f6ede0; --base-ink:#4a3a2a; --base-soft:rgba(74,58,42,.74);
+  --base-hair:rgba(192,106,67,.3); --base-accent:#a05735; --base-accent-ink:#fff7ee;
+  --alt-bg:#3a2517; --alt-ink:#f6ead9; --alt-soft:rgba(246,234,217,.65);
+  --alt-hair:rgba(224,149,108,.3); --alt-accent:#e0956c; --alt-accent-ink:#3a2517;
+  --panel-bg:#3a2517; --panel-ink:#f6ead9; --panel-soft:rgba(246,234,217,.66);
+  --panel-hair:rgba(224,149,108,.4); --panel-accent:#e0956c;
+  --blob-a:#eecfb4; --blob-b:#c06a43; --blob-c:#d9b98c; --blob-opacity:.5;
+  --dock-glow:rgba(192,106,67,.35); --dock-glow-strong:rgba(192,106,67,.55);
+}

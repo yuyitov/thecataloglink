@@ -1,0 +1,16 @@
+{
+  "_comment": "Que boton principal eligio el negocio -> el canal del motor. UNICA fuente de verdad: la consumen worker.js (import) y engine/generator/primary_cta.py (que a su vez la usa build_client_from_intake y generate_service_menu). Vivio COPIADA en esas tres y divergio: el 2026-07-26 tres de las cinco opciones del formulario de PawContact caian a WhatsApp en silencio.",
+  "_comment_claves": "La clave es el CANAL, y tiene que existir en _contact_options() de generate_service_menu.py o el boton no se puede pintar. La lista son las respuestas del formulario ya normalizadas (sin acentos, minusculas, lo no alfanumerico a _). El canal se lista a si mismo a proposito: sin logica que lo agregue, lo que ves es lo que hay.",
+  "_comment_formulario": "Toda opcion de un `primary_cta` de un tally_form.yaml tiene que estar aqui, o la eleccion del negocio se pierde. Lo fija tests/python/test_primary_cta.py, que barre los formularios de todas las verticales.",
+
+  "whatsapp": ["wa", "wpp", "whats", "whatsapp"],
+  "phone": ["telefono", "phone", "phone_call", "call", "llamar", "llamada_telefonica"],
+  "booking": ["booking", "book", "booking_link", "reservation", "reservas", "reservas_agenda", "reservar", "external_booking_link", "enlace_externo_de_reservas"],
+  "website": ["website", "web", "sitio_web", "site"],
+  "tiktok": ["tiktok", "tik_tok", "tt"],
+  "instagram": ["instagram", "ig", "insta"],
+  "facebook": ["facebook", "fb", "face"],
+  "email": ["email", "mail", "correo"],
+  "other": ["other", "otro", "other_public_link", "otro_enlace_publico", "external_link", "enlace_externo"],
+  "maps": ["maps", "map", "google_maps", "directions", "google_maps_directions", "google_maps_como_llegar", "como_llegar", "mapa"]
+}

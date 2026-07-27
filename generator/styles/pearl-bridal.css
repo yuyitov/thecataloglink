@@ -1,0 +1,13 @@
+/* pearl-bridal — perla / marfil frío + champagne dorado suave. Elegante,
+   luminoso y ceremonial. Novias, XV años, alta costura de gala, joyería.
+   Formato "editorial motion" (§7.10): base perla, alt bronce profundo. */
+:root{
+  --base-bg:#f6f4f0; --base-ink:#453f39; --base-soft:rgba(69,63,57,.68);
+  --base-hair:rgba(149,128,90,.3); --base-accent:#95805a; --base-accent-ink:#fffffe;
+  --alt-bg:#3a332a; --alt-ink:#f4efe6; --alt-soft:rgba(244,239,230,.65);
+  --alt-hair:rgba(216,201,168,.28); --alt-accent:#d8c9a8; --alt-accent-ink:#3a332a;
+  --panel-bg:#3a332a; --panel-ink:#f4efe6; --panel-soft:rgba(244,239,230,.66);
+  --panel-hair:rgba(216,201,168,.4); --panel-accent:#d8c9a8;
+  --blob-a:#e6dcc6; --blob-b:#b49b6e; --blob-c:#efe9dc; --blob-opacity:.5;
+  --dock-glow:rgba(149,128,90,.32); --dock-glow-strong:rgba(149,128,90,.5);
+}

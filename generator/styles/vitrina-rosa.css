@@ -1,0 +1,17 @@
+/* Vitrina · paleta "rosa" — blanco rosado, tinta vino, acento rosa profundo.
+   Nicho tipo: florería, arreglos, regalos. Fresco y romántico. */
+:root{
+  --bg:#fbf0f3;
+  --surface:#fffbfc;
+  --ink:#38202b;
+  --soft:#8a6270;
+  --hair:#f1dce3;
+  --accent:#c33c63;
+  --accent-ink:#fff5f8;
+  --accent-soft:#f8d8e2;
+  --price-bg:#f6dee6;
+  --price-ink:#9c5a72;
+  --shadow:24px 40px -32px rgba(120,30,60,.34);
+  --hero-a:#f7d9e2;
+  --hero-b:#fbf0f3;
+}

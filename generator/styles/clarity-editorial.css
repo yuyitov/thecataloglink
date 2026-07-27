@@ -1,0 +1,12 @@
+/* clarity-editorial - profesional, minimal, confiable. Coaches / consultores / servicios profesionales.
+   Paleta WOW: papel calido + azul marino. Base papel, alt marino profundo. */
+:root{
+  --base-bg:#f7f6f2; --base-ink:#1c2b45; --base-soft:rgba(28,43,69,.66);
+  --base-hair:rgba(31,58,95,.28); --base-accent:#1f3a5f; --base-accent-ink:#f4f6f9;
+  --alt-bg:#16233a; --alt-ink:#eef1f6; --alt-soft:rgba(238,241,246,.65);
+  --alt-hair:rgba(157,184,220,.28); --alt-accent:#9db8dc; --alt-accent-ink:#16233a;
+  --panel-bg:#16233a; --panel-ink:#eef1f6; --panel-soft:rgba(238,241,246,.66);
+  --panel-hair:rgba(157,184,220,.4); --panel-accent:#9db8dc;
+  --blob-a:#b9c9de; --blob-b:#5d7ba1; --blob-c:#e6e3d8; --blob-opacity:.45;
+  --dock-glow:rgba(31,58,95,.3); --dock-glow-strong:rgba(31,58,95,.5);
+}

@@ -1,0 +1,96 @@
+{
+  "_note": "DEMO FICTICIA de la tienda (layout Revista). Negocio inventado; fotos CC0 / dominio publico via Openverse — procedencia y licencia en data/demo_photos/mesa-bonita/LICENSES.json. Telefono ficticio (patron 555).",
+  "public_slug": "mesa-bonita",
+  "default_language": "es",
+  "brand_style": "revista-salvia",
+  "business_name": "Mesa Bonita",
+  "sale_button": { "kind": "whatsapp", "value": "5215555550202" },
+  "photo_source_dir": "../demo_photos/mesa-bonita",
+  "address": "Providencia, Guadalajara, Jal.",
+  "content": {
+    "es": { "short_description": "Tablas de charcutería y quesos por encargo." },
+    "en": { "short_description": "Made-to-order charcuterie and cheese boards." }
+  },
+  "products": [
+    {
+      "category": "Tablas",
+      "name_es": "Tabla grande para compartir",
+      "name_en": "Large sharing board",
+      "description_es": "Para 6 a 8 personas. Quesos, embutidos, fruta de temporada, frutos secos y pan.",
+      "description_en": "For 6 to 8 people. Cheeses, cured meats, seasonal fruit, nuts and bread.",
+      "price_label": "$1,250",
+      "ask_price": false,
+      "image": "tabla-grande.webp"
+    },
+    {
+      "category": "Tablas",
+      "name_es": "Tabla con miel y uvas",
+      "name_en": "Honey and grape board",
+      "description_es": "Quesos suaves con miel, uva fresca y galleta salada. Para 4 personas.",
+      "description_en": "Soft cheeses with honey, fresh grapes and crackers. Serves 4.",
+      "price_label": "$890",
+      "ask_price": false,
+      "image": "tabla-miel.webp"
+    },
+    {
+      "category": "Tablas",
+      "name_es": "Tabla de uvas y burrata",
+      "name_en": "Grape and burrata board",
+      "description_es": "Burrata fresca, uva negra, nuez y aceite de oliva. Se arma el mismo día.",
+      "description_en": "Fresh burrata, black grapes, walnuts and olive oil. Assembled same day.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "tabla-uvas.webp"
+    },
+    {
+      "category": "Tablas",
+      "name_es": "Tabla blanca con frutas",
+      "name_en": "White board with fruit",
+      "description_es": "Presentación clara con quesos frescos, fruta y flores comestibles. Para eventos.",
+      "description_en": "Light presentation with fresh cheeses, fruit and edible flowers. For events.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "tabla-blanca-frutas.webp"
+    },
+    {
+      "category": "Quesos",
+      "name_es": "Selección de quesos madurados",
+      "name_en": "Aged cheese selection",
+      "description_es": "Tres quesos madurados con su maridaje. Se corta al momento.",
+      "description_en": "Three aged cheeses with pairings. Cut to order.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "quesos-seleccion.webp"
+    },
+    {
+      "category": "Quesos",
+      "name_es": "Quesos con mermelada artesanal",
+      "name_en": "Cheese with artisan preserves",
+      "description_es": "Quesos de pasta dura con mermelada de higo o de tomate. Pregunta por el sabor del mes.",
+      "description_en": "Hard cheeses with fig or tomato preserve. Ask about this month's flavor.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "quesos-mermelada.webp"
+    },
+    {
+      "category": "Quesos",
+      "name_es": "Quesos con aceitunas",
+      "name_en": "Cheese and olives",
+      "description_es": "Tabla chica de quesos con aceitunas marinadas. Ideal para dos.",
+      "description_en": "Small cheese board with marinated olives. Ideal for two.",
+      "price_label": "$540",
+      "ask_price": false,
+      "image": "quesos-olivas.webp"
+    },
+    {
+      "category": "Cajas",
+      "name_es": "Caja de tapas para llevar",
+      "name_en": "Tapas box to go",
+      "description_es": "Caja individual con quesos, aceitunas y pan. Para regalo o picnic.",
+      "description_en": "Individual box with cheese, olives and bread. For a gift or a picnic.",
+      "price_label": "$380",
+      "ask_price": false,
+      "image": "quesos-tapas.webp"
+    }
+  ]
+}

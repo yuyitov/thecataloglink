@@ -1,0 +1,102 @@
+{
+  "slug": "mesa-bonita",
+  "note": "Fotos CC0 / dominio publico via Openverse. Sin obligacion de atribucion; el registro existe para poder auditar el origen.",
+  "photos": [
+    {
+      "query": "charcuterie",
+      "openverse_id": "b2ec61c2-3a8b-43a4-94dd-42eaac3674d0",
+      "title": "Charcuterie Board",
+      "creator": "laredawg",
+      "provider": "flickr",
+      "license": "pdm 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "source_page": "https://www.flickr.com/photos/27144732@N04/51739861901",
+      "file_url": "https://live.staticflickr.com/65535/51739861901_f481bf72ec_b.jpg",
+      "file": "tabla-grande.webp"
+    },
+    {
+      "query": "cheese board",
+      "openverse_id": "910473e2-3e36-4eb2-8837-5578952dca7d",
+      "title": "Cheese Board",
+      "creator": "Foodie Girl",
+      "provider": "stocksnap",
+      "license": "cc0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://stocksnap.io/photo/cheese-board-IDWG2ABOTY",
+      "file_url": "https://cdn.stocksnap.io/img-thumbs/960w/IDWG2ABOTY.jpg",
+      "file": "quesos-seleccion.webp"
+    },
+    {
+      "query": "cheese board",
+      "openverse_id": "1ce96040-404f-4330-a010-d47ee045f4cc",
+      "title": "Cheese Board",
+      "creator": "Foodie Girl",
+      "provider": "stocksnap",
+      "license": "cc0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://stocksnap.io/photo/cheese-board-K1UZNXNPBG",
+      "file_url": "https://cdn.stocksnap.io/img-thumbs/960w/K1UZNXNPBG.jpg",
+      "file": "quesos-mermelada.webp"
+    },
+    {
+      "query": "cheese platter",
+      "openverse_id": "36779535-d8f9-402f-b0ae-e0a0a334f057",
+      "title": "Closeup different types cheeses platter",
+      "creator": null,
+      "provider": "rawpixel",
+      "license": "cc0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://www.rawpixel.com/image/6035654/photo-image-public-domain-food-free",
+      "file_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2Zya19jM19hNHNlcGxhdHRlX2NoZWVzZS1pbWFnZS1reWJkYno3cy5qcGc.jpg",
+      "file": "quesos-olivas.webp"
+    },
+    {
+      "query": "cheese platter",
+      "openverse_id": "57832e63-4050-4857-8dce-9805d9a047c3",
+      "title": "Summer Cheese Platter",
+      "creator": null,
+      "provider": "rawpixel",
+      "license": "cc0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://www.rawpixel.com/image/3282990/free-photo-image-food-dinner-antipasto",
+      "file_url": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdXB3azYxNjM5MTAyLXdpa2ltZWRpYS1pbWFnZS1rb3diNHozay1remVtanZoZC5qcGc.jpg",
+      "file": "tabla-blanca-frutas.webp"
+    },
+    {
+      "query": "cheese platter",
+      "openverse_id": "a78aef1f-1a1e-4ef2-a00d-b574644eac20",
+      "title": "Free cheese platter image",
+      "creator": null,
+      "provider": "rawpixel",
+      "license": "cc0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://www.rawpixel.com/image/5926916/photo-image-public-domain-food-free",
+      "file_url": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvaXMxMDE5Ny1pbWFnZS1rd3Z5ZjZ2dS5qcGc.jpg",
+      "file": "quesos-tapas.webp"
+    },
+    {
+      "query": "cheese platter",
+      "openverse_id": "47d7e931-1942-48cb-9168-3226089dd07c",
+      "title": "Free grape cheese platter image",
+      "creator": null,
+      "provider": "rawpixel",
+      "license": "cc0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://www.rawpixel.com/image/5927563/photo-image-public-domain-people-kitchen",
+      "file_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2ZyZGFyaWF5YWtvdmxldmEwMDA0OC1pbWFnZS1rd3Z5anh6by5qcGc.jpg",
+      "file": "tabla-uvas.webp"
+    },
+    {
+      "query": "cheese platter",
+      "openverse_id": "98ef1299-f469-4372-937e-0e1ec253daba",
+      "title": "Free grape cheese platter image",
+      "creator": null,
+      "provider": "rawpixel",
+      "license": "cc0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://www.rawpixel.com/image/5917501/image-public-domain-fruit-food",
+      "file_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2lzMTA5OTAtaW1hZ2Uta3d2d3ZvaTEuanBn.jpg",
+      "file": "tabla-miel.webp"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+/* Vitrina · paleta "crema" — marfil cálido, tinta espresso, acento terracota.
+   Nicho tipo: charcutería, panadería, gourmet. Luminoso y apetitoso. */
+:root{
+  --bg:#f7f1e7;
+  --surface:#fffdf8;
+  --ink:#2b2119;
+  --soft:#7a6b5b;
+  --hair:#e6dccb;
+  --accent:#b4552d;
+  --accent-ink:#fff8f2;
+  --accent-soft:#f3e3d6;
+  --price-bg:#efe6d5;
+  --price-ink:#8a6a4a;
+  --shadow:24px 40px -32px rgba(74,48,26,.45);
+  --hero-a:#f6e7d4;
+  --hero-b:#f7f1e7;
+}

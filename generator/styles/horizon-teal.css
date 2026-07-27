@@ -1,0 +1,12 @@
+/* horizon-teal - aventurero, fresco, expansivo. Tours / experiencias / actividades al aire libre.
+   Paleta WOW: teal profundo + arena calida. Base arena, alt teal nocturno. */
+:root{
+  --base-bg:#f5f1e6; --base-ink:#0f2e2e; --base-soft:rgba(15,46,46,.66);
+  --base-hair:rgba(15,110,110,.3); --base-accent:#0f6e6e; --base-accent-ink:#f2f8f6;
+  --alt-bg:#0c3535; --alt-ink:#e9f4f0; --alt-soft:rgba(233,244,240,.65);
+  --alt-hair:rgba(124,198,184,.28); --alt-accent:#7cc6b8; --alt-accent-ink:#0c3535;
+  --panel-bg:#0c3535; --panel-ink:#e9f4f0; --panel-soft:rgba(233,244,240,.66);
+  --panel-hair:rgba(124,198,184,.4); --panel-accent:#7cc6b8;
+  --blob-a:#9fd3c8; --blob-b:#0f6e6e; --blob-c:#e8dcbd; --blob-opacity:.5;
+  --dock-glow:rgba(15,110,110,.3); --dock-glow-strong:rgba(15,110,110,.5);
+}

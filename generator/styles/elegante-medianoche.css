@@ -1,0 +1,17 @@
+/* Elegante · paleta "medianoche" — azul noche, tinta hielo, acento platino/acero.
+   Nicho tipo: joyería en plata/platino, piezas minimalistas, velas frías. */
+:root{
+  --bg:#101319;
+  --surface:#191d26;
+  --ink:#e9edf4;
+  --soft:#98a1b3;
+  --hair:#282e3a;
+  --accent:#8ea6cb;
+  --accent-ink:#0d1016;
+  --accent-soft:#232b39;
+  --price-bg:#1a1f2a;
+  --price-ink:#a9bcda;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.85);
+  --hero-a:#151a24;
+  --hero-b:#101319;
+}

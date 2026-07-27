@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Solicitar corrección — The Catalog Link</title>
+<meta name="description" content="Pide la corrección de tu página The Catalog Link con tu enlace personal.">
+<meta name="theme-color" content="#FBF6EF">
+<link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..800&amp;family=Outfit:wght@400..700&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+  --brand: #A8452F;
+  --brand-deep: #6E2A1B;
+  --brand-soft: #F7E2D9;
+  --accent: #2F6156;
+  --accent-deep: #1C3D36;
+  --accent-soft: #DBE8E3;
+  --highlight: #D99A2B;
+  --highlight-deep: #8C5F12;
+  --highlight-soft: #FAEBCF;
+  --paper: #FBF6EF;
+  --card: #FFFFFF;
+  --ink: #2A2320;
+  --muted: #6B5F58;
+  --line: #EAE0D4;
+    --radius: 18px;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 64px;
+    background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); line-height: 1.6;
+    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+  }
+  a { color: var(--brand-deep); }
+  a:focus-visible, button:focus-visible, textarea:focus-visible {
+    outline: 3px solid var(--brand-deep); outline-offset: 2px;
+  }
+  .logo {
+    font-family: var(--font-display); font-weight: 800; font-size: 1.4rem;
+    color: var(--ink); text-decoration: none; margin: 8px 0 24px; display: inline-block;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    max-width: 560px; width: 100%; padding: 32px 28px;
+    box-shadow: 0 10px 30px rgba(31, 45, 39, 0.07);
+  }
+  h1 {
+    font-family: var(--font-display); font-weight: 700; font-size: 1.5rem;
+    margin: 0 0 8px; letter-spacing: -0.01em;
+  }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); font-size: 0.92rem; }
+  .pill {
+    display: inline-block; background: var(--brand-soft); color: var(--ink);
+    border-radius: 999px; padding: 4px 14px; font-size: 0.85rem; font-weight: 600; margin-bottom: 14px;
+  }
+  .page-link { word-break: break-all; font-weight: 600; }
+  textarea {
+    width: 100%; min-height: 170px; resize: vertical;
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 14px;
+    font-family: var(--font-body); font-size: 1rem; color: var(--ink); background: var(--card);
+  }
+  textarea:focus { border-color: var(--brand); }
+  .count { text-align: right; font-size: 0.8rem; color: var(--muted); margin: 4px 0 14px; }
+  /* Contraste AA (>=4.5:1): tinta oscura sobre highlight claro / blanco sobre brand oscuro. */
+  .btn {
+    display: inline-block; border: none; cursor: pointer; text-decoration: none;
+    font-family: var(--font-body); font-weight: 700; font-size: 1.05rem;
+    background: var(--highlight); color: var(--accent-deep); padding: 13px 28px; border-radius: 999px;
+    box-shadow: 0 4px 0 var(--highlight-deep); transition: transform .15s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:disabled { opacity: 0.55; cursor: wait; transform: none; }
+  .btn--brand { background: var(--brand-deep); color: #fff; box-shadow: 0 4px 0 var(--ink); }
+  .notice {
+    border-radius: 12px; padding: 14px 16px; margin: 0 0 16px; font-size: 0.92rem;
+    background: var(--brand-soft); color: var(--accent-deep);
+  }
+  .error { background: var(--highlight-soft); color: var(--accent-deep); }
+  .success-icon { font-size: 2.4rem; margin-bottom: 8px; }
+  .hidden { display: none; }
+  .lang-switch { margin-top: 20px; font-size: 0.85rem; color: var(--muted); text-align: center; }
+  footer { margin-top: 28px; font-size: 0.8rem; color: var(--muted); text-align: center; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<a class="logo" href="/">The Catalog Link</a>
+
+<div class="card" id="card" aria-live="polite">
+  <div id="state-loading">
+    <h1 data-i18n="loadingTitle">Verificando tu enlace…</h1>
+    <p class="muted" data-i18n="loadingBody">Un momento, por favor.</p>
+  </div>
+
+  <div id="state-form" class="hidden">
+    <span class="pill" id="form-pill" data-i18n="pillFree">Corrección incluida</span>
+    <h1 data-i18n="formTitle">¿Qué quieres cambiar en tu página?</h1>
+    <p class="muted"><span data-i18n="formPage">Página:</span> <a id="page-link" class="page-link" href="#" target="_blank" rel="noopener"></a></p>
+    <p class="muted" data-i18n="formHint">Describe los cambios con tus palabras: horarios, precios, servicios, textos, teléfono, redes… Sé específico y aplicamos todo en una sola pasada.</p>
+    <div class="notice" data-i18n="formWarn">Esta información se usa para actualizar tu página pública — no incluyas datos privados. Para cambiar fotos o logo, responde al correo de entrega adjuntando los archivos.</div>
+    <form id="correction-form">
+      <label for="changes" class="muted" data-i18n="formLabel">Tus cambios:</label>
+      <textarea id="changes" name="changes" maxlength="3000" required
+        placeholder="Ejemplo: Cambia el horario de sábado a 10:00–14:00 y actualiza el precio a $250."></textarea>
+      <div class="count"><span id="char-count">0</span>/3000</div>
+      <button type="submit" class="btn" id="submit-btn" data-i18n="formBtn">Enviar corrección</button>
+    </form>
+    <p class="muted hidden" id="form-error" role="alert" style="color: var(--highlight-deep); margin-top:12px;"></p>
+  </div>
+
+  <div id="state-done" class="hidden">
+    <div class="success-icon">🎉</div>
+    <h1 data-i18n="doneTitle">¡Recibimos tu corrección!</h1>
+    <p data-i18n="doneBody">La estamos aplicando automáticamente. Te llegará un correo de confirmación cuando tu página esté actualizada (normalmente en menos de 15 minutos).</p>
+  </div>
+
+  <div id="state-used" class="hidden">
+    <h1 data-i18n="usedTitle">Este enlace de corrección ya fue usado</h1>
+    <p data-i18n="usedBody">Este enlace ya se usó. Si necesitas otro cambio y ya no te quedan modificaciones incluidas, puedes comprar una adicional ($59 MXN / $6 USD):</p>
+    <p style="margin: 22px 0;"><a class="btn btn--brand" id="buy-link" href="#" data-i18n="usedBtn">Comprar corrección adicional</a></p>
+    <p class="muted" data-i18n="usedAlt">¿Dudas? Escríbenos por correo o responde a tu correo de entrega.</p>
+  </div>
+
+  <div id="state-invalid" class="hidden">
+    <h1 data-i18n="invalidTitle">Enlace no válido o vencido</h1>
+    <p data-i18n="invalidBody">Este enlace de corrección no existe o ya venció (dura 30 días). Escríbenos y te ayudamos:</p>
+    <p style="margin: 22px 0;"><a class="btn btn--brand" id="invalid-mail" href="mailto:hello@thecataloglink.com" data-i18n="invalidBtn">Escribirnos por correo</a></p>
+    <p class="muted" data-i18n="invalidAlt">También puedes responder al correo de entrega de tu página.</p>
+  </div>
+
+  <div id="state-unavailable" class="hidden">
+    <h1 data-i18n="unavailTitle">Compra en línea no disponible por ahora</h1>
+    <p data-i18n="unavailBody">Escríbenos por correo y te cobramos la corrección adicional directamente:</p>
+    <p style="margin: 22px 0;"><a class="btn btn--brand" id="unavail-mail" href="mailto:hello@thecataloglink.com" data-i18n="unavailBtn">Escribirnos por correo</a></p>
+  </div>
+</div>
+
+<p class="lang-switch"><a href="#" id="lang-toggle">English version</a></p>
+
+<footer>
+  <a href="/es/terminos/" id="footer-terms">Términos y Condiciones</a> ·
+  <a href="/es/privacidad/" id="footer-privacy">Aviso de Privacidad</a>
+  <br><span data-i18n="footerBottom">© 2026 The Catalog Link · Los catálogos de ejemplo usan datos ficticios.</span>
+</footer>
+
+<script>
+(function () {
+  var WORKER_URL = 'https://catalog-worker.veronica-perezarroyo.workers.dev';
+  var BRAND = 'The Catalog Link';
+  var SUPPORT_EMAIL = 'hello@thecataloglink.com';
+
+  var params = new URLSearchParams(window.location.search);
+  var token = (params.get('t') || '').trim();
+  var lang = (params.get('l') || 'es') === 'en' ? 'en' : 'es';
+  var buyFlag = params.get('buy') || '';
+
+  var STRINGS = {
+    es: {
+      docTitle: 'Solicitar corrección — ' + BRAND,
+      loadingTitle: 'Verificando tu enlace…',
+      loadingBody: 'Un momento, por favor.',
+      pillFree: 'Corrección incluida',
+      pillPaid: 'Corrección adicional',
+      formTitle: '¿Qué quieres cambiar en tu página?',
+      formPage: 'Página:',
+      formHint: 'Describe los cambios con tus palabras: horarios, precios, servicios, textos, teléfono, redes… Sé específico y aplicamos todo en una sola pasada.',
+      formWarn: 'Esta información se usa para actualizar tu página pública — no incluyas datos privados. Para cambiar fotos o logo, responde al correo de entrega adjuntando los archivos.',
+      formLabel: 'Tus cambios:',
+      formBtn: 'Enviar corrección',
+      formSending: 'Enviando…',
+      formErrorShort: 'Cuéntanos un poco más (mínimo unas palabras) para poder aplicar el cambio.',
+      formErrorGeneric: 'No pudimos enviar tu corrección. Intenta de nuevo en unos minutos o responde al correo de entrega.',
+      doneTitle: '¡Recibimos tu corrección!',
+      doneBody: 'La estamos aplicando automáticamente. Te llegará un correo de confirmación cuando tu página esté actualizada (normalmente en menos de 15 minutos).',
+      usedTitle: 'Este enlace de corrección ya fue usado',
+      usedBody: 'Este enlace ya se usó. Si necesitas otro cambio y ya no te quedan modificaciones incluidas, puedes comprar una adicional ($59 MXN / $6 USD):',
+      usedBtn: 'Comprar corrección adicional',
+      usedAlt: '¿Dudas? Escríbenos por correo o responde a tu correo de entrega.',
+      invalidTitle: 'Enlace no válido o vencido',
+      invalidBody: 'Este enlace de corrección no existe o ya venció (dura 30 días). Escríbenos y te ayudamos:',
+      invalidBtn: 'Escribirnos por correo',
+      invalidAlt: 'También puedes responder al correo de entrega de tu página.',
+      unavailTitle: 'Compra en línea no disponible por ahora',
+      unavailBody: 'Escríbenos por correo y te cobramos la corrección adicional directamente:',
+      unavailBtn: 'Escribirnos por correo',
+      langToggle: 'English version',
+      terms: 'Términos y Condiciones', termsHref: '/es/terminos/',
+      privacy: 'Aviso de Privacidad', privacyHref: '/es/privacidad/',
+      footerBottom: '© 2026 The Catalog Link · Los catálogos de ejemplo usan datos ficticios.'
+    },
+    en: {
+      docTitle: 'Request a correction — ' + BRAND,
+      loadingTitle: 'Checking your link…',
+      loadingBody: 'One moment, please.',
+      pillFree: 'Included correction',
+      pillPaid: 'Extra correction',
+      formTitle: 'What would you like to change on your page?',
+      formPage: 'Page:',
+      formHint: 'Describe the changes in your own words: hours, prices, services, texts, phone, socials… Be specific and we apply everything in one pass.',
+      formWarn: 'This information is used to update your public page — do not include private info. To change photos or your logo, reply to your delivery email with the files attached.',
+      formLabel: 'Your changes:',
+      formBtn: 'Send correction',
+      formSending: 'Sending…',
+      formErrorShort: 'Tell us a bit more (at least a few words) so we can apply the change.',
+      formErrorGeneric: 'We could not send your correction. Try again in a few minutes or reply to your delivery email.',
+      doneTitle: 'We received your correction!',
+      doneBody: 'We are applying it automatically. You will get a confirmation email once your page is updated (usually within 15 minutes).',
+      usedTitle: 'This correction link was already used',
+      usedBody: 'This link has already been used. If you need another change and have no included modifications left, you can buy an extra one ($6 USD / $59 MXN):',
+      usedBtn: 'Buy an extra correction',
+      usedAlt: 'Questions? Email us or reply to your delivery email.',
+      invalidTitle: 'Invalid or expired link',
+      invalidBody: 'This correction link does not exist or has expired (links last 30 days). Contact us and we will help:',
+      invalidBtn: 'Email us',
+      invalidAlt: 'You can also reply to your page delivery email.',
+      unavailTitle: 'Online purchase unavailable right now',
+      unavailBody: 'Email us and we will charge the extra correction directly:',
+      unavailBtn: 'Email us',
+      langToggle: 'Versión en español',
+      terms: 'Terms & Conditions', termsHref: '/terms/',
+      privacy: 'Privacy Policy', privacyHref: '/privacy/',
+      footerBottom: '© 2026 The Catalog Link · Example catalogs use fictional data.'
+    }
+  };
+
+  function applyLang() {
+    var t = STRINGS[lang];
+    document.documentElement.lang = lang;
+    document.title = t.docTitle;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      if (t[key]) el.textContent = t[key];
+    });
+    var toggle = document.getElementById('lang-toggle');
+    toggle.textContent = t.langToggle;
+    var terms = document.getElementById('footer-terms');
+    terms.textContent = t.terms; terms.href = t.termsHref;
+    var privacy = document.getElementById('footer-privacy');
+    privacy.textContent = t.privacy; privacy.href = t.privacyHref;
+    var ta = document.getElementById('changes');
+    ta.placeholder = lang === 'es'
+      ? 'Ejemplo: Cambia el horario de sábado a 10:00–14:00 y actualiza el precio a $250.'
+      : 'Example: Change Saturday hours to 10:00–14:00 and raise the price to $25.';
+    var mailSubject = lang === 'es'
+      ? 'Correccion de mi pagina ' + BRAND
+      : 'Correction for my ' + BRAND + ' page';
+    ['invalid-mail', 'unavail-mail'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.href = 'mailto:' + SUPPORT_EMAIL + '?subject=' + encodeURIComponent(mailSubject);
+    });
+  }
+
+  document.getElementById('lang-toggle').addEventListener('click', function (e) {
+    e.preventDefault();
+    lang = lang === 'es' ? 'en' : 'es';
+    var url = new URL(window.location.href);
+    url.searchParams.set('l', lang);
+    window.history.replaceState(null, '', url.toString());
+    applyLang();
+  });
+
+  var states = ['loading', 'form', 'done', 'used', 'invalid', 'unavailable'];
+  function show(state) {
+    states.forEach(function (s) {
+      document.getElementById('state-' + s).classList.toggle('hidden', s !== state);
+    });
+  }
+
+  var ta = document.getElementById('changes');
+  ta.addEventListener('input', function () {
+    document.getElementById('char-count').textContent = String(ta.value.length);
+  });
+
+  document.getElementById('correction-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var t = STRINGS[lang];
+    var changes = ta.value.trim();
+    var errEl = document.getElementById('form-error');
+    errEl.classList.add('hidden');
+    if (changes.length < 5) {
+      errEl.textContent = t.formErrorShort;
+      errEl.classList.remove('hidden');
+      return;
+    }
+    var btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = t.formSending;
+    fetch(WORKER_URL + '/correct', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, changes: changes })
+    }).then(function (resp) { return resp.json().then(function (data) { return { resp: resp, data: data }; }); })
+      .then(function (r) {
+        if (r.resp.ok && r.data.ok) { show('done'); return; }
+        if (r.data && r.data.state === 'used') { setBuyLink(r.data.buy_url); show('used'); return; }
+        if (r.data && r.data.state === 'invalid') { show('invalid'); return; }
+        throw new Error('send failed');
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = t.formBtn;
+        errEl.textContent = t.formErrorGeneric;
+        errEl.classList.remove('hidden');
+      });
+  });
+
+  // Guard de esquema (hallazgo #18 de la auditoria 2026-07-23): estos href
+  // salen de un JSON del worker. Hoy ese JSON lo controla el servidor, asi que
+  // no es explotable -- pero un `javascript:` o un `data:` colado ahi se
+  // ejecutaria con un clic del cliente, y cerrarlo cuesta esta funcion.
+  // Solo http(s); cualquier otra cosa cae a '#'.
+  function safeHref(url) {
+    var s = String(url || '').trim();
+    return /^https?:\/\//i.test(s) ? s : '#';
+  }
+
+  function setBuyLink(buyUrl) {
+    var link = document.getElementById('buy-link');
+    if (buyUrl) {
+      link.href = safeHref(buyUrl);
+    } else {
+      link.href = 'mailto:' + SUPPORT_EMAIL + '?subject=' + encodeURIComponent(
+        lang === 'es'
+          ? 'Quiero una correccion adicional para mi pagina ' + BRAND
+          : 'I want an extra correction for my ' + BRAND + ' page'
+      );
+    }
+  }
+
+  applyLang();
+
+  if (buyFlag === 'unavailable') {
+    show('unavailable');
+    return;
+  }
+  if (!token) {
+    show('invalid');
+    return;
+  }
+
+  fetch(WORKER_URL + '/correction-status?t=' + encodeURIComponent(token))
+    .then(function (resp) { return resp.json(); })
+    .then(function (data) {
+      if (data.state === 'valid') {
+        var link = document.getElementById('page-link');
+        link.href = safeHref(data.page_url);
+        link.textContent = data.page_url || '';
+        show('form');
+        ta.focus();
+      } else if (data.state === 'used') {
+        setBuyLink(data.buy_url);
+        show('used');
+      } else {
+        show('invalid');
+      }
+    })
+    .catch(function () { show('invalid'); });
+})();
+</script>
+</body>
+</html>

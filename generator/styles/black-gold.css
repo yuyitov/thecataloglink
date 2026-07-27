@@ -1,0 +1,12 @@
+/* black-gold - premium, elegante, lujo. Spa premium / med spa / estetica premium.
+   Paleta WOW: azul-negro + crema calido + dorado. Base oscura, alt crema. */
+:root{
+  --base-bg:#101018; --base-ink:#efe7d6; --base-soft:rgba(239,231,214,.6);
+  --base-hair:rgba(201,162,75,.25); --base-accent:#c9a24b; --base-accent-ink:#14140f;
+  --alt-bg:#f0e8d6; --alt-ink:#262214; --alt-soft:rgba(38,34,20,.66);
+  --alt-hair:rgba(138,106,31,.3); --alt-accent:#82641d; --alt-accent-ink:#f7f1e3;
+  --panel-bg:#191922; --panel-ink:#efe7d6; --panel-soft:rgba(239,231,214,.66);
+  --panel-hair:rgba(201,162,75,.4); --panel-accent:#c9a24b;
+  --blob-a:#c9a24b; --blob-b:#6b5a2e; --blob-c:#2b2c4a; --blob-opacity:.45;
+  --dock-glow:rgba(201,162,75,.35); --dock-glow-strong:rgba(201,162,75,.55);
+}

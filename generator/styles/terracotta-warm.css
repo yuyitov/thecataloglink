@@ -1,0 +1,12 @@
+/* terracotta-warm - acogedor, artesanal, sabroso. Restaurantes / cafes / hospitalidad.
+   Paleta WOW: terracota profundo + crema calido. Base crema, alt barro oscuro. */
+:root{
+  --base-bg:#fbf1e6; --base-ink:#43281c; --base-soft:rgba(67,40,28,.68);
+  --base-hair:rgba(181,80,47,.3); --base-accent:#b5502f; --base-accent-ink:#fff8f0;
+  --alt-bg:#40200f; --alt-ink:#f9ecdf; --alt-soft:rgba(249,236,223,.65);
+  --alt-hair:rgba(226,138,95,.3); --alt-accent:#e28a5f; --alt-accent-ink:#40200f;
+  --panel-bg:#40200f; --panel-ink:#f9ecdf; --panel-soft:rgba(249,236,223,.66);
+  --panel-hair:rgba(226,138,95,.4); --panel-accent:#e28a5f;
+  --blob-a:#eab088; --blob-b:#b5502f; --blob-c:#f2d5b8; --blob-opacity:.5;
+  --dock-glow:rgba(181,80,47,.35); --dock-glow-strong:rgba(181,80,47,.55);
+}

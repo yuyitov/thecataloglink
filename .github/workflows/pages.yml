@@ -1,0 +1,129 @@
+name: pages
+
+# Publica public/ (landing EN/ES, legales, /correct/ y las demos) en GitHub
+# Pages. NO usa secrets. Plantilla del motor link-factory, generada para
+# The Catalog Link: mismos checks que la instancia de referencia (HMU Link),
+# ajustados a esta vertical.
+# El dominio propio lo fija public/CNAME.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos minimos para publicar a GitHub Pages via Actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Solo un deploy de Pages a la vez; no cancelar deploys en curso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies (if requirements.txt exists)
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Generate the demos from scratch
+        run: python generator/generate_catalog.py
+
+      - name: Verify expected outputs exist (index.html + qr.svg per demo)
+        run: |
+          set -e
+          demos="casa-cacao dulce-marea mesa-bonita"
+          missing=0
+          for slug in $demos; do
+            for asset in index.html qr.svg; do
+              path="public/demos/$slug/$asset"
+              if [ ! -f "$path" ]; then
+                echo "FALTA: $path"
+                missing=1
+              fi
+            done
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Faltan archivos esperados."
+            exit 1
+          fi
+          echo "OK: todas las demos tienen index.html y qr.svg."
+
+      - name: Verify the storefront exists (landing EN/ES + legales + correct)
+        run: |
+          set -e
+          pages="public/index.html public/es/index.html public/privacy/index.html public/terms/index.html public/es/privacidad/index.html public/es/terminos/index.html public/correct/index.html public/CNAME"
+          missing=0
+          for path in $pages; do
+            if [ ! -f "$path" ]; then
+              echo "FALTA: $path"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Falta parte de la tienda. Regla de la casa: nunca publicar una pagina donde no se pueda comprar."
+            exit 1
+          fi
+          echo "OK: la tienda esta completa."
+
+      - name: Verify no unreplaced {{...}} tokens in generated HTML
+        run: |
+          if grep -rl "{{" public/demos/ ; then
+            echo "Hay tokens {{...}} sin reemplazar en la salida."
+            exit 1
+          fi
+          echo "OK: sin tokens residuales."
+
+      - name: Verify no placeholder URLs left in the storefront
+        run: |
+          # Los placeholders de la tienda (checkout de Stripe, URL del worker) se
+          # rellenan al configurar la vertical. Si alguno sobrevive al deploy, la
+          # tienda queda rota en silencio: el boton de comprar no compra.
+          if grep -rn "TODO_STRIPE_CHECKOUT\|TODO_WORKER_URL" public/ ; then
+            echo "Quedan placeholders sin rellenar en la tienda."
+            exit 1
+          fi
+          echo "OK: sin placeholders pendientes."
+
+      - name: Verify no obvious secrets committed
+        run: |
+          # Matches secret-shaped VALUES (Stripe/OpenAI key prefixes, PEM
+          # headers), not mere mentions of words like "api_key" or "bearer"
+          # that legitimately appear in code/comments/docstrings.
+          if grep -rnE "sk_live_[A-Za-z0-9]+|sk_test_[A-Za-z0-9]+|rk_live_[A-Za-z0-9]+|sk-proj-[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----" \
+               generator/ data/ public/ ; then
+            echo "Posible secreto detectado."
+            exit 1
+          fi
+          echo "OK: sin secrets obvios."
+
+      - name: Upload public/ as Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: public/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5

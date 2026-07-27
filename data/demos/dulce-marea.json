@@ -1,0 +1,116 @@
+{
+  "_note": "DEMO FICTICIA de la tienda (layout Vitrina). Negocio inventado; las fotos son CC0 / dominio publico via Openverse — procedencia y licencia de cada una en data/demo_photos/dulce-marea/LICENSES.json. El telefono es el patron ficticio 555. Sirve de ejemplo enlazado desde la seccion de estilos de la landing.",
+  "public_slug": "dulce-marea",
+  "default_language": "es",
+  "brand_style": "vitrina-crema",
+  "business_name": "Dulce Marea",
+  "sale_button": { "kind": "whatsapp", "value": "5215555550101" },
+  "photo_source_dir": "../demo_photos/dulce-marea",
+  "address": "Colonia Americana, Guadalajara, Jal.",
+  "content": {
+    "es": { "short_description": "Repostería y pasteles por encargo." },
+    "en": { "short_description": "Made-to-order cakes and pastries." }
+  },
+  "products": [
+    {
+      "category": "Pasteles",
+      "name_es": "Pastel de chocolate",
+      "name_en": "Chocolate cake",
+      "description_es": "Bizcocho de chocolate con relleno de ganache. Se hace por encargo en tamaño de 8, 12 o 20 porciones.",
+      "description_en": "Chocolate sponge with ganache filling. Made to order in 8, 12 or 20 portions.",
+      "price_label": "$680",
+      "ask_price": false,
+      "image": "pastel-chocolate.webp"
+    },
+    {
+      "category": "Pasteles",
+      "name_es": "Pastel de fresas con crema",
+      "name_en": "Strawberries and cream cake",
+      "description_es": "Capas de vainilla con crema batida y fresa natural de temporada.",
+      "description_en": "Vanilla layers with whipped cream and seasonal fresh strawberries.",
+      "price_label": "$720",
+      "ask_price": false,
+      "image": "pastel-fresa.webp"
+    },
+    {
+      "category": "Pasteles",
+      "name_es": "Cheesecake de frutos rojos",
+      "name_en": "Berry cheesecake",
+      "description_es": "Base de galleta, relleno cremoso y frutos rojos frescos encima.",
+      "description_en": "Cookie base, creamy filling and fresh berries on top.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "cheesecake.webp"
+    },
+    {
+      "category": "Pasteles",
+      "name_es": "Tarta de limón",
+      "name_en": "Lemon tart",
+      "description_es": "Masa quebrada con crema de limón y merengue. Individual o para compartir.",
+      "description_en": "Shortcrust with lemon curd and meringue. Individual or to share.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "tarta-limon.webp"
+    },
+    {
+      "category": "Individuales",
+      "name_es": "Cupcakes decorados",
+      "name_en": "Decorated cupcakes",
+      "description_es": "Por caja de 6 o 12, con betún de tu color. Sabores de vainilla, chocolate o red velvet.",
+      "description_en": "By the box of 6 or 12, frosting in the color you pick. Vanilla, chocolate or red velvet.",
+      "price_label": "$45 c/u",
+      "ask_price": false,
+      "image": "cupcakes.webp"
+    },
+    {
+      "category": "Individuales",
+      "name_es": "Brownies",
+      "name_en": "Brownies",
+      "description_es": "Brownie denso de chocolate amargo. Por pieza o en caja de 9.",
+      "description_en": "Dense dark-chocolate brownie. By the piece or in a box of 9.",
+      "price_label": "$38 c/u",
+      "ask_price": false,
+      "image": "brownies.webp"
+    },
+    {
+      "category": "Individuales",
+      "name_es": "Macarons",
+      "name_en": "Macarons",
+      "description_es": "Surtido de sabores del día. Se venden por caja de 6, 12 o 24.",
+      "description_en": "Assorted flavors of the day. Sold in boxes of 6, 12 or 24.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "macarons.webp"
+    },
+    {
+      "category": "Individuales",
+      "name_es": "Donas glaseadas",
+      "name_en": "Glazed donuts",
+      "description_es": "Donas suaves con glaseado de colores. Por pieza o por docena.",
+      "description_en": "Soft donuts with colored glaze. By the piece or by the dozen.",
+      "price_label": "$32 c/u",
+      "ask_price": false,
+      "image": "donas.webp"
+    },
+    {
+      "category": "Galletas",
+      "name_es": "Galletas decoradas",
+      "name_en": "Decorated cookies",
+      "description_es": "Galleta de mantequilla decorada a mano con glasé real. Se personalizan por tema o fecha.",
+      "description_en": "Butter cookies hand-decorated with royal icing. Customized by theme or occasion.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "galletas.webp"
+    },
+    {
+      "category": "Galletas",
+      "name_es": "Pan dulce de la casa",
+      "name_en": "House sweet bread",
+      "description_es": "Pan del día, horneado por la mañana. Pregunta qué hay hoy.",
+      "description_en": "Bread of the day, baked in the morning. Ask what's available today.",
+      "price_label": null,
+      "ask_price": true,
+      "image": "pan-dulce.webp"
+    }
+  ]
+}

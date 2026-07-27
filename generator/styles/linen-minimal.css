@@ -1,0 +1,13 @@
+/* linen-minimal — lino / avena natural + acento greige. Neutro, calmado y
+   contemporáneo. Ropa a medida ligera, slow fashion, prêt-à-porter minimal.
+   Formato "editorial motion" (§7.10): base lino, alt taupe profundo. */
+:root{
+  --base-bg:#f4f1ea; --base-ink:#3f3a32; --base-soft:rgba(63,58,50,.68);
+  --base-hair:rgba(107,93,73,.3); --base-accent:#6b5d49; --base-accent-ink:#fbf9f3;
+  --alt-bg:#35302a; --alt-ink:#f1ece1; --alt-soft:rgba(241,236,225,.65);
+  --alt-hair:rgba(203,187,158,.28); --alt-accent:#cbbb9e; --alt-accent-ink:#35302a;
+  --panel-bg:#35302a; --panel-ink:#f1ece1; --panel-soft:rgba(241,236,225,.66);
+  --panel-hair:rgba(203,187,158,.4); --panel-accent:#cbbb9e;
+  --blob-a:#ddd4c1; --blob-b:#a8967a; --blob-c:#ece6d8; --blob-opacity:.5;
+  --dock-glow:rgba(107,93,73,.32); --dock-glow-strong:rgba(107,93,73,.5);
+}

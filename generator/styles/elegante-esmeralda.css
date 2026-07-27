@@ -1,0 +1,17 @@
+/* Elegante · paleta "esmeralda" — verde casi negro, tinta menta, acento esmeralda.
+   Nicho tipo: joyería en plata/jade, botánica premium, velas de eucalipto. */
+:root{
+  --bg:#0f1512;
+  --surface:#17201b;
+  --ink:#e7f0e9;
+  --soft:#94a89b;
+  --hair:#26332c;
+  --accent:#5cae83;
+  --accent-ink:#0c1410;
+  --accent-soft:#213029;
+  --price-bg:#182219;
+  --price-ink:#8fc7a5;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.82);
+  --hero-a:#141d18;
+  --hero-b:#0f1512;
+}

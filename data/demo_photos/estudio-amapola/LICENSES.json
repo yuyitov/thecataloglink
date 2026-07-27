@@ -1,0 +1,73 @@
+{
+  "slug": "estudio-amapola",
+  "origen": "IMAGENES GENERADAS POR IA. No son fotografias de un negocio real.",
+  "note": "Estudio Amapola es un negocio FICTICIO, inventado para la vitrina de ejemplos de la tienda (mismo caso que dulce-marea / mesa-bonita / casa-cacao, que usan fotos CC0). Estas 8 imagenes las genero Vero el 2026-07-25 con Gemini (Nano Banana) siguiendo prompts encadenados: la foto 1 se genero desde cero y las 7 restantes se pidieron en la MISMA conversacion usando las anteriores como referencia de estilo, que es lo que hace que las 8 parezcan de la misma tienda.",
+  "marca_de_agua": "Las 8 conservan la estrella de 4 picos que Google estampa en las imagenes generadas, abajo a la derecha (~90% del ancho, ~86% del alto), y la marca invisible SynthID. DECISION DE VERO 2026-07-25: NO se quitan, ni recortando ni borrando. Al tamano real de tarjeta (~360px) es practicamente invisible. Quitarla seria borrar la senal de origen justo en el producto cuya promesa es contestar de frente de donde salen las fotos.",
+  "regla_dura": "ESTAS IMAGENES SON SOLO PARA LOS EJEMPLOS FICTICIOS DE LA VITRINA. JAMAS entran al camino de cliente real ni a una vista previa de prospecto: ahi van SIEMPRE las fotos reales del negocio, bajadas de su propio Instagram por Cory (data/catalogo/prospects/<slug>/raw/). Si una imagen generada llegara a un prospecto, se cae la promesa entera del producto.",
+  "generador": {
+    "modelo": "Gemini (Nano Banana) via la app de Gemini",
+    "fecha": "2026-07-25",
+    "autor": "Vero",
+    "licencia": "salida de Gemini, uso comercial permitido por los terminos de Google (verificar al publicar)"
+  },
+  "optimizacion": "Convertidas con prospector/enhance_photos.py optimize_to_webp (MAX_WIDTH=1080, WEBP_QUALITY=82, method=6), la misma receta F3 que las 26 fotos CC0. 61.10 MB -> 0.58 MB (99% menos). Los PNG originales de 8 MB quedaron en el escritorio de Vero.",
+  "estilo_sugerido": "revista-rosa (para no chocar con mesa-bonita, que ya usa revista-salvia)",
+  "photos": [
+    {
+      "file": "ramo-grande-kraft.webp",
+      "categoria": "Ramos",
+      "formato": "4:5",
+      "orden": 1,
+      "prompt": "Photorealistic product photo for a small florist's online catalog. Soft natural window light from the left, gentle shadows, warm neutral background of pale limewash plaster and raw linen. Shot on a 50mm lens. Artisanal, calm, editorial feel. No text, no logos, no watermarks, no visible faces. Clean and uncluttered. A large hand-tied bouquet wrapped in kraft paper, with garden roses, ranunculus and eucalyptus, standing upright. Vertical 4:5 format."
+    },
+    {
+      "file": "ramo-pequeno-liston.webp",
+      "categoria": "Ramos",
+      "formato": "3:2",
+      "orden": 2,
+      "prompt": "Using the previous images as a style reference - same florist shop, same light, same wall, same table - create a new product photo of a different item: a small seasonal bouquet in soft pastel tones, tied with cotton ribbon, lying flat on the linen cloth. Horizontal 3:2 format."
+    },
+    {
+      "file": "arreglo-jarron.webp",
+      "categoria": "Arreglos",
+      "formato": "3:2",
+      "orden": 3,
+      "prompt": "Using the previous images as a style reference - same florist shop, same light, same wall, same table - create a new product photo of a different item: a flower arrangement in a matte ceramic vase, white and blush blooms with greenery spilling naturally over the rim. Horizontal 3:2 format."
+    },
+    {
+      "file": "caja-sombrerera.webp",
+      "categoria": "Arreglos",
+      "formato": "4:5",
+      "orden": 4,
+      "prompt": "Using the previous images as a style reference - same florist shop, same light, same wall, same table - create a new product photo of a different item: a round hat-box flower arrangement, dense pink and cream roses packed tightly, the lid resting beside it. Vertical 4:5 format."
+    },
+    {
+      "file": "centro-de-mesa.webp",
+      "categoria": "Arreglos",
+      "formato": "3:2",
+      "orden": 5,
+      "prompt": "Using the previous images as a style reference - same florist shop, same light, same wall, same table - create a new product photo of a different item: a low, wide table centerpiece in soft white and green flowers, two unlit taper candles standing beside it. Horizontal 3:2 format."
+    },
+    {
+      "file": "ramo-novia.webp",
+      "categoria": "Ramos",
+      "formato": "4:5",
+      "orden": 6,
+      "prompt": "Using the previous images as a style reference - same florist shop, same light, same wall, same table - create a new product photo of a different item: a bridal bouquet in cream and ivory tones resting on a pale wooden chair, a long white silk ribbon trailing down toward the floor. No hands, no people. Vertical 4:5 format."
+    },
+    {
+      "file": "planta-maceta.webp",
+      "categoria": "Plantas",
+      "formato": "4:5",
+      "orden": 7,
+      "prompt": "Using the previous images as a style reference - same florist shop, same light, same wall, same table - create a new product photo of a different item: a single leafy indoor plant in a terracotta pot standing on the wooden table, healthy green leaves, one specimen only. Vertical 4:5 format."
+    },
+    {
+      "file": "corona-flor-seca.webp",
+      "categoria": "Plantas",
+      "formato": "4:5",
+      "orden": 8,
+      "prompt": "Using the previous images as a style reference - same florist shop, same light, same wall, same table - create a new product photo of a different item: a dried flower wreath hanging on the pale plaster wall, muted beige and dusty pink tones, casting a soft shadow. Vertical 4:5 format."
+    }
+  ]
+}

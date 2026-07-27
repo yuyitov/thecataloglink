@@ -1,0 +1,17 @@
+/* Revista · paleta "durazno" — durazno suave, tinta ciruela, acento coral.
+   Nicho tipo: repostería, postres, fresas con chocolate. Dulce y editorial. */
+:root{
+  --bg:#fce9e1;
+  --surface:#fffaf7;
+  --ink:#37222e;
+  --soft:#8a6472;
+  --hair:#f2d9cf;
+  --accent:#d24e6f;
+  --accent-ink:#fff6f8;
+  --accent-soft:#f8dbe1;
+  --price-bg:#f6ded4;
+  --price-ink:#a4657a;
+  --shadow:28px 52px -34px rgba(120,44,68,.4);
+  --hero-a:#fbd8c7;
+  --hero-b:#fce9e1;
+}

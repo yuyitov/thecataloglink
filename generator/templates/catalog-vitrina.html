@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{{HEAD_META}}
+<title>{{PAGE_TITLE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   The Catalog Link — layout "Vitrina" (grid luminoso, F4).
+   Estructura compartida por las 4 paletas luminosas; cada
+   paleta inyecta solo sus variables de color.
+   Realidad del nicho: casi ningún producto trae precio, así que
+   "Preguntar precio" es una pastilla INTENCIONAL (afordancia de
+   conversación), no un hueco. Mejora progresiva: sin JS todo el
+   catálogo es visible; el JS solo agrega buscador + filtro.
+   ============================================================ */
+
+/* ---- Paleta por estilo (inyectada: una de las paletas de vitrina) ---- */
+{{STYLE_CSS}}
+
+:root{
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Outfit","Segoe UI",sans-serif;
+  --maxw:1160px;
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-weight:400;line-height:1.55;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+.shell{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+.skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:0 0 10px 0;z-index:200}
+.skip:focus{left:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+/* ---- Topbar delgada, pegajosa ---- */
+.topbar{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
+.topbar__in{display:flex;align-items:center;gap:12px;height:60px}
+.monogram{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;
+  display:grid;place-items:center;border:1px solid var(--hair);background:var(--surface);
+  font-family:var(--serif);font-weight:600;font-size:1rem;color:var(--accent)}
+.topbar__spacer{flex:1}
+.lang-switch a{font-size:.78rem;color:var(--soft);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:1px;white-space:nowrap}
+.lang-switch a:hover{color:var(--ink)}
+
+/* botón de venta (sólido, acento) */
+.btn-sale{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:var(--accent-ink);
+  font-weight:500;font-size:.92rem;text-decoration:none;padding:10px 16px;border-radius:999px;
+  border:none;cursor:pointer;transition:transform .15s ease,filter .15s ease}
+.btn-sale:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.btn-sale svg{width:16px;height:16px;flex:none}
+.topbar .btn-sale{padding:8px 14px;font-size:.85rem}
+@media (max-width:560px){.topbar .btn-sale span{display:none}.topbar .btn-sale{padding:9px}}
+
+/* ---- Hero ---- */
+.hero{padding:44px 0 28px;background:linear-gradient(180deg,var(--hero-a),var(--hero-b))}
+.hero__eyebrow{font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);margin:0 0 14px}
+.hero__title{font-family:var(--serif);font-weight:600;line-height:1.02;letter-spacing:-.01em;
+  font-size:clamp(2.5rem,7vw,4.4rem);margin:0}
+.hero__title em{font-style:italic;color:var(--accent)}
+.hero__desc{max-width:52ch;margin:16px 0 0;color:var(--soft);font-size:1.06rem}
+.hero__meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin:20px 0 0;font-size:.86rem;color:var(--soft)}
+.hero__meta span{display:inline-flex;align-items:center;gap:6px}
+.hero__cta{margin:26px 0 4px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.hero__cta .count{font-size:.86rem;color:var(--soft)}
+
+/* ---- Barra de búsqueda + filtros, pegajosa bajo la topbar ---- */
+.controls{position:sticky;top:60px;z-index:50;background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--hair);padding:14px 0}
+.search{position:relative;max-width:420px}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--soft);pointer-events:none}
+.search input{width:100%;font-family:var(--sans);font-size:.98rem;color:var(--ink);
+  background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:12px 16px 12px 40px}
+.search input::placeholder{color:var(--soft)}
+.filters{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:2px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;font-family:var(--sans);font-size:.86rem;font-weight:500;color:var(--soft);
+  background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:8px 15px;cursor:pointer;
+  white-space:nowrap;transition:all .15s ease}
+.chip:hover{color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* ---- Grid de productos ---- */
+.catalog{padding:26px 0 60px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media (min-width:680px){.grid{grid-template-columns:repeat(3,1fr);gap:22px}}
+@media (min-width:1000px){.grid{grid-template-columns:repeat(4,1fr)}}
+
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(0,0,0,.02);transition:transform .2s ease,box-shadow .3s ease}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.card__media{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--accent-soft)}
+.card__img{width:100%;height:100%;object-fit:cover;transform:scale(1.02);
+  animation:kenburns 22s ease-in-out infinite alternate}
+.card:nth-child(3n) .card__img{animation-delay:-7s}
+.card:nth-child(3n+1) .card__img{animation-delay:-13s}
+@keyframes kenburns{
+  from{transform:scale(1.02) translate(0,0)}
+  to{transform:scale(1.12) translate(-1.5%,-1.5%)}
+}
+.card__cat{position:absolute;left:10px;top:10px;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:600;color:var(--ink);background:color-mix(in srgb,var(--surface) 85%,transparent);
+  backdrop-filter:blur(4px);padding:4px 9px;border-radius:999px}
+.card__body{padding:14px 15px 16px;display:flex;flex-direction:column;gap:7px;flex:1}
+.card__name{font-family:var(--serif);font-weight:600;font-size:1.08rem;line-height:1.2;margin:0}
+.card__desc{font-size:.86rem;color:var(--soft);margin:0;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* El pie envuelve: en tarjetas angostas (2 col a 375px) el precio y el botón
+   no caben lado a lado, así que el botón baja a su propia línea a ancho completo
+   en vez de desbordar y quedar cortado ("Pre…"). En tarjetas anchas (3-4 col)
+   caben en una fila con el precio a la izquierda y el botón a la derecha. */
+.card__foot{margin-top:auto;padding-top:10px;display:flex;flex-wrap:wrap;
+  align-items:center;gap:8px 10px;justify-content:space-between}
+/* precio real */
+.price{font-family:var(--sans);font-weight:600;font-size:.98rem;color:var(--ink);flex:0 1 auto}
+/* "Preguntar precio": pastilla intencional, con punto de "conversación" */
+.price--ask{display:inline-flex;align-items:center;gap:6px;font-weight:500;font-size:.82rem;
+  color:var(--price-ink);background:var(--price-bg);border-radius:999px;padding:5px 11px;flex:0 1 auto}
+.price--ask::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+/* flex:1 1 auto -> al envolver ocupa la fila completa (botón claro y legible);
+   white-space:normal permite 2 líneas antes que recortar el texto. */
+.card__cta{flex:1 1 auto;text-align:center;white-space:normal;font-size:.8rem;font-weight:600;
+  text-decoration:none;color:var(--accent);border:1px solid var(--accent-soft);border-radius:999px;
+  padding:7px 12px;line-height:1.2;transition:all .15s ease}
+.card__cta:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+.noresults{display:none;text-align:center;color:var(--soft);padding:48px 0;font-size:1rem}
+.noresults.is-visible{display:block}
+
+/* ---- Compartir / QR ---- */
+.share{padding:44px 0;border-top:1px solid var(--hair);text-align:center}
+.share__eyebrow{font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);margin:0 0 10px}
+.share__title{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,4vw,2.2rem);margin:0 0 8px}
+.share__title em{font-style:italic;color:var(--accent)}
+.share__lead{color:var(--soft);margin:0 auto 20px;max-width:40ch}
+.qrbox{display:inline-block;background:#fff;padding:14px;border-radius:14px;border:1px solid var(--hair)}
+.share__url{display:inline-block;margin-top:16px;color:var(--accent);text-decoration:none;font-weight:500;border-bottom:1px solid var(--accent-soft)}
+.share__actions{margin-top:16px}
+
+/* ---- Footer ---- */
+.footer{padding:30px 0 40px;border-top:1px solid var(--hair);text-align:center;color:var(--soft);font-size:.86rem}
+.footer .serif{font-family:var(--serif);font-weight:600;color:var(--ink);font-size:1rem;display:block;margin-bottom:8px}
+.footer__link{color:var(--soft);text-decoration:underline;text-underline-offset:2px}
+.footer__link:hover{color:var(--ink)}
+.footer__disclaimers{margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85;max-width:60ch;margin-left:auto;margin-right:auto}
+
+/* ---- Dock inferior fijo (aparece al hacer scroll) ---- */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:70;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--hair);
+  display:flex;justify-content:center;transform:translateY(120%);transition:transform .3s ease}
+.dock.is-visible{transform:translateY(0)}
+.dock .btn-sale{width:100%;max-width:420px;justify-content:center;padding:13px}
+@media (min-width:680px){.dock{display:none}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .card__img{transform:none}
+}
+</style>
+</head>
+<body>
+{{SKIP_LINK_BLOCK}}
+
+<header class="topbar">
+  <div class="shell topbar__in">
+    {{LOGO_BLOCK}}
+    <span class="topbar__spacer"></span>
+    {{LANG_SWITCH_BLOCK}}
+    {{SALE_CTA_TOPBAR}}
+  </div>
+</header>
+
+<main id="content">
+  <section class="hero">
+    <div class="shell">
+      <p class="hero__eyebrow">{{HERO_EYEBROW}}</p>
+      <h1 class="hero__title">{{HERO_TITLE}}</h1>
+      {{HERO_DESC}}
+      {{HERO_META}}
+      <div class="hero__cta">
+        {{SALE_CTA_HERO}}
+        <span class="count" id="count">{{PRODUCTS_COUNT}}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls" aria-label="{{SEARCH_LABEL}}">
+    <div class="shell">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" id="q" placeholder="{{SEARCH_PLACEHOLDER}}" aria-label="{{SEARCH_LABEL}}" autocomplete="off">
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="{{FILTER_LABEL}}">
+        {{FILTER_CHIPS}}
+      </div>
+    </div>
+  </section>
+
+  <section class="catalog">
+    <div class="shell">
+      <div class="grid" id="grid">
+        {{PRODUCT_CARDS}}
+      </div>
+      <p class="noresults" id="noresults">{{NO_RESULTS}}</p>
+    </div>
+  </section>
+
+  {{SHARE_BLOCK}}
+</main>
+
+{{FOOTER_BLOCK}}
+{{DOCK_BLOCK}}
+
+<script>
+(function(){
+  "use strict";
+  var STR = {{JS_STRINGS}};
+  var norm = function(s){
+    return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  };
+  var grid = document.getElementById("grid");
+  if(!grid) return;
+  var cards = Array.prototype.slice.call(grid.querySelectorAll(".card"));
+  var input = document.getElementById("q");
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+  var countEl = document.getElementById("count");
+  var noResults = document.getElementById("noresults");
+  var activeCat = "all";
+  var query = "";
+
+  function apply(){
+    var q = norm(query.trim());
+    var shown = 0;
+    cards.forEach(function(card){
+      var matchCat = activeCat === "all" || card.getAttribute("data-cat") === activeCat;
+      // Match por SUBSTRING de cada palabra (no por palabra exacta): "queso"
+      // encuentra "quesos", y con varias palabras TODAS deben aparecer
+      // ("queso frutas" -> tarjetas que contengan ambas). data-search ya
+      // incluye nombre + descripción + categoría (normalizados).
+      var hay = card.getAttribute("data-search") || "";
+      var matchQ = !q || q.split(/\s+/).every(function(t){ return hay.indexOf(t) !== -1; });
+      var ok = matchCat && matchQ;
+      card.style.display = ok ? "" : "none";
+      if(ok) shown++;
+    });
+    if(noResults) noResults.classList.toggle("is-visible", shown === 0);
+    if(countEl){
+      countEl.textContent = shown === 1
+        ? STR.one
+        : STR.many.replace("{n}", shown);
+    }
+  }
+
+  if(input){
+    input.addEventListener("input", function(){ query = input.value; apply(); });
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener("click", function(){
+      activeCat = chip.getAttribute("data-cat");
+      chips.forEach(function(c){ c.setAttribute("aria-pressed", c === chip ? "true" : "false"); });
+      apply();
+    });
+  });
+
+  // Dock inferior: aparece cuando el hero sale de vista.
+  var dock = document.getElementById("dock");
+  var hero = document.querySelector(".hero");
+  if(dock && hero && "IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      dock.classList.toggle("is-visible", !entries[0].isIntersecting);
+    }, {rootMargin:"-40px 0px 0px 0px"});
+    io.observe(hero);
+  }
+
+  // Compartir (Web Share API con copia como respaldo).
+  var shareBtn = document.querySelector(".share-btn");
+  if(shareBtn){
+    shareBtn.addEventListener("click", function(){
+      var url = shareBtn.getAttribute("data-share-url");
+      var title = shareBtn.getAttribute("data-share-title");
+      if(navigator.share){ navigator.share({title:title, url:url}).catch(function(){}); }
+      else if(navigator.clipboard){
+        navigator.clipboard.writeText(url).then(function(){
+          var old = shareBtn.textContent;
+          shareBtn.textContent = shareBtn.getAttribute("data-copied");
+          setTimeout(function(){ shareBtn.textContent = old; }, 1600);
+        });
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

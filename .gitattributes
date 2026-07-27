@@ -1,0 +1,9 @@
+# Force LF everywhere: the golden regression compares generated output byte a
+# byte, and CI drift-checks depend on stable line endings across machines.
+# (Leccion aprendida en ModaLink.)
+* text=auto eol=lf
+*.svg text eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
+*.woff2 binary

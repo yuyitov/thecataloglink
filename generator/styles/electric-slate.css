@@ -1,0 +1,12 @@
+/* electric-slate - energico, audaz, alto rendimiento. Fitness / gimnasios / entrenamiento.
+   Paleta WOW: carbon oscuro + lima electrico. Base carbon, alt lima palido. */
+:root{
+  --base-bg:#101214; --base-ink:#f2f5f2; --base-soft:rgba(242,245,242,.6);
+  --base-hair:rgba(198,255,61,.22); --base-accent:#c6ff3d; --base-accent-ink:#111a04;
+  --alt-bg:#eef3e2; --alt-ink:#161c0e; --alt-soft:rgba(22,28,14,.62);
+  --alt-hair:rgba(90,125,0,.3); --alt-accent:#567800; --alt-accent-ink:#f4f9e8;
+  --panel-bg:#1a1d20; --panel-ink:#f2f5f2; --panel-soft:rgba(242,245,242,.66);
+  --panel-hair:rgba(198,255,61,.35); --panel-accent:#c6ff3d;
+  --blob-a:#c6ff3d; --blob-b:#3d5c10; --blob-c:#2a3138; --blob-opacity:.3;
+  --dock-glow:rgba(198,255,61,.3); --dock-glow-strong:rgba(198,255,61,.5);
+}

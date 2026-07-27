@@ -1,0 +1,14 @@
+/* editorial-ivory — marfil cálido + tinta casi negra. Minimalismo de revista
+   de moda: mucho aire, acento sobrio. Diseñadoras, asesoría de imagen,
+   colecciones editoriales.
+   Formato "editorial motion" (§7.10): base marfil, alt tinta profunda. */
+:root{
+  --base-bg:#f7f4ec; --base-ink:#201d18; --base-soft:rgba(32,29,24,.66);
+  --base-hair:rgba(31,28,23,.28); --base-accent:#1f1c17; --base-accent-ink:#fffdf8;
+  --alt-bg:#1f1c17; --alt-ink:#f4f1e8; --alt-soft:rgba(244,241,232,.65);
+  --alt-hair:rgba(216,207,184,.28); --alt-accent:#d8cfb8; --alt-accent-ink:#1f1c17;
+  --panel-bg:#1f1c17; --panel-ink:#f4f1e8; --panel-soft:rgba(244,241,232,.66);
+  --panel-hair:rgba(216,207,184,.4); --panel-accent:#d8cfb8;
+  --blob-a:#e7e0d2; --blob-b:#cfc4a8; --blob-c:#efe9db; --blob-opacity:.45;
+  --dock-glow:rgba(31,28,23,.3); --dock-glow-strong:rgba(31,28,23,.5);
+}

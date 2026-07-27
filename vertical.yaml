@@ -1,0 +1,73 @@
+# Brand/domain config for the "catalog" vertical — The Catalog Link
+# (thecataloglink.com, comprado 2026-07-22). Producto de la vertical de
+# Catálogo Digital "YA HECHO" (PLAN en Negocios Digitales/Catalogo Digital).
+#
+# ⚠️ ID CONGELADO (P-CAT-F4, 2026-07-23): `catalog`. Este id prefija el KV, el
+# worker y el repo de esta vertical. El nombre provisional `catalink`/`catalog`
+# quedó decidido al comprar la marca The Catalog Link. NO renombrar.
+#
+# 🚫 NO ES E-COMMERCE (decisión de producto CERRADA, PLAN §F4). El catálogo NO
+# tiene carrito, checkout, inventario ni envíos. Es una vitrina estática que
+# empuja el pedido a un botón de venta (WhatsApp / SMS / llamada). Ninguna
+# sesión futura debe "mejorarlo" hacia una tienda: si aparece esa idea, es un
+# producto distinto, no esta vertical. (También anotado en docs/CATALOG.md.)
+id: catalog
+brand_name: "The Catalog Link"
+domain: "https://www.thecataloglink.com"
+
+# F4: esta vertical renderiza con la SEGUNDA plantilla base del engine
+# (catalog), no con service-menu. Ver engine/generator/vertical_config.py
+# (KNOWN_TEMPLATES) y scripts/build_vertical.py (GENERATOR_FOR_TEMPLATE).
+template: catalog
+
+# Estilos = layout + paleta. El nombre codifica <layout>-<paleta>; el generador
+# deriva el LAYOUT del prefijo (vitrina / revista / elegante → una plantilla
+# estructural por layout) y el CSS es solo la paleta. Meta del PLAN COMPLETA:
+# 12 estilos = 3 layouts × 4 paletas. P-CAT-F4 (paso 1-2) entregó Vitrina;
+# P-CAT-F4-estilos (paso 3) agrega Revista (editorial, foto grande) y Elegante
+# (oscuro, joyería/velas), cada uno con sus 4 paletas. Cada nombre debe tener su
+# engine/generator/styles/<nombre>.css y su templates/catalog-<layout>.html.
+styles:
+  catalog:
+    # Vitrina — grid luminoso (comida, muchos productos)
+    - vitrina-crema
+    - vitrina-durazno
+    - vitrina-rosa
+    - vitrina-salvia
+    # Revista — editorial, foto grande (florería, charcutería, gourmet)
+    - revista-crema
+    - revista-durazno
+    - revista-rosa
+    - revista-salvia
+    # Elegante — oscuro (joyería, velas, perfumería, piezas de autor)
+    - elegante-onix
+    - elegante-vino
+    - elegante-esmeralda
+    - elegante-medianoche
+
+# Sin overrides de strings: la plantilla catalog usa las claves catalog_* de
+# la base (engine/generator/strings_base.py). ES/EN parity obligatoria.
+strings_overrides:
+  es: {}
+  en: {}
+
+# La plantilla catalog no usa el registro de bloques condicionales de
+# service-menu; se deja en el default del engine.
+blocks: {}
+
+# Datos legales de la vertical (Ola 1b). Reúso del mismo mecanismo de la
+# fábrica. Lo que no se declare usa el default de la casa (refund_days 7,
+# support_email hello@<dominio>, CFDI a solicitud, jurisdicción México).
+legal:
+  responsable: "Verónica Pérez Arroyo"
+  domicilio_fiscal: "Virgen 5552, Arboledas, Zapopan, Jalisco, C.P. 45070, México"
+  updated:
+    es: "23 de julio de 2026"
+    en: "July 23, 2026"
+  # El catálogo publica información y fotos tomadas de perfiles públicos del
+  # negocio. El disclaimer va hacia AFUERA (lo lee el cliente final) y deja
+  # claro que los precios se confirman con el negocio — coherente con que casi
+  # todo el catálogo dice "Preguntar precio".
+  disclaimers:
+    - es: "Catálogo informativo. Los productos, la disponibilidad y los precios se confirman directamente con el negocio; no es una tienda en línea."
+      en: "Informational catalog. Products, availability and prices are confirmed directly with the business; this is not an online store."

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.wrangler/
+worker/.wrangler/
+.engine-only-backup/
+# Fotos del catálogo bajadas del prospector para construir una página: el
+# generador las copia a public/links/<slug>/img/, que es lo que se publica.
+# Versionar además la copia de trabajo duplicaría el peso de cada catálogo.
+.catalog-photos/
+.env
+.env.*
+*.local

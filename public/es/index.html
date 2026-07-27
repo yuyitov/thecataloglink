@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Catalog Link — Tu catálogo ya está hecho. Míralo.</title>
+<meta name="description" content="Armamos tu catálogo digital con los productos que ya publicas, para que lo veas antes de pagar. Cada producto con su foto, su descripción y su precio, en un solo enlace con botón para pedir. Pago único, sin mensualidades.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#FBF6EF">
+<link rel="canonical" href="https://www.thecataloglink.com/es/">
+<link rel="alternate" hreflang="es-MX" href="https://www.thecataloglink.com/es/">
+<link rel="alternate" hreflang="en-US" href="https://www.thecataloglink.com/">
+<link rel="alternate" hreflang="x-default" href="https://www.thecataloglink.com/">
+<link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Catalog Link — Tu catálogo ya está hecho. Míralo.">
+<meta property="og:description" content="Tus productos, fotos y precios en un solo enlace, con botón para pedir. Armado con lo que ya publicas. Pago único, publicado ese mismo día.">
+<meta property="og:url" content="https://www.thecataloglink.com/es/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..800&amp;family=Outfit:wght@400..700&amp;display=swap" rel="stylesheet">
+<style>
+/* ------------------------------------------------------------------- */
+/* Landing de la tienda — plantilla compartida del motor. El diseno de   */
+/* referencia es la landing hecha a mano de PawContact (2026-07-16); las */
+/* variables de color son los 14 slots semanticos que emite store.py, no */
+/* los nombres de marca de un giro concreto.                             */
+/* Estatica: sin backend, sin formularios. JS solo para animaciones.     */
+/* ------------------------------------------------------------------- */
+:root {
+  --brand: #A8452F;
+  --brand-deep: #6E2A1B;
+  --brand-soft: #F7E2D9;
+  --accent: #2F6156;
+  --accent-deep: #1C3D36;
+  --accent-soft: #DBE8E3;
+  --highlight: #D99A2B;
+  --highlight-deep: #8C5F12;
+  --highlight-soft: #FAEBCF;
+  --paper: #FBF6EF;
+  --card: #FFFFFF;
+  --ink: #2A2320;
+  --muted: #6B5F58;
+  --line: #EAE0D4;
+  --radius: 18px;
+  --maxw: 1080px;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection { background: var(--brand); color: #fff; }
+:focus-visible { outline: 3px solid var(--brand-deep); outline-offset: 3px; border-radius: 6px; }
+img, svg { max-width: 100%; }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+section { padding: 62px 0; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.015em; line-height: 1.14; }
+h2 { font-size: clamp(1.65rem, 3.4vw, 2.35rem); margin-bottom: 10px; }
+h3 { font-size: 1.1rem; margin-bottom: 6px; }
+p { max-width: 66ch; }
+.lead { color: var(--muted); font-size: 1.05rem; margin-bottom: 32px; }
+.kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--brand-deep); background: var(--brand-soft);
+  border-radius: 999px; padding: 6px 14px; margin-bottom: 14px;
+}
+.skip { position: absolute; left: -9999px; top: 10px; z-index: 200; background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 999px; font-weight: 600; }
+.skip:focus { left: 12px; }
+
+/* Header */
+.top {
+  position: sticky; top: 0; z-index: 80;
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  padding: 12px 0; border-bottom: 1px solid transparent;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+.top.scrolled { border-bottom-color: var(--line); box-shadow: 0 8px 28px -20px rgba(61,43,31,.4); }
+/* flex-wrap: la barra estaba calibrada al ancho exacto de PawContact (logo de
+   una palabra) y se desbordaba en horizontal con una marca de nombre largo
+   como The Catalog Link. Con wrap, una marca que cabe se sigue pintando igual
+   (no se dispara) y una que no cabe baja las acciones a un segundo renglon en
+   vez de romper el ancho de la pagina en movil. */
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; }
+.logo { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--accent); font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; white-space: nowrap; }
+.logo img { width: 28px; height: 28px; border-radius: 7px; transition: transform .4s var(--ease); }
+.logo:hover img { transform: rotate(-10deg) scale(1.08); }
+.logo .b { color: var(--ink); }
+.top nav { display: none; gap: 24px; }
+.top nav a { color: var(--ink); text-decoration: none; font-weight: 500; font-size: 0.92rem; }
+.top nav a:hover { color: var(--brand-deep); }
+.top-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.lang { display: inline-flex; border: 1.5px solid var(--line); border-radius: 999px; padding: 3px; background: var(--card); font-size: 0.76rem; font-weight: 600; }
+.lang a, .lang span { padding: 4px 10px; border-radius: 999px; text-decoration: none; color: var(--muted); }
+.lang span { background: var(--accent); color: #fff; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-body); font-weight: 700; text-decoration: none; white-space: nowrap;
+  padding: 13px 24px; border-radius: 999px; border: 2px solid transparent; cursor: pointer;
+  transition: transform .22s var(--ease), box-shadow .22s ease, background .2s ease;
+}
+.btn--primary { background: var(--accent); color: #fff; box-shadow: 0 4px 0 var(--accent-deep); }
+.btn--primary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--accent-deep); }
+.btn--ghost { background: transparent; color: var(--accent); border-color: var(--accent-soft); }
+.btn--ghost:hover { border-color: var(--accent); }
+.btn--mini { padding: 9px 17px; font-size: 0.85rem; }
+
+/* Hero */
+.hero { padding: 54px 0 40px; position: relative; }
+.hero h1 { font-size: clamp(2.1rem, 5.4vw, 3.5rem); margin-bottom: 16px; max-width: 16ch; }
+.hero .sub { font-size: 1.1rem; color: var(--muted); max-width: 54ch; margin-bottom: 26px; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.trust { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: 0.88rem; font-weight: 500; }
+.trust span::before { content: "✓"; color: var(--brand-deep); font-weight: 800; margin-right: 6px; }
+.hero-grid { display: grid; gap: 34px; align-items: center; }
+.bubbles { display: grid; gap: 10px; }
+.bubble {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  padding: 12px 16px; font-size: 0.95rem; box-shadow: 0 10px 26px -20px rgba(61,43,31,.5);
+  max-width: 310px;
+}
+.bubble:nth-child(1) { background: var(--highlight-soft); border-color: var(--highlight); }
+.bubble:nth-child(2) { margin-left: 30px; }
+.bubble:nth-child(3) { background: var(--brand-soft); border-color: var(--brand); margin-left: 12px; }
+
+/* Ticker */
+.ticker { background: var(--accent); color: var(--paper); overflow: hidden; padding: 12px 0; }
+.ticker__track { display: flex; gap: 26px; white-space: nowrap; animation: slide 28s linear infinite; font-weight: 600; font-size: .92rem; }
+.ticker__track span { display: inline-flex; align-items: center; gap: 26px; }
+.ticker__track span::after { content: "✦"; color: var(--brand); }
+@keyframes slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .ticker__track { animation: none; } html { scroll-behavior: auto; } }
+
+/* Cards */
+.cards { display: grid; gap: 18px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.card .ico { font-size: 1.5rem; display: block; margin-bottom: 10px; }
+.card p { color: var(--muted); font-size: .96rem; }
+
+/* Segments */
+.segs { display: grid; gap: 12px; }
+.seg { display: flex; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.seg .ico { font-size: 1.3rem; line-height: 1.3; }
+.seg b { display: block; font-family: var(--font-display); font-size: 1rem; }
+.seg span { color: var(--muted); font-size: .93rem; }
+
+/* Banda decorativa — la firma visual del giro (sale de store/band.html). Full
+   bleed, decorativa: aria-hidden, no carga contenido. */
+.paws-band { display: grid; grid-template-columns: repeat(4, 1fr); line-height: 0; }
+.paws-band svg { display: block; width: 100%; height: auto; }
+/* Movil: 4 columnas -> se muestran solo 4 figuras (fila completa). Escritorio:
+   8 columnas -> las 8. Nunca una fila rota a medias. */
+.paws-band .p5, .paws-band .p6, .paws-band .p7, .paws-band .p8 { display: none; }
+@media (min-width: 720px) {
+  .paws-band { grid-template-columns: repeat(8, 1fr); }
+  .paws-band .p5, .paws-band .p6, .paws-band .p7, .paws-band .p8 { display: block; }
+}
+
+/* Included */
+.included { background: var(--brand-soft); }
+.inc-list { list-style: none; display: grid; gap: 10px; margin-bottom: 22px; }
+.inc-list li { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; }
+.inc-list li::before { content: "✓"; color: var(--brand-deep); font-weight: 800; }
+.honest { background: var(--card); border-left: 4px solid var(--highlight-deep); border-radius: 10px; padding: 15px 18px; color: var(--ink); font-size: .96rem; }
+
+/* Styles table */
+.styles { display: grid; gap: 16px; }
+.style { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+.style__sw { height: 76px; display: flex; }
+.style__sw i { flex: 1; }
+.style__body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+.style__body p { color: var(--muted); font-size: .93rem; margin-bottom: 6px; }
+.style__for { font-size: .84rem; color: var(--brand-deep); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+.style__link { margin-top: auto; font-weight: 700; color: var(--accent); text-decoration: none; font-size: .93rem; }
+.style__link:hover { text-decoration: underline; }
+
+/* Pricing */
+.pricing { background: var(--accent); color: var(--paper); }
+.pricing h2 { color: #fff; }
+.pricing .lead { color: var(--accent-soft); }
+.price-card { background: var(--card); color: var(--ink); border-radius: 22px; padding: 30px; max-width: 460px; box-shadow: 0 30px 60px -30px rgba(0,0,0,.5); }
+.price-flag { display: inline-block; background: var(--highlight); color: var(--accent-deep); font-weight: 700; font-size: .78rem; padding: 5px 12px; border-radius: 999px; margin-bottom: 14px; }
+.price-num { font-family: var(--font-display); font-weight: 800; font-size: 2.85rem; line-height: 1; color: var(--accent); margin-bottom: 4px; }
+.price-num s { color: var(--muted); font-size: 1.45rem; font-weight: 500; margin-right: 10px; }
+.price-note { color: var(--muted); font-size: .92rem; margin-bottom: 18px; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.badge { background: var(--brand-soft); color: var(--brand-deep); font-weight: 700; font-size: .8rem; padding: 5px 11px; border-radius: 999px; }
+.price-card .inc-list { margin-bottom: 20px; font-size: .95rem; }
+.price-card .btn { width: 100%; }
+.guarantee { margin-top: 14px; font-size: .9rem; color: var(--muted); text-align: center; }
+.compare { color: var(--accent-soft); font-size: .96rem; max-width: 46ch; }
+.compare b { color: #fff; }
+.fineprint { color: var(--accent-soft); font-size: .86rem; margin-top: 16px; max-width: 52ch; }
+
+/* Steps */
+.steps { display: grid; gap: 14px; }
+.step {
+  display: grid; grid-template-columns: 30px 1fr; column-gap: 14px; align-items: start;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px;
+}
+.step__n {
+  grid-row: 1 / span 2; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--brand); color: #fff; font-weight: 800; font-size: .95rem;
+  display: grid; place-items: center; font-family: var(--font-display);
+}
+.step p { color: var(--muted); font-size: .96rem; }
+
+/* FAQ */
+details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 0 18px; margin-bottom: 10px; }
+details[open] { border-color: var(--brand); }
+summary { cursor: pointer; font-weight: 600; padding: 15px 0; list-style: none; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--brand-deep); font-weight: 800; font-size: 1.3rem; flex: none; }
+details[open] summary::after { content: "−"; }
+details p { padding-bottom: 16px; color: var(--muted); font-size: .96rem; }
+
+/* Final CTA */
+.final { background: var(--highlight-soft); text-align: center; }
+.final h2 { max-width: 20ch; margin: 0 auto 10px; }
+.final p { margin: 0 auto 22px; color: var(--muted); }
+
+/* Footer */
+footer { background: var(--accent-deep); color: var(--accent-soft); padding: 40px 0 30px; }
+footer .cols { display: grid; gap: 24px; margin-bottom: 26px; }
+footer h4 { font-family: var(--font-display); color: #fff; font-size: .95rem; margin-bottom: 8px; }
+footer a { color: var(--accent-soft); text-decoration: none; font-size: .92rem; display: block; margin-bottom: 5px; }
+footer a:hover { color: #fff; text-decoration: underline; }
+.foot-brand { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; }
+.foot-brand img { width: 22px; height: 22px; border-radius: 6px; }
+/* Avisos legales del giro — se repiten aqui, igual que en las tarjetas de
+   cliente: quien compra los lee antes de pagar. */
+.foot-disclaimers { margin-top: 18px; font-size: .8rem; opacity: .85; }
+.foot-disclaimers p { margin-bottom: 6px; max-width: 90ch; }
+.foot-bottom { border-top: 1px solid rgba(255,255,255,.14); padding-top: 18px; margin-top: 18px; font-size: .84rem; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+
+/* Reveal — FAIL-OPEN a proposito: el contenido solo se oculta si JS esta vivo
+   (clase .js en <html>). Sin JS, o si el observer no dispara, la pagina se ve
+   completa. La animacion es un extra; nunca un requisito para leer/comprar. */
+.js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.js .reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js .reveal { opacity: 1; transform: none; transition: none; } }
+
+@media (min-width: 720px) {
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .segs { grid-template-columns: repeat(2, 1fr); }
+  .styles { grid-template-columns: repeat(2, 1fr); }
+  .steps { grid-template-columns: repeat(2, 1fr); }
+  footer .cols { grid-template-columns: 2fr 1fr 1fr; }
+}
+@media (min-width: 940px) {
+  .top nav { display: flex; }
+  .hero-grid { grid-template-columns: 1.25fr .75fr; }
+  .styles { grid-template-columns: repeat(4, 1fr); }
+  .pricing .wrap { display: grid; grid-template-columns: 1fr 460px; gap: 40px; align-items: center; }
+}
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip" href="#content">Saltar al contenido</a>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="logo" href="/es/">
+      <img src="../assets/brand/favicon.svg" alt="" aria-hidden="true" width="28" height="28">
+      <span class="logo__word">The Catalog <span class="b">Link</span></span>
+    </a>
+    <nav>
+      <a href="#what">Cómo lo hicimos</a><a href="#styles">Estilos</a><a href="#pricing">Precio</a><a href="#faq">Preguntas</a>
+    </nav>
+    <div class="top-actions">
+      <div class="lang"><span>ES</span><a href="/" hreflang="en-US" lang="en-US">EN</a></div>
+      <a class="btn btn--primary btn--mini" href="https://buy.stripe.com/3cI14nab4aCa7K29H4ffy0o">Quiero mi catálogo</a>
+    </div>
+  </div>
+</header>
+
+<main id="content">
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="kicker">Pago único · Sin mensualidades</span>
+      <h1>Tu catálogo ya está hecho. Míralo.</h1>
+      <p class="sub">Lo armamos con los productos que ya publicas. Ábrelo, revísalo, y si te gusta es tuyo — con tu propio botón para pedir, listo para tu bio. ¿Todavía no tienes tu enlace? Te armamos uno antes de que decidas, sin costo.</p>
+      <div class="hero-cta">
+        <a class="btn btn--primary" href="https://buy.stripe.com/3cI14nab4aCa7K29H4ffy0o">Quiero mi catálogo →</a>
+        <a class="btn btn--ghost" href="#styles">Ver catálogos de ejemplo</a>
+      </div>
+      <div class="trust"><span>Ya está armado</span><span>Pago único</span><span>Publicado ese mismo día</span></div>
+    </div>
+    <div class="bubbles" aria-hidden="true"><div class="bubble">“¿Me mandas fotos de lo que tienes?”</div><div class="bubble">“¿Cuánto cuesta ese?”</div><div class="bubble">“¿Tienes catálogo?”</div></div>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true"><div class="ticker__track"><span>Un solo enlace </span><span>Sin apps </span><span>Código QR </span><span>Listo para Instagram </span><span>Fotos, precios y categorías </span><span>Publicado ese mismo día </span><span>Un solo enlace </span><span>Sin apps </span><span>Código QR </span><span>Listo para Instagram </span><span>Fotos, precios y categorías </span><span>Publicado ese mismo día </span></div></div>
+
+<section id="what">
+  <div class="wrap">
+    <span class="kicker reveal">Cómo lo hicimos</span>
+    <h2 class="reveal">Lo armamos con lo que tú ya publicaste.</h2>
+    <p class="lead reveal">No nos diste nada, y no entramos a nada tuyo. Esto es exactamente de dónde salió cada pieza.</p>
+    <div class="cards">
+      <div class="card reveal"><span class="ico">📷</span><h3>Tus publicaciones públicas</h3><p>Tus fotos y tus descripciones salen de lo que ya publicaste en Instagram — lo mismo que cualquiera puede ver hoy. Nada privado, nada que no hayas puesto tú.</p></div><div class="card reveal"><span class="ico">🏷️</span><h3>Ningún precio inventado</h3><p>Si no publicaste un precio, tu catálogo dice “Preguntar precio”. Nunca va a mostrar una cifra que no sea tuya — no estimamos ni suponemos.</p></div><div class="card reveal"><span class="ico">✏️</span><h3>Tuyo para cambiarlo</h3><p>¿Algo no va, o algo que prefieres no mostrar? Se quita. Tienes 2 cambios incluidos y, en cuanto lo compras, el catálogo es tuyo — no nuestro.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="who">
+  <div class="wrap">
+    <span class="kicker reveal">Para quién es</span>
+    <h2 class="reveal">Hecho para negocios que venden por encargo.</h2>
+    <p class="lead reveal">Si cierras tus ventas por mensaje y tu catálogo en realidad está regado en tu feed de Instagram, esto lo junta todo en un solo enlace. Ya sea que el tuyo ya esté armado o que empieces de cero.</p>
+    <div class="segs">
+      <div class="seg reveal"><span class="ico">🎂</span><div><b>Repostería y postres</b><span>Pasteles, cupcakes, galletas decoradas y gelatinas — cada uno con su foto, su tamaño y su precio.</span></div></div><div class="seg reveal"><span class="ico">💐</span><div><b>Florerías</b><span>Ramos, arreglos y coronas, ordenados por ocasión en vez de perdidos en el feed.</span></div></div><div class="seg reveal"><span class="ico">🧀</span><div><b>Charcutería y tablas</b><span>Tablas por tamaño, cajas y complementos, con lo que incluye cada una escrito una sola vez.</span></div></div><div class="seg reveal"><span class="ico">🎁</span><div><b>Regalos personalizados</b><span>Cajas de regalo, desayunos sorpresa, tazas y sublimación — todo el surtido en un solo lugar.</span></div></div><div class="seg reveal"><span class="ico">🎈</span><div><b>Globos y fiesta</b><span>Arreglos con globos, mesas de dulces y piñatas, con fotos de lo que de verdad has hecho.</span></div></div><div class="seg reveal"><span class="ico">🕯️</span><div><b>Velas y joyería</b><span>Piezas de autor que se venden por cómo se ven — mostradas en grande, sobre un fondo oscuro que les queda.</span></div></div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="included" id="included">
+  <div class="wrap">
+    <span class="kicker reveal" style="background:var(--card)">Alcance claro</span>
+    <h2 class="reveal">Qué recibes</h2>
+    <p class="lead reveal">Preferimos decirlo de frente: esto es exactamente lo que recibes, sin letras chiquitas.</p>
+    <ul class="inc-list reveal"><li>Tu catálogo de productos publicado (en español e inglés, automático)</li><li>Enlace para compartir + código QR</li><li>Cada producto con foto, descripción y precio — o “Preguntar precio”</li><li>Buscador y filtros por categoría</li><li>Un botón para pedir — WhatsApp, mensaje o llamada</li><li>1 estilo visual de 12</li><li>2 cambios incluidos</li></ul>
+    <p class="honest reveal">No es una tienda en línea — sin carrito, sin cobro, sin inventario y sin envíos. Tu catálogo termina en una conversación contigo, por el canal que ya usas. Esa es la idea, y no va a cambiar.</p>
+  </div>
+</section>
+
+<section id="styles">
+  <div class="wrap">
+    <span class="kicker reveal">Estilos</span>
+    <h2 class="reveal">12 estilos — 3 diseños, 4 paletas cada uno.</h2>
+    <p class="lead reveal">Elegimos el que le queda a tu negocio y a tus fotos; puedes cambiarlo por cualquiera de los otros 11 con uno de tus cambios incluidos. Los tres ejemplos de abajo son catálogos publicados con datos ficticios.</p>
+    <div class="styles">
+      <article class="style reveal"><div class="style__sw" aria-hidden="true"><i style="background:#F7F1E7"></i><i style="background:#B4552D"></i><i style="background:#2B2119"></i></div><div class="style__body"><h3>Vitrina</h3><p>Cuadrícula luminosa y densa. Para cuando tienes muchos productos y todos tienen que verse de un vistazo.</p><div class="style__for">Repostería, regalos, fiesta</div><a class="style__link" href="../demos/dulce-marea/">Ver Dulce Marea →</a></div></article><article class="style reveal"><div class="style__sw" aria-hidden="true"><i style="background:#EBF1E8"></i><i style="background:#47764C"></i><i style="background:#1D2820"></i></div><div class="style__body"><h3>Revista</h3><p>Editorial, una foto grande a la vez. Para cuando cada pieza es distinta y la foto es la que vende.</p><div class="style__for">Florerías, charcutería, gourmet</div><a class="style__link" href="../demos/mesa-bonita/">Ver Mesa Bonita →</a></div></article><article class="style reveal"><div class="style__sw" aria-hidden="true"><i style="background:#141110"></i><i style="background:#C9A35E"></i><i style="background:#F3ECE1"></i></div><div class="style__body"><h3>Elegante</h3><p>Oscuro y silencioso, para que el producto sea lo único brillante en la pantalla. Para piezas de autor.</p><div class="style__for">Chocolatería, velas, joyería</div><a class="style__link" href="../demos/casa-cacao/">Ver Casa Cacao →</a></div></article>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div>
+      <span class="kicker" style="background:rgba(255,255,255,.14); color:#fff">🔥 Precio de lanzamiento por tiempo limitado</span>
+      <h2>Pago único. Sin mensualidades.</h2>
+      <p class="compare">Las herramientas de catálogo digital cobran entre <b>$16 y $85 dólares al mes</b> — y subir cada producto, foto por foto, escribir cada descripción y mantenerlo al día sigue siendo tu trabajo. <b>Aquí ya está armado, y pagas una sola vez.</b></p>
+      <p class="fineprint">El pago único es por terminar y publicar tu catálogo. ¿Necesitas un ajuste después? Los cambios extra cuestan $59 MXN.</p>
+    </div>
+    <div class="price-card">
+      <span class="price-flag">Tu catálogo</span>
+      <div class="price-num"><s>$2,499</s>$1,699</div>
+      <p class="price-note">Un solo pago con tarjeta, en pesos. Sin mensualidades.</p>
+      <div class="badges">
+        <span class="badge">💳 Pago único</span><span class="badge">🚫 Sin suscripciones</span><span class="badge">⚡ Publicado ese mismo día</span>
+      </div>
+      <ul class="inc-list"><li>1 catálogo publicado, hasta 20 productos</li><li>1 estilo visual de 12</li><li>Buscador, categorías y botón para pedir</li><li>Código QR + enlace para compartir</li><li>2 cambios incluidos</li></ul>
+      <a class="btn btn--primary" href="https://buy.stripe.com/3cI14nab4aCa7K29H4ffy0o">Quiero mi catálogo →</a>
+      <p class="guarantee">Si no te encanta tu catálogo, te devolvemos tu dinero.</p>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <span class="kicker reveal">Cómo funciona</span>
+    <h2 class="reveal">Del enlace que te mandamos a tu catálogo publicado</h2>
+    <p class="lead reveal">Esto es exactamente lo que pasa, en orden.</p>
+    <div class="steps">
+      <div class="step reveal"><span class="step__n">1</span><h3>Abres tu catálogo</h3><p>Ya está armado, con tus productos. Para verlo no te registras, no das ningún dato y no pagas nada.</p></div><div class="step reveal"><span class="step__n">2</span><h3>Pagas, una sola vez</h3><p>$1,699 MXN, pago único con tarjeta por Stripe. Sin mensualidades, nunca.</p></div><div class="step reveal"><span class="step__n">3</span><h3>Eliges tu botón para pedir</h3><p>Un formulario corto que te llega ya lleno con tu información. Eliges WhatsApp, mensaje o llamada, confirmas y ya — no subes una sola foto.</p></div><div class="step reveal"><span class="step__n">4</span><h3>Lo publicamos ese mismo día</h3><p>Terminamos el resto de tus fotos, publicamos tu catálogo en su propio enlace con su código QR y te lo mandamos. Tus 2 cambios incluidos quedan ahí para cuando los necesites.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <span class="kicker reveal">Preguntas frecuentes</span>
+    <h2 class="reveal">Respuestas directas</h2>
+    <p class="lead reveal">Sin promesas infladas — esto es lo que The Catalog Link hace y lo que no.</p>
+    <details class="faq reveal"><summary>Todavía no tengo mi enlace. ¿Cómo consigo el mío?</summary><p>De dos formas, y en las dos lo ves antes de pagar. Déjanos tu usuario de Instagram y armamos tu catálogo con tus publicaciones y te lo mandamos — así fue como los demás recibieron el suyo. O empieza de cero: lo compras y nos mandas tus productos en el formulario, con tus propias fotos y precios.</p></details><details class="faq reveal"><summary>¿De dónde salieron mis fotos y mis precios?</summary><p>De tus propias publicaciones públicas de Instagram — las mismas que cualquiera puede ver hoy. No entramos a nada privado y tú no tuviste que darnos nada. Si un precio no estaba publicado, tu catálogo dice “Preguntar precio” en vez de una cifra.</p></details><details class="faq reveal"><summary>¿De verdad es mío en cuanto pago?</summary><p>Sí. Tu catálogo tiene su propio enlace y su propio código QR, y se queda publicado. No lo estás rentando y no hay nada que cancelar.</p></details><details class="faq reveal"><summary>Algo está mal — cambió un precio, o ya no vendo ese producto.</summary><p>Para eso son los 2 cambios incluidos. Te llega un enlace personal, nos dices qué corregir y lo volvemos a publicar. Después de esos dos, un ajuste cuesta $59 MXN.</p></details><details class="faq reveal"><summary>¿Puedo agregar productos después?</summary><p>Sí. Un agregado chico cuenta como cambio extra de $59 MXN. Para una tanda grande de productos nuevos, escríbenos y te cotizamos en el momento.</p></details><details class="faq reveal"><summary>¿Es una tienda en línea? ¿Pueden pagar ahí?</summary><p>No, y no pretende serlo. No hay carrito, ni cobro, ni inventario, ni envíos. Tu catálogo muestra lo que vendes y manda a la persona directo contigo — tú cierras la venta y cobras como lo haces hoy.</p></details><details class="faq reveal"><summary>¿Hay mensualidad?</summary><p>No. Un pago, una vez. No hay suscripción que cancelar y nada caduca.</p></details><details class="faq reveal"><summary>¿Necesito una app o una cuenta?</summary><p>Ni tú ni tus clientes descargan ni se registran en nada. Se abre en cualquier navegador, desde cualquier celular.</p></details><details class="faq reveal"><summary>Casi ninguno de mis productos tiene precio público. ¿Es un problema?</summary><p>Para nada — es lo normal en este giro. Esos productos muestran una pastilla de “Preguntar precio”, que es una invitación a escribirte, no un hueco. Si prefieres mostrar precios, nos los mandas y los ponemos.</p></details><details class="faq reveal"><summary>¿Puedo elegir mis colores?</summary><p>Eliges entre 12 estilos — 3 diseños con 4 paletas cada uno. Te dejamos en el que le queda a tus productos, y cambiarte a otro es un uso normal de uno de tus cambios incluidos. No hay selector libre de colores; así garantizamos que todos los catálogos se vean bien.</p></details><details class="faq reveal"><summary>¿Y si mis clientes hablan inglés? ¿O español?</summary><p>Todos los catálogos son bilingües automáticamente. Cada quien lo ve en su idioma, desde el mismo enlace — incluidos los filtros de categoría.</p></details><details class="faq reveal"><summary>¿Cuántos productos caben?</summary><p>Hasta 20 con foto, que es lo que cabe cómodo en un catálogo que la gente de verdad recorre. Si tienes más, empezamos con los mejores y agregas el resto después.</p></details><details class="faq reveal"><summary>¿Y si no me gusta?</summary><p>Primero lo arreglamos gratis — si algo salió mal de nuestro lado, lo corregimos sin costo. Y si aun así no te encanta, te devolvemos tu dinero.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2 class="reveal">Tu catálogo ya está esperándote.</h2>
+    <p class="reveal">Ábrelo, revísalo, y si te gusta es tuyo hoy mismo.</p>
+    <a class="btn btn--primary reveal" href="https://buy.stripe.com/3cI14nab4aCa7K29H4ffy0o">Quiero mi catálogo →</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <span class="foot-brand">
+          <img src="../assets/brand/favicon.svg" alt="" aria-hidden="true" width="22" height="22">
+          <span class="logo__word">The Catalog Link</span>
+        </span>
+        <p style="font-size:.9rem">Catálogos digitales para negocios que venden por encargo. Tus productos, fotos y precios — en un solo enlace.</p>
+        <a href="mailto:hello@thecataloglink.com">hello@thecataloglink.com</a>
+      </div>
+      <div>
+        <h4>Explora</h4>
+        <a href="#what">Cómo lo hicimos</a><a href="#styles">Estilos</a><a href="#pricing">Precio</a><a href="#faq">Preguntas</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="privacidad/">Aviso de Privacidad</a>
+        <a href="terminos/">Términos y Condiciones</a>
+        <h4 style="margin-top:14px">Idioma</h4>
+        <a href="/" hreflang="en-US" lang="en-US">English (US)</a>
+      </div>
+    </div>
+    <div class="foot-disclaimers"><p>Catálogo informativo. Los productos, la disponibilidad y los precios se confirman directamente con el negocio; no es una tienda en línea.</p></div>
+    <div class="foot-bottom">
+      <span>© 2026 The Catalog Link · Los catálogos de ejemplo usan datos ficticios.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// OJO: no usar `top` como nombre de variable — colisiona con window.top, que
+// es de solo lectura: la asignacion falla en silencio y el handler truena.
+var header = document.getElementById('top');
+addEventListener('scroll', function () {
+  header.classList.toggle('scrolled', scrollY > 8);
+}, { passive: true });
+
+// Reveal on enter, fail-open: ante cualquier problema se muestra todo. Una
+// animacion decorativa jamas debe poder esconder la pagina que vende.
+var reveals = document.querySelectorAll('.reveal');
+function revealAll() {
+  reveals.forEach(function (el) { el.classList.add('in'); });
+}
+try {
+  if (!('IntersectionObserver' in window)) {
+    revealAll();
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(function (el, i) {
+      el.style.transitionDelay = (i % 4) * 60 + 'ms';
+      io.observe(el);
+    });
+    // Red de seguridad: si nada se revelo, el observer no esta funcionando.
+    setTimeout(function () {
+      if (!document.querySelector('.reveal.in')) { revealAll(); }
+    }, 1500);
+  }
+} catch (e) {
+  revealAll();
+}
+</script>
+</body>
+</html>

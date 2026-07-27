@@ -1351,6 +1351,32 @@ def build_catalog_client(payload: dict, slug: str) -> tuple[dict, Path | None]:
             client[field] = prospect[field]
     if photo_dir is not None:
         client["photo_source_dir"] = str(photo_dir)
+
+    # Lo que ESTA vertical agrega al esquema (`intake.fields`), igual que la rama
+    # de service-menu. Vacío para toda vertical que no abra la sección.
+    #
+    # LA SEGUNDA PUERTA (linkFactory/17, 2026-07-27). El catálogo perdía
+    # `photo_rights_confirmed` en DOS lugares, no en uno: el worker no lo emitía
+    # (su rama era cerrada) y esta función retornaba antes de que
+    # `build_intake_fields` corriera nunca. Arreglar solo el worker habría hecho
+    # que el campo llegara al payload para tirarse aquí mismo — la forma exacta
+    # de un arreglo que no arregla nada. Por eso son SIEMPRE dos declaraciones:
+    # el alias en `tally-field-aliases.json` (el worker lo extrae) y esta
+    # sección en el `vertical.yaml` (el client.json lo guarda).
+    #
+    # `per_language` NO se usa aquí: la plantilla catalog arma su `content.<lang>`
+    # con `short_description` y nada más, y meterle claves sueltas dejaría al
+    # generador del catálogo con un bloque que no sabe pintar. Una vertical de
+    # catálogo que declare `per_language: true` no rompe nada — el campo queda
+    # igual en la raíz, que es donde el generador lo lee.
+    vertical_fields, _ = build_intake_fields(payload)
+    # Un nombre que el motor ya escribe se rechaza contra el cliente REAL recién
+    # construido (misma guarda que la rama de service-menu): pisarlo dejaría a un
+    # cliente que ya pagó sin ese dato y sin un solo error.
+    chocan = sorted(set(vertical_fields) & set(client))
+    if chocan:
+        fail(f"intake.fields de esta vertical redefine campos del motor: {chocan}")
+    client.update(vertical_fields)
     return client, photo_dir
 
 

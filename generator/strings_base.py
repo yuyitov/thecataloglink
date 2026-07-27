@@ -64,6 +64,9 @@ BASE_STRINGS = {
         "share_lead": "Escanea el código o comparte el link directo.",
         "share_button": "Compartir link",
         "share_copied": "Link copiado",
+        # Boton del bloque `vcard` (linkFactory/14). Solo lo imprime una
+        # vertical que active el bloque; agregar la clave no mueve un byte.
+        "vcard_button": "Guardar en contactos",
         "footer_credit": "Hecho con {brand_name}",
         "footer_privacy": "Privacidad",
         "footer_demo_credit": "Demo hecho con {brand_name}",
@@ -138,6 +141,9 @@ BASE_STRINGS = {
         "share_lead": "Scan the code or share the direct link.",
         "share_button": "Share link",
         "share_copied": "Link copied",
+        # `vcard` block button (linkFactory/14). Only printed by verticals
+        # that enable the block; adding the key moves no bytes.
+        "vcard_button": "Save to contacts",
         "footer_credit": "Made with {brand_name}",
         "footer_privacy": "Privacy",
         "footer_demo_credit": "Demo made with {brand_name}",

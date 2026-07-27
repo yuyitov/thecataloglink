@@ -55,6 +55,34 @@ strings_overrides:
 # service-menu; se deja en el default del engine.
 blocks: {}
 
+# Cómo se LEE el intake de esta vertical (ver INTAKE_DEFAULTS en
+# vertical_config.py). El worker extrae estos campos como texto —solo porque el
+# tally-field-aliases.json de al lado los declara— y aquí se dice en qué se
+# convierten. Una vertical que no abre esta sección no gana ni una clave.
+intake:
+  fields:
+    # linkFactory/17 (2026-07-27). De las 12 preguntas del formulario VIVO del
+    # catálogo, ésta era la única que se contestaba y no llegaba a ningún campo
+    # del worker. Es el consentimiento de derechos de imagen del camino
+    # ORGÁNICO —el único donde el negocio sube SUS fotos— y vivía SOLO en el
+    # blob crudo del intake, que expira a los 90 días (expirationTtl 7776000),
+    # mientras que la página publicada con esas fotos es PERMANENTE. La única
+    # prueba de un consentimiento no puede expirar antes que el uso que ampara
+    # (mismo dictamen de pawcontact/6, cerrado en linkFactory/16).
+    #
+    # Van las DOS declaraciones o no sirve ninguna: el alias de al lado hace que
+    # el WORKER lo extraiga al payload, y esta línea hace que
+    # build_client_from_intake lo ESCRIBA al client.json. Con solo la primera,
+    # el campo llega al payload y se tira ahí mismo.
+    #
+    # NO se declara `schema.require_true` (ModaLink sí lo hace). Ahí la casilla
+    # es un gate: sin ella el generador se niega a publicar. Aquí sería falso
+    # rigor — la pregunta solo se MUESTRA en el camino orgánico (show_when
+    # catalog_mode), así que un cliente del camino prellenado, que nunca la ve,
+    # se quedaría sin página. Sin contestar queda `false`, que es la verdad
+    # ("nadie confirmó"): lo que no puede pasar es que quede `true` por default.
+    photo_rights_confirmed: {kind: yes_no}
+
 # Datos legales de la vertical (Ola 1b). Reúso del mismo mecanismo de la
 # fábrica. Lo que no se declare usa el default de la casa (refund_days 7,
 # support_email hello@<dominio>, CFDI a solicitud, jurisdicción México).

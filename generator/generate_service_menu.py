@@ -1380,7 +1380,86 @@ def make_qr_png(public_url: str) -> bytes:
     return buff.getvalue()
 
 
-def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
+# --------------------------------------------------------------------------- #
+# vCard — bloque `vcard` (linkFactory/14)
+# --------------------------------------------------------------------------- #
+VCARD_ASSET_NAME = "contact.vcf"
+
+
+def vcard_escape(value) -> str:
+    """Escapa un valor de texto para una propiedad de vCard 3.0 (RFC 2426).
+
+    Backslash primero (o re-escaparia los demas escapes), luego `;` y `,`
+    (separadores estructurales) y los saltos de linea como `\\n` literal.
+    """
+    text = str(value or "")
+    text = text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,")
+    return text.replace("\r\n", "\\n").replace("\r", "\\n").replace("\n", "\\n")
+
+
+def make_vcard(view: dict, page_url: str) -> str:
+    """El contact.vcf del negocio: SOLO datos que su pagina ya publica.
+
+    Campo por campo es el patron VIVO de My Guest (`vcardText` en su
+    master.html: N/FN/ORG con el nombre, TEL tipo CELL, EMAIL, ADR con la
+    direccion completa en el slot de calle, URL) — formas que iPhone y Android
+    ya aceptaron en produccion. Diferencias a proposito:
+
+    - Aqui el .vcf se ARMA EN BUILD y se sirve como archivo estatico, no con
+      JS en el navegador: en My Guest el telefono del anfitrion es privado
+      (lo inyecta su worker con token); aqui todos los datos son publicos.
+    - El link de la pagina SI viaja en el vCard. En My Guest se excluye porque
+      su link lleva token; el nuestro es publico, y es EL punto del boton
+      (insight de Vero: el cliente recurrente olvida el enlace — guardado el
+      contacto, el enlace viaja adentro).
+
+    Telefono: `phone`, o `whatsapp` como respaldo — los dos son numeros y lo
+    que importa es el caller-id. CRLF por RFC; el llamador escribe el archivo
+    con `newline=""` para que Windows no lo duplique.
+    """
+    name = str(view.get("business_name", "") or "").strip()
+    lines = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        f"N:;{vcard_escape(name)};;;",
+        f"FN:{vcard_escape(name)}",
+        f"ORG:{vcard_escape(name)}",
+    ]
+    tel = tel_href(view.get("phone")) or tel_href(view.get("whatsapp"))
+    if tel:
+        lines.append(f"TEL;TYPE=CELL,VOICE:{vcard_escape(tel[len('tel:'):])}")
+    mail = str(view.get("public_email", "") or "").strip()
+    if mail and "@" in mail and " " not in mail:
+        lines.append(f"EMAIL;TYPE=INTERNET:{vcard_escape(mail)}")
+    addr = _kicker_source_address(view)
+    if addr:
+        lines.append(f"ADR;TYPE=WORK:;;{vcard_escape(addr)};;;;")
+    page = str(page_url or "").strip()
+    if page:
+        lines.append(f"URL:{vcard_escape(page)}")
+    website = str(view.get("website", "") or "").strip()
+    if website.lower().startswith(("http://", "https://")) and website.rstrip("/") != page.rstrip("/"):
+        lines.append(f"URL:{vcard_escape(website)}")
+    lines.append("END:VCARD")
+    return "\r\n".join(lines) + "\r\n"
+
+
+def build_vcard_action(s: dict, vcf_src: str) -> str:
+    """La fila de accion del boton "Guardar en contactos".
+
+    Un `<a download>` al archivo estatico: cero JS. GitHub Pages sirve `.vcf`
+    como text/vcard, con lo que iPhone abre la tarjeta de contacto directo y
+    Android la descarga a Contactos. Reusa `.share__actions` y `.btn` tal
+    cual: sin CSS nuevo no hay bytes nuevos para quien no activa el bloque.
+    """
+    return (
+        f'<div class="share__actions"><a class="btn btn--ghost btn--sm" '
+        f'href="{esc(vcf_src)}" download>{s["vcard_button"]}</a></div>'
+    )
+
+
+def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME,
+                vcard_html: str = "") -> str:
     """"Share" section: QR image + visible link, centered, base theme.
 
     The QR references the static asset written next to the page (qr.svg) or at
@@ -1410,7 +1489,7 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
         f'<p class="lead" data-reveal>{s["share_lead"]}</p>'
         f'<div class="qrbox" data-reveal><img src="{esc(qr_src)}" '
         f'alt="{alt}" width="180" height="180"></div>'
-        f'{link_line}{share_button}'
+        f'{link_line}{share_button}{vcard_html}'
         "</div></section>"
     )
 
@@ -1505,8 +1584,14 @@ def render_view(
     footer_text: str,
     share_url: str,
     qr_src: str = QR_ASSET_NAME,
+    vcard_src: str = "",
 ) -> str:
-    """Render one page (any language) from a flat single-language view dict."""
+    """Render one page (any language) from a flat single-language view dict.
+
+    `vcard_src` es la ruta relativa al contact.vcf del cliente (misma mecanica
+    que `qr_src`). El boton solo se imprime con el bloque `vcard` encendido Y
+    una ruta dada: el default vacio deja a todo llamador existente byte-identico.
+    """
     s = STRINGS[lang]
     brand = view["brand_style"]
     template_path = TEMPLATES_DIR / "base.html"
@@ -1564,7 +1649,11 @@ def render_view(
         "{{FAQ_LINE}}": f"\n{faq_html}" if faq_on else "",
         "{{FAQ_CSS}}": FAQ_CSS if faq_on else "",
         "{{FOOTER_DISCLAIMER_CSS}}": FOOTER_DISCLAIMER_CSS if footer_span else "",
-        "{{SHARE_BLOCK}}": build_share(share_url, s, qr_src),
+        "{{SHARE_BLOCK}}": build_share(
+            share_url, s, qr_src,
+            build_vcard_action(s, vcard_src)
+            if vcard_src and _block_enabled(view, "vcard") else "",
+        ),
         "{{FOOTER_BLOCK}}": build_footer(
             view,
             footer_text,
@@ -1736,6 +1825,7 @@ def build_client(json_path: Path) -> Path:
         footer_text=STRINGS[default_lang]["footer_credit"],
         share_url=root_url,
         qr_src=QR_ASSET_NAME,
+        vcard_src=VCARD_ASSET_NAME,
     )
     alt_html = render_view(
         views[alt_lang],
@@ -1745,6 +1835,7 @@ def build_client(json_path: Path) -> Path:
         footer_text=STRINGS[alt_lang]["footer_credit"],
         share_url=root_url,
         qr_src=f"../{QR_ASSET_NAME}",
+        vcard_src=f"../{VCARD_ASSET_NAME}",
     )
 
     (root_dir / "index.html").write_text(default_html, encoding="utf-8")
@@ -1756,6 +1847,13 @@ def build_client(json_path: Path) -> Path:
     # en las demos rompería el golden, que compara el árbol byte a byte.
     (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
     (root_dir / QR_PNG_ASSET_NAME).write_bytes(make_qr_png(root_url))
+    # Un contact.vcf por cliente, SOLO con el bloque `vcard` encendido: con el
+    # default ("none") ni el archivo ni el boton existen y el arbol queda
+    # byte-identico. Datos del idioma por defecto (la direccion viaja por
+    # idioma); `newline=""` para que Windows no convierta el CRLF del RFC.
+    if _block_enabled(payload, "vcard"):
+        with (root_dir / VCARD_ASSET_NAME).open("w", encoding="utf-8", newline="") as fh:
+            fh.write(make_vcard(views[default_lang], root_url))
     return root_dir / "index.html"
 
 
@@ -1795,12 +1893,18 @@ def build_demo_monolingual(json_path: Path) -> Path:
         lang_switch_html="",
         footer_text=STRINGS[lang]["footer_demo_credit"],
         share_url=public_url,
+        vcard_src=VCARD_ASSET_NAME,
     )
     out_dir = OUTPUT_DIR / slug
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / "index.html"
     out_file.write_text(html, encoding="utf-8")
     (out_dir / QR_ASSET_NAME).write_text(make_qr_svg(public_url), encoding="utf-8")
+    # La demo enseña el producto completo: con el bloque `vcard` encendido
+    # lleva su contact.vcf igual que un cliente (con el default no hay archivo).
+    if _block_enabled(payload, "vcard"):
+        with (out_dir / VCARD_ASSET_NAME).open("w", encoding="utf-8", newline="") as fh:
+            fh.write(make_vcard(payload, public_url))
     return out_file
 
 
@@ -1862,6 +1966,7 @@ def build_demo(json_path: Path) -> Path:
         footer_text=STRINGS[default_lang]["footer_demo_credit"],
         share_url=root_url,
         qr_src=QR_ASSET_NAME,
+        vcard_src=VCARD_ASSET_NAME,
     )
     alt_html = render_view(
         views[alt_lang],
@@ -1871,12 +1976,18 @@ def build_demo(json_path: Path) -> Path:
         footer_text=STRINGS[alt_lang]["footer_demo_credit"],
         share_url=root_url,
         qr_src=f"../{QR_ASSET_NAME}",
+        vcard_src=f"../{VCARD_ASSET_NAME}",
     )
 
     (root_dir / "index.html").write_text(default_html, encoding="utf-8")
     (alt_dir / "index.html").write_text(alt_html, encoding="utf-8")
     # One QR per demo, encoding the default-language (root) URL.
     (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
+    # Mismo criterio que build_client: el contact.vcf solo existe con el
+    # bloque `vcard` encendido — el golden de HMU compara el arbol byte a byte.
+    if _block_enabled(payload, "vcard"):
+        with (root_dir / VCARD_ASSET_NAME).open("w", encoding="utf-8", newline="") as fh:
+            fh.write(make_vcard(views[default_lang], root_url))
     return root_dir / "index.html"
 
 

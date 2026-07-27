@@ -2544,7 +2544,33 @@ function buildCatalogPublicPayload(normalized, orderId, env) {
     // 20 = el tope de productos por catálogo que fijó F2.
     product_image_urls: answerFileUrls(a, fieldAliases('product_image_urls'), 20),
     logo_url: answerFileUrl(a, fieldAliases('logo_url')),
-    prospect_slug: ''
+    prospect_slug: '',
+    // Lo que ESTA vertical declare de mas (ver OPTIONAL_INTAKE_FIELDS), igual
+    // que la rama de service-menu de arriba.
+    //
+    // POR QUE LA RAMA CERRADA SE ABRE JUSTO AQUI (linkFactory/17, 2026-07-27).
+    // La lista de arriba es cerrada porque un catalogo no tiene los 47 campos de
+    // un menu de servicios, no porque no pueda crecer. Y una pregunta REAL del
+    // formulario vivo del catalogo se estaba cayendo por esta puerta:
+    // `photo_rights_confirmed` — el consentimiento de derechos de imagen del
+    // camino ORGANICO, el unico donde el negocio sube SUS fotos. Se contesta, y
+    // hasta hoy vivia SOLO en el blob crudo del intake, con expirationTtl de 90
+    // dias, mientras que la pagina publicada con esas fotos es PERMANENTE. La
+    // unica prueba de un consentimiento no puede expirar antes que el uso que
+    // ampara (mismo dictamen de pawcontact/6).
+    //
+    // Se resuelve con el mecanismo que el motor YA tiene en vez de con un campo
+    // a mano, y eso NO le agrega ni una clave a nadie: `optionalIntakeFields`
+    // solo emite lo que el `tally-field-aliases.json` de la vertical declara, y
+    // el mapa GENERICO no declara ninguno de los campos de esa tabla (hay
+    // prueba: campos-de-vertical.test.mjs). Quien gana el campo es `catalog`,
+    // que desde hoy lleva mapa propio con esa sola entrada de mas.
+    //
+    // Que llegue al payload es la MITAD del camino: sin `intake.fields` en el
+    // vertical.yaml, `build_client_from_intake` lo tira aqui mismo y el
+    // consentimiento no queda en el client.json, que es lo unico permanente.
+    // Son SIEMPRE dos declaraciones, no una (leccion de linkFactory/16).
+    ...optionalIntakeFields(a)
   };
 }
 

@@ -70,6 +70,19 @@ ENGINE_BLOCKS = {
     "footer_privacy": {
         "enabled_for": "all",
     },
+    # `vcard` (linkFactory/14, decision de Vero 2026-07-27): el boton "Guardar
+    # en contactos" — un contact.vcf generado en build con los datos PUBLICOS
+    # del negocio (nombre, telefono, web, direccion) y el link de su pagina
+    # adentro, que es el punto: nadie guarda el telefono de un servicio al que
+    # va cada 3 meses, y el enlace se olvida; el contacto guardado lleva los
+    # dos. A diferencia de los bloques de arriba, este AGREGA contenido nuevo,
+    # asi que su default es "none": ninguna vertical cambia un byte hasta que
+    # declare `blocks: {vcard: {enabled_for: ...}}` en su vertical.yaml (la
+    # activacion viaja con la ola del re-export, linkFactory/12). Referencia
+    # viva del patron: My Guest (su .vcf se arma igual, campo por campo).
+    "vcard": {
+        "enabled_for": "none",
+    },
 }
 
 _GENERAL = ("", "general")

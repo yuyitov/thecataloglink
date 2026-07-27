@@ -12,7 +12,7 @@ compatibility_date = "2024-01-01"
 # 2. Copia el namespace ID aquí
 [[kv_namespaces]]
 binding = "SERVICE_MENU_KV"
-id      = "{{KV_NAMESPACE_ID}}"
+id      = "b82b53b9a7e340a1a802ee30d685a794"   # catalog-orders (creado 2026-07-27)
 
 # ─── Secrets (NO van aquí — se configura con: wrangler secret put) ────────────
 # Estos secrets deben configurarse después via:

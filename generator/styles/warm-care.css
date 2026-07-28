@@ -1,0 +1,11 @@
+/* warm-care - cercano, humano y familiar sin perder seriedad. */
+:root{
+  --base-bg:#fdf5f0; --base-ink:#4a3324; --base-soft:#806753;
+  --base-hair:#f0ddcf; --base-accent:#b86132; --base-accent-ink:#ffffff;
+  --alt-bg:#4a3324; --alt-ink:#fdf5f0; --alt-soft:rgba(253,245,240,.72);
+  --alt-hair:rgba(240,221,207,.28); --alt-accent:#e2a079; --alt-accent-ink:#40291c;
+  --panel-bg:#f6e3d3; --panel-ink:#4a3324; --panel-soft:#765b49;
+  --panel-hair:#eacbb3; --panel-accent:#b86132;
+  --blob-a:#f6e3d3; --blob-b:#eccdae; --blob-c:#fffaf5; --blob-opacity:0;
+  --dock-glow:rgba(184,97,50,.22); --dock-glow-strong:rgba(184,97,50,.32);
+}

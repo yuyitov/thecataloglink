@@ -253,6 +253,21 @@ def _number_or_none(value):
     return text or None
 
 
+def csv_list(value) -> list[str]:
+    """Texto de Tally separado por comas (o lista) -> valores no vacios."""
+    raw = value if isinstance(value, list) else str(value or "").split(",")
+    return [str(item).strip() for item in raw if str(item).strip()]
+
+
+def strict_http_url(value) -> str | None:
+    """URL publica http(s) completa; no corrige esquemas ni dominios raros."""
+    text = str(value or "").strip()
+    if not text.lower().startswith(("http://", "https://")):
+        return None
+    parsed = urllib.parse.urlparse(text)
+    return text if parsed.scheme in ("http", "https") and parsed.netloc else None
+
+
 def catalog_key(name: str, value) -> str | None:
     """La opción que el negocio eligió en el formulario -> su clave cerrada.
 
@@ -316,6 +331,10 @@ def build_intake_fields(payload: dict) -> tuple[dict, dict]:
             value = catalog_keys(name, raw) if es_lista else catalog_key(name, raw)
         elif kind == "social":
             value = social_url(raw, cfg["base"])
+        elif kind == "csv_list":
+            value = csv_list(raw)
+        elif kind == "url":
+            value = strict_http_url(raw)
         else:
             value = str(raw or "").strip()
             if cfg.get("max"):
@@ -519,17 +538,6 @@ def split_price_label(line: str, max_price_len: int = MAX_PRICE_LABEL) -> tuple[
     return line, None
 
 
-def normalize_price_policy(value: str) -> str:
-    plain = plain_latin(value)
-    if not plain:
-        return "show"
-    if "dont" in plain or "don't" in plain or "no mostrar" in plain or "sin precios" in plain:
-        return "hide"
-    if "mixed" in plain or "mixto" in plain:
-        return "mixed"
-    return "show"
-
-
 def parse_service_categories(value: str, lang: str) -> list[str]:
     text = (value or "").strip()
     if not text:
@@ -568,7 +576,7 @@ def split_category_name_description(text: str, known: dict[str, str]) -> tuple[s
     return category, name, description
 
 
-def parse_services(services_text: str, categories: list[str], price_policy: str) -> list[dict]:
+def parse_services(services_text: str, categories: list[str]) -> list[dict]:
     """Each non-empty line is one service; headings ending in ':' become categories.
 
     A service line may also begin with a "Category — " prefix naming a known
@@ -599,7 +607,7 @@ def parse_services(services_text: str, categories: list[str], price_policy: str)
         svc = {"category": category or current_category, "name": name[:120]}
         if description:
             svc["description"] = description[:300]
-        if price_label and price_policy != "hide":
+        if price_label:
             svc["price_label"] = price_label
         services.append(svc)
     return services
@@ -1432,11 +1440,10 @@ def main() -> int:
     if default_language not in ("es", "en"):
         default_language = "es"
 
-    price_policy = normalize_price_policy(payload.get("price_display", ""))
     categories_es = parse_service_categories(payload.get("service_categories_text", ""), "es")
     categories_en = parse_service_categories(payload.get("service_categories_text", ""), "en")
-    services_es = parse_services(payload.get("services_text", ""), categories_es, price_policy)
-    services_en = parse_services(payload.get("services_text", ""), categories_en, price_policy)
+    services_es = parse_services(payload.get("services_text", ""), categories_es)
+    services_en = parse_services(payload.get("services_text", ""), categories_en)
     # Sin servicios NO se publica una página nueva. Pero al REGENERAR una que ya
     # existe, un `services_text` vacío es justo el caso que la fusión atiende
     # ("no cambies mis servicios"), así que la guarda se la deja a la fusión: si
@@ -1448,9 +1455,6 @@ def main() -> int:
     policies = parse_policies(payload.get("policies_text", ""))
     faq = parse_faq(payload.get("faq_text", ""))
     featured = parse_featured(payload.get("featured_text", ""))
-    if featured and price_policy == "hide":
-        featured.pop("price_label", None)
-
     short_description = str(payload.get("short_description", "")).strip() or str(payload.get("business_name", "")).strip()
     hours = str(payload.get("opening_hours_text", "")).strip() or "Consultar horarios / Ask us for hours"
     service_area = str(payload.get("service_area_text", "")).strip()
@@ -1497,7 +1501,6 @@ def main() -> int:
             "class_schedule_text": class_schedule[:300],
             "tour_details_text": tour_details[:400],
             "pet_notes_text": pet_notes[:300],
-            "price_display": price_policy,
             "service_categories": list(categories_es if lang == "es" else categories_en),
             "services": [dict(s) for s in (services_es if lang == "es" else services_en)],
             "policies": list(policies),

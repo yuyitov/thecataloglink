@@ -74,8 +74,10 @@ LEGAL_DEFAULTS = {
     "updated": "",
     "cfdi": True,
     "disclaimers": [],
+    "required_notices": [],
     "disclaimers_style": "inline",
     "copy_linter": {},
+    "privacy_paths": {"en": "/privacy/", "es": "/es/privacidad/"},
 }
 
 # Espejo de engine/generator/vertical_config.py::SCHEMA_DEFAULTS. Aqui solo se
@@ -88,6 +90,12 @@ SCHEMA_DEFAULTS = {
     "locations_min": 0,
     "locations_max": 0,
     "require_true": [],
+    "client_noindex": False,
+}
+
+TYPOGRAPHY_DEFAULTS = {
+    "serif": '"Cormorant Garamond",Georgia,serif',
+    "sans": '"Outfit","Segoe UI",sans-serif',
 }
 
 
@@ -133,6 +141,10 @@ BLOCKS = merge_blocks(VERTICAL.get("blocks"))
 LEGAL = build_legal(VERTICAL)
 CATALOGS = copy.deepcopy(VERTICAL.get("catalogs") or {})
 SCHEMA = build_schema(VERTICAL)
+TYPOGRAPHY = {
+    **copy.deepcopy(TYPOGRAPHY_DEFAULTS),
+    **copy.deepcopy(VERTICAL.get("typography") or {}),
+}
 # Espejo de INTAKE_DEFAULTS de la fabrica.
 INTAKE_DEFAULTS = {"default_language": "", "fields": {}}
 INTAKE = {**copy.deepcopy(INTAKE_DEFAULTS), **copy.deepcopy(VERTICAL.get("intake") or {})}

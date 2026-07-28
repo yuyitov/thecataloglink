@@ -157,6 +157,25 @@ const OPTIONAL_INTAKE_FIELDS = {
   payment_methods: answerAny,
   invoicing: answerAny,
   photo_rights_confirmed: answerAny,
+  // Salud (Dr Link). Son nombres planos a proposito: el worker solo
+  // transporta texto; Python arma/valida el contrato y el generador acepta
+  // tambien el objeto `credentials` historico del fork.
+  country: answerAny,
+  profession: answerAny,
+  credentials_institution: answerAny,
+  cedula_profesional: answerAny,
+  cedula_especialidad: answerAny,
+  license_state: answerAny,
+  license_number: answerAny,
+  npi: answerAny,
+  board_name: answerAny,
+  languages: answerAny,
+  telemedicine_offered: answerAny,
+  telemedicine_modality: answerAny,
+  insurance: answerAny,
+  privacy_notice_url: answerAny,
+  appointment_policy_text: answerAny,
+  emergency_policy_text: answerAny,
   // Directorio publico de la vertical
   directory_state: answerAny,
   directory_opt_in: answerAny,
@@ -208,6 +227,27 @@ const CORRECTION_TEXT_MAX = 3000;
 // fuga entre requests: todas ven el mismo valor, escribirlo es idempotente.
 let _workerEnv = null;
 
+/**
+ * Adapta el nombre del binding KV sin renombrar el namespace vivo.
+ *
+ * El motor usa internamente `SERVICE_MENU_KV`. Una vertical puede conservar
+ * su binding histórico (`DR_LINK_KV`, por ejemplo) declarando
+ * `KV_BINDING = "DR_LINK_KV"`. Se crea una vista del env con un alias; no se
+ * copia ni migra una sola llave. Sin configuración se conserva exactamente el
+ * binding histórico del motor.
+ */
+function bindRuntimeEnv(env) {
+  const binding = String(env?.KV_BINDING || 'SERVICE_MENU_KV').trim() || 'SERVICE_MENU_KV';
+  const namespace = env?.[binding];
+  if (!namespace) {
+    throw new Error(`KV binding ${binding} is not available`);
+  }
+  if (binding === 'SERVICE_MENU_KV') return env;
+  return Object.create(env, {
+    SERVICE_MENU_KV: { value: namespace, enumerable: true },
+  });
+}
+
 // Named export (ademas del default que usa Cloudflare) para probar la
 // normalizacion del payload de Tally con node --test — en particular que un
 // hidden field nunca pise la respuesta visible del mismo nombre. La runtime de
@@ -226,7 +266,11 @@ let _workerEnv = null;
 // una experiencia que la vertical no entrega (regresión R1 del gate de HMU).
 export {
   normalizeTallyPayload, buildPublicPayload, missingFromIntake,
-  checkIntakeCompleteness, marca, modificationCopy,
+  checkIntakeCompleteness, marca, modificationCopy, bindRuntimeEnv,
+  // Contrato puro de la compra de correcciones. Se exporta para que una
+  // vertical migrada pueda fijar precio, validación de slug y URL sin copiar
+  // una implementación paralela del Worker.
+  CORRECTION_PRICE, SLUG_RE, buyCorrectionUrl,
   // El correo de ENTREGA: lo que recibe el cliente que pagó. No estaba
   // exportado, así que ni una prueba lo miraba — y es donde vivían las dos
   // notas de Vero de la Fase 2 (el idioma por moneda y la imagen del correo).
@@ -235,6 +279,7 @@ export {
 
 export default {
   async fetch(request, env, ctx) {
+    env = bindRuntimeEnv(env);
     _workerEnv = env;
     const url = new URL(request.url);
     const pathname = url.pathname;
@@ -381,11 +426,11 @@ async function handleStripeWebhook(request, env) {
         // todos los productos y un dedup por-pago seria una tormenta.
         await alertOnce(env, 'filter_not_configured', 3600,
           `${marca(env)} esta IGNORANDO todos los pagos (filtro sin configurar)`, [
-            'STRIPE_PAYMENT_LINK_ID esta vacio/sin configurar en este worker.',
+            'STRIPE_PAYMENT_LINK_IDS esta vacio/sin configurar en este worker.',
             'El worker responde 200 {ignored} a TODOS los pagos entrantes: el',
             'cliente paga y NUNCA recibe el formulario de intake.',
             '',
-            'Revisa STRIPE_PAYMENT_LINK_ID en wrangler.toml y redespliega.',
+            'Revisa STRIPE_PAYMENT_LINK_IDS en wrangler.toml y redespliega.',
           ]);
         return jsonResponse({ ok: true, ignored: true, reason: 'filter_not_configured' });
       case 'unattributable_event_type':
@@ -409,7 +454,7 @@ async function handleStripeWebhook(request, env) {
                 `payment_link observado: ${plink}`,
                 `esperados: ${verdict.expectedPaymentLinks.join(', ') || '(ninguno)'}`,
                 '',
-                'Si el link ES del producto, actualiza STRIPE_PAYMENT_LINK_ID.',
+                'Si el link ES del producto, actualiza STRIPE_PAYMENT_LINK_IDS.',
                 'Si es de otro producto de la cuenta compartida, agregalo a',
                 'KNOWN_OTHER_PAYMENT_LINKS para dejar de recibir este aviso.',
               ]);
@@ -1226,9 +1271,9 @@ async function bestModificationUrl(env, { token, slug, lang, orderId }) {
 
 // La compra de corrección adicional pasa por el worker (crea el Checkout
 // Session al vuelo); la página /correct/ y los correos enlazan esta URL.
-function buyCorrectionUrl(env, slug) {
-  const workerBase = (env.WORKER_PUBLIC_URL || '').trim().replace(/\/+$/, '');
-  if (!workerBase) return '';
+function buyCorrectionUrl(env, slug, fallbackOrigin = '') {
+  const workerBase = (env.WORKER_PUBLIC_URL || fallbackOrigin || '').trim().replace(/\/+$/, '');
+  if (!workerBase || !SLUG_RE.test(slug)) return '';
   return `${workerBase}/buy-correction?slug=${encodeURIComponent(slug)}`;
 }
 
@@ -1673,7 +1718,7 @@ function alertEmail(env) {
 
 // Payment links de OTROS productos de la cuenta Stripe compartida que ya sabemos
 // que no son del producto: NO alertamos por ellos (evita el ruido de cada venta de un
-// producto hermano). Mismo formato que STRIPE_PAYMENT_LINK_ID (coma-separado).
+// producto hermano). Mismo formato que STRIPE_PAYMENT_LINK_IDS (coma-separado).
 function knownOtherPaymentLinks(env) {
   return (env.KNOWN_OTHER_PAYMENT_LINKS || '')
     .split(',')

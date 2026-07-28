@@ -83,6 +83,42 @@ ENGINE_BLOCKS = {
     "vcard": {
         "enabled_for": "none",
     },
+    # Opciones estructurales incorporadas para Dr Link. Ambas conservan el
+    # comportamiento histórico por default; una vertical debe apagarlas de
+    # forma explícita.
+    #
+    # `motion`: animaciones CSS + capa cinematográfica de GSAP. Apagarla deja
+    # carrusel, compartir y CTA funcionales, pero sin movimiento.
+    "motion": {
+        "enabled_for": "all",
+    },
+    # `third_party_assets`: fuentes de Google y scripts desde jsDelivr. Las
+    # imágenes del propio negocio no cuentan: este gate controla solo recursos
+    # que la plantilla agrega por su cuenta.
+    "third_party_assets": {
+        "enabled_for": "all",
+    },
+    # Bloques de producto medico. Todos nacen apagados: agregar su mecanica al
+    # motor no publica contenido en ninguna vertical existente. Dr Link los
+    # activa explicitamente en su vertical.yaml.
+    "credentials": {
+        "enabled_for": "none",
+    },
+    "languages": {
+        "enabled_for": "none",
+    },
+    "telemedicine": {
+        "enabled_for": "none",
+    },
+    "health_billing": {
+        "enabled_for": "none",
+    },
+    "appointment_policies": {
+        "enabled_for": "none",
+    },
+    "provider_privacy": {
+        "enabled_for": "none",
+    },
 }
 
 _GENERAL = ("", "general")

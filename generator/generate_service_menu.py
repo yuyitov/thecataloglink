@@ -60,7 +60,7 @@ from blocks import block_enabled, fill_tokens
 from primary_cta import normalize_primary_cta
 from vertical_config import (
     BLOCKS, BRAND_NAME, CATALOGS, DIRECTORY, DOMAIN, LEGAL, SCHEMA,
-    STRINGS, STYLES_CATALOG, TEMPLATE_COMMENT_OVERRIDES,
+    STRINGS, STYLES_CATALOG, TEMPLATE_COMMENT_OVERRIDES, TYPOGRAPHY,
 )
 
 # Repo layout (this file lives in <repo>/generator/) — standalone export,
@@ -902,7 +902,6 @@ def build_services(payload: dict, s: dict) -> str:
     """Editorial price list: italic serif category titles + dotted-leader rows."""
     services = payload.get("services") or []
     declared = payload.get("service_categories") or []
-    hide_prices = payload.get("price_display") == "hide"
     # La leyenda "Consultar"/"Ask us" de un servicio SIN precio es una decision
     # de copy de la casa, no del negocio: por eso se apaga por vertical
     # (`blocks.price_ask_legend`) y no por payload. Encendida (el default) el
@@ -919,15 +918,15 @@ def build_services(payload: dict, s: dict) -> str:
     def render_service(svc: dict) -> str:
         name = esc(svc.get("name"))
         desc = svc.get("description")
-        price = None if hide_prices else svc.get("price_label")
+        price = svc.get("price_label")
         left = f'<span class="mrow__name">{name}</span>'
         if desc:
             left += f'<span class="mrow__desc">{esc(desc)}</span>'
-        # Con precio → se muestra. Sin precio y política "mostrar" → leyenda
-        # "Consultar"/"Ask us" (se ve intencional). Política "ocultar" → nada.
+        # Con precio se muestra. Sin precio, la leyenda "Consultar"/"Ask us"
+        # depende solo de la opción de la vertical.
         if price:
             price_text = esc(price)
-        elif not hide_prices and ask_legend:
+        elif ask_legend:
             price_text = esc(s["price_ask"])
         else:
             price_text = ""
@@ -978,7 +977,7 @@ def build_featured(payload: dict, s: dict) -> str:
         return ""
     name = esc(pkg.get("name"))
     desc = esc(pkg.get("description"))
-    price = None if payload.get("price_display") == "hide" else pkg.get("price_label")
+    price = pkg.get("price_label")
     price_html = f'<div class="ritual__price">{esc(price)}</div>' if price else ""
     # Sin descripción (o igual al nombre) no se repite el texto.
     desc_html = f'<p class="ritual__desc">{desc}</p>' if desc and desc != name else ""
@@ -1164,6 +1163,136 @@ def _payment_row(payload: dict, s: dict, lang: str) -> str:
     )
 
 
+def _list_values(value) -> list[str]:
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [part.strip() for part in str(value or "").split(",") if part.strip()]
+
+
+def _credentials_row(payload: dict, s: dict) -> str:
+    if not _block_enabled(payload, "credentials"):
+        return ""
+    nested = payload.get("credentials")
+    nested = nested if isinstance(nested, dict) else {}
+    country = str(payload.get("country", "") or "").strip().lower()
+    pairs = []
+    if country in ("mx", "mexico", "méxico"):
+        pairs = [
+            (s["credential_institution"], nested.get("institution") or payload.get("credentials_institution")),
+            (s["credential_cedula"], nested.get("cedula_profesional") or payload.get("cedula_profesional")),
+            (
+                s["credential_specialty_license"],
+                nested.get("cedula_especialidad") or payload.get("cedula_especialidad"),
+            ),
+        ]
+    elif country in ("us", "usa", "united states", "estados unidos"):
+        state = nested.get("state") or payload.get("license_state")
+        number = nested.get("license_number") or payload.get("license_number")
+        license_value = " · ".join(
+            str(value).strip() for value in (state, number) if str(value or "").strip()
+        )
+        pairs = [
+            (s["credential_license"], license_value),
+            (s["credential_npi"], nested.get("npi") or payload.get("npi")),
+            (s["credential_board"], nested.get("board_name") or payload.get("board_name")),
+        ]
+    lines = [
+        f"<p><strong>{esc(label)}:</strong> {esc(value)}</p>"
+        for label, value in pairs
+        if str(value or "").strip()
+    ]
+    if not lines:
+        return ""
+    return (
+        f'<div class="info-row" data-reveal><h3>{s["credentials_title"]}</h3>'
+        f'{"".join(lines)}</div>'
+    )
+
+
+def _languages_row(payload: dict, s: dict) -> str:
+    if not _block_enabled(payload, "languages"):
+        return ""
+    values = _list_values(payload.get("languages"))
+    if not values:
+        return ""
+    return (
+        f'<div class="info-row" data-reveal><h3>{s["languages_title"]}</h3>'
+        f'<p>{esc(", ".join(values))}</p></div>'
+    )
+
+
+def _telemedicine_row(payload: dict, s: dict) -> str:
+    if not _block_enabled(payload, "telemedicine"):
+        return ""
+    nested = payload.get("telemedicine")
+    nested = nested if isinstance(nested, dict) else {}
+    offered = nested.get("offered", payload.get("telemedicine_offered"))
+    if not offered:
+        return ""
+    modality = str(
+        nested.get("modality") or payload.get("telemedicine_modality") or ""
+    ).strip().lower()
+    label = s.get(f"telemedicine_{modality}", s["telemedicine_yes"])
+    return (
+        f'<div class="info-row" data-reveal><h3>{s["telemedicine_title"]}</h3>'
+        f'<p>{esc(label)}</p></div>'
+    )
+
+
+def _health_billing_row(payload: dict, s: dict, lang: str) -> str:
+    if not _block_enabled(payload, "health_billing"):
+        return ""
+    insurance = _list_values(payload.get("insurance"))
+    lines = []
+    if insurance:
+        lines.append(
+            f'<p><strong>{s["insurance_accepted"]}:</strong> '
+            f'{esc(", ".join(insurance))}</p>'
+        )
+    else:
+        lines.append(f'<p>{s["insurance_direct"]}</p>')
+    methods = payload.get("payment_methods") or []
+    labels = [catalog_label("payment_methods", item, lang) or str(item) for item in methods if item]
+    if labels:
+        lines.append(f'<p>{esc(", ".join(labels))}</p>')
+    if payload.get("invoicing"):
+        lines.append(f'<p>{s["invoicing_yes"]}</p>')
+    return (
+        f'<div class="info-row" data-reveal><h3>{s["insurance_title"]}</h3>'
+        f'{"".join(lines)}</div>'
+    )
+
+
+def _appointment_policy_rows(payload: dict, s: dict) -> list[str]:
+    if not _block_enabled(payload, "appointment_policies"):
+        return []
+    rows = []
+    for field, title in (
+        ("appointment_policy_text", s["appointment_policy_title"]),
+        ("emergency_policy_text", s["emergency_policy_title"]),
+    ):
+        value = str(payload.get(field, "") or "").strip()
+        if value:
+            rows.append(
+                f'<div class="info-row" data-reveal><h3>{title}</h3>'
+                f'<p>{esc(value)}</p></div>'
+            )
+    return rows
+
+
+def _provider_privacy_row(payload: dict, s: dict) -> str:
+    if not _block_enabled(payload, "provider_privacy"):
+        return ""
+    url = safe_href(payload.get("privacy_notice_url"))
+    if not url:
+        return ""
+    return (
+        f'<div class="info-row" data-reveal><h3>{s["provider_privacy_title"]}</h3>'
+        f'<p><a class="mapl" href="{url}" target="_blank" rel="noopener noreferrer">'
+        f'{s["provider_privacy_link"]}</a></p></div>'
+    )
+
+
 def _has_stacked_info_rows(payload: dict, s: dict, lang: str) -> bool:
     """True si esta pagina lleva alguna de las filas que apilan parrafos.
 
@@ -1175,6 +1304,11 @@ def _has_stacked_info_rows(payload: dict, s: dict, lang: str) -> bool:
         _brand_row(payload, s, lang)
         or _practice_rows(payload, s)
         or _payment_row(payload, s, lang)
+        or _credentials_row(payload, s)
+        or _languages_row(payload, s)
+        or _telemedicine_row(payload, s)
+        or _health_billing_row(payload, s, lang)
+        or _appointment_policy_rows(payload, s)
     )
 
 
@@ -1186,6 +1320,14 @@ def build_info(payload: dict, s: dict, lang: str) -> str:
     brand_row = _brand_row(payload, s, lang)
     if brand_row:
         rows.append(brand_row)
+
+    for medical_row in (
+        _credentials_row(payload, s),
+        _languages_row(payload, s),
+        _telemedicine_row(payload, s),
+    ):
+        if medical_row:
+            rows.append(medical_row)
 
     hours = str(payload.get("opening_hours_text", "") or "").strip()
     if hours:
@@ -1252,9 +1394,15 @@ def build_info(payload: dict, s: dict, lang: str) -> str:
             f'{address_body}</div>'
         )
 
-    payment_row = _payment_row(payload, s, lang)
+    payment_row = (
+        _health_billing_row(payload, s, lang)
+        if _block_enabled(payload, "health_billing")
+        else _payment_row(payload, s, lang)
+    )
     if payment_row:
         rows.append(payment_row)
+
+    rows.extend(_appointment_policy_rows(payload, s))
 
     policies = payload.get("policies") or []
     items = [f"<li>{esc(p)}</li>" for p in policies if str(p).strip()]
@@ -1263,6 +1411,10 @@ def build_info(payload: dict, s: dict, lang: str) -> str:
             f'<div class="info-row" data-reveal><h3>{s["policies_title"]}</h3>'
             f'<ul>{"".join(items)}</ul></div>'
         )
+
+    privacy_row = _provider_privacy_row(payload, s)
+    if privacy_row:
+        rows.append(privacy_row)
 
     primary_kind, _, _ = _primary_contact(payload, s)
     links = _secondary_links(payload, s, primary_kind)
@@ -1510,6 +1662,181 @@ FOOTER_DISCLAIMER_CSS = (
     "font-size:11.5px;opacity:.8}"
 )
 
+THIRD_PARTY_FONT_LINKS = (
+    '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+    '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,'
+    'wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:'
+    'wght@300;400;500;600&display=swap" rel="stylesheet">'
+)
+THIRD_PARTY_GSAP_LINKS = (
+    '<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>\n'
+    '<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>'
+)
+MOTION_COMMENT = "Mejora progresiva: sin JS todo es visible; GSAP añade el cine."
+NO_MOTION_COMMENT = "Animacion desactivada por configuracion de la vertical."
+MOTION_OFF_CSS = (
+    "\n/* motion desactivado por la vertical */"
+    "\n*,*::before,*::after{animation:none!important;transition:none!important;"
+    "scroll-behavior:auto!important}"
+    "\n.intro{display:none!important}"
+)
+
+# Runtime sin movimiento. Conserva únicamente el comportamiento funcional
+# (tema por sección, dock, carrusel y compartir), sin descargar ni mencionar
+# librerías de animación. B3/C1 de Dr Link exigen que el HTML final no conserve
+# ni siquiera el runtime inerte: un `return` temprano seguía publicando todo el
+# código y hacía imposible demostrar "cero terceros / cero GSAP" con curl.
+STATIC_RUNTIME_SCRIPT = """<script>
+(function(){
+  var doc=document;
+
+  var themed=doc.querySelectorAll('[data-theme]');
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          doc.body.classList.toggle('theme-alt',e.target.dataset.theme==='alt');
+        }
+      });
+    },{rootMargin:'-45% 0px -45% 0px'});
+    themed.forEach(function(s){io.observe(s)});
+  }
+
+  var dock=doc.getElementById('dock'), hero=doc.querySelector('.hero');
+  if(dock){
+    if('IntersectionObserver' in window){
+      var io2=new IntersectionObserver(function(entries){
+        dock.classList.toggle('show',!entries[0].isIntersecting);
+      },{threshold:.15});
+      io2.observe(hero);
+    }else{dock.classList.add('show')}
+  }
+
+  doc.querySelectorAll('.figure--carousel').forEach(function(gallery){
+    var track=gallery.querySelector('.figure__track');
+    var slides=[].slice.call(gallery.querySelectorAll('.figure__slide'));
+    var dots=[].slice.call(gallery.querySelectorAll('.gallery-dot'));
+    var prev=gallery.querySelector('.gallery-btn--prev');
+    var next=gallery.querySelector('.gallery-btn--next');
+    if(!track||slides.length<2)return;
+    var active=0,ticking=false;
+    function setActive(index){
+      active=(index+slides.length)%slides.length;
+      dots.forEach(function(dot,i){dot.classList.toggle('is-active',i===active)});
+    }
+    function go(index){
+      setActive(index);
+      track.scrollTo({left:slides[active].offsetLeft,behavior:'auto'});
+    }
+    if(prev)prev.addEventListener('click',function(){go(active-1)});
+    if(next)next.addEventListener('click',function(){go(active+1)});
+    dots.forEach(function(dot,i){dot.addEventListener('click',function(){go(i)})});
+    track.addEventListener('scroll',function(){
+      if(ticking)return;
+      ticking=true;
+      requestAnimationFrame(function(){
+        setActive(Math.round(track.scrollLeft/Math.max(1,track.clientWidth)));
+        ticking=false;
+      });
+    },{passive:true});
+  });
+
+  doc.querySelectorAll('.share-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var url=btn.getAttribute('data-share-url');
+      var original=btn.textContent;
+      var copied=btn.getAttribute('data-copied')||original;
+      if(navigator.share){
+        navigator.share({title:btn.getAttribute('data-share-title')||doc.title,url:url}).catch(function(){});
+        return;
+      }
+      if(navigator.clipboard&&url){
+        navigator.clipboard.writeText(url).then(function(){
+          btn.textContent=copied;
+          setTimeout(function(){btn.textContent=original},1600);
+        });
+      }
+    });
+  });
+})();
+</script>"""
+
+
+def without_motion_runtime(rendered: str) -> str:
+    """Remove the complete cinematic runtime and its CSS hooks.
+
+    The motion-on output is intentionally untouched (golden products remain
+    byte-identical). Only a vertical that explicitly disables motion takes
+    this branch.
+    """
+    rendered = rendered.replace(
+        "html:not(.gsap-on) .intro{animation:introUp .9s "
+        "cubic-bezier(.76,0,.24,1) 1.9s forwards}\n",
+        "",
+    )
+    rendered = rendered.replace(
+        "/* ---------- reveals (fallback CSS si no hay GSAP) ---------- */",
+        "/* ---------- reveals ---------- */",
+    )
+    rendered = rendered.replace(
+        ".gsap-on [data-reveal]{opacity:0;transform:translateY(36px)}\n",
+        "",
+    )
+    rendered = rendered.replace(
+        "  html.gsap-on [data-reveal]{opacity:1;transform:none}\n",
+        "",
+    )
+    start = rendered.rfind("<script>\n(function(){")
+    end = rendered.find("</script>", start)
+    if start < 0 or end < 0:
+        raise ValidationError("No se encontro el runtime de la plantilla para apagar movimiento.")
+    rendered = rendered[:start] + STATIC_RUNTIME_SCRIPT + rendered[end + len("</script>"):]
+    if re.search(r"gsap", rendered, flags=re.IGNORECASE):
+        raise ValidationError("motion=none dejo una referencia al runtime de animacion.")
+    return rendered
+
+NOTICE_BOX_STYLE = (
+    "border:1px solid var(--hair);border-radius:18px;padding:22px;"
+    "background:var(--bg)"
+)
+NOTICE_LABEL_STYLE = (
+    "margin:0 0 8px;font-size:11px;letter-spacing:.22em;"
+    "text-transform:uppercase;color:var(--accent);font-weight:600"
+)
+NOTICE_TEXT_STYLE = "margin:0;color:var(--soft);font-size:14px;line-height:1.65"
+
+
+def build_required_notices(lang: str, position: str) -> str:
+    """Render non-removable vertical notices at a structural page position."""
+    notices = [
+        item
+        for item in (LEGAL.get("required_notices") or ())
+        if item.get("position") == position
+    ]
+    if not notices:
+        return ""
+    cards = []
+    for item in notices:
+        label = item.get("label") or {}
+        label_html = (
+            f'<p class="notice__label" style="{NOTICE_LABEL_STYLE}">'
+            f'{esc(label.get(lang))}</p>'
+            if str(label.get(lang, "")).strip()
+            else ""
+        )
+        cards.append(
+            f'<div class="notice__card" data-notice-id="{esc(item.get("id"))}" '
+            f'role="note" style="{NOTICE_BOX_STYLE}">{label_html}'
+            f'<p class="notice__text" style="{NOTICE_TEXT_STYLE}">'
+            f'{esc(item.get(lang))}</p></div>'
+        )
+    return (
+        f'\n  <section class="section section--notices" '
+        f'data-notice-position="{esc(position)}"><div class="shell">'
+        f'{"".join(cards)}</div></section>'
+    )
+
 
 def build_footer(
     payload: dict,
@@ -1616,12 +1943,23 @@ def render_view(
         LEGAL.get("disclaimers_style") == "footer-span"
         and any(str(t).strip() for t in disclaimer_texts)
     )
+    motion_on = _block_enabled(view, "motion")
+    third_party_on = _block_enabled(view, "third_party_assets")
 
     tokens = {
         "{{LANG}}": lang,
         "{{HEAD_META}}": head_meta,
+        "{{THIRD_PARTY_FONT_LINKS}}": THIRD_PARTY_FONT_LINKS if third_party_on else "",
+        "{{THIRD_PARTY_GSAP_LINKS}}": (
+            THIRD_PARTY_GSAP_LINKS if third_party_on and motion_on else ""
+        ),
+        "{{CINEMATIC_EXPR}}": "hasGsap&&!reduced" if motion_on else "false",
+        "{{MOTION_OFF_CSS}}": "" if motion_on else MOTION_OFF_CSS,
+        "{{TPL_MOTION_LINE}}": MOTION_COMMENT if motion_on else NO_MOTION_COMMENT,
         "{{STYLE_NAME}}": esc(brand),
         "{{STYLE_CSS}}": style_css,
+        "{{SERIF_STACK}}": TYPOGRAPHY["serif"],
+        "{{SANS_STACK}}": TYPOGRAPHY["sans"],
         "{{TPL_BRAND_LINE}}": TEMPLATE_COMMENTS["brand_line"],
         "{{TPL_STYLES_LINE}}": TEMPLATE_COMMENTS["styles_line"],
         "{{TPL_PALETTE_LINE}}": TEMPLATE_COMMENTS["palette_line"],
@@ -1630,7 +1968,7 @@ def render_view(
         "{{SHORT_DESCRIPTION}}": esc(view.get("short_description")),
         "{{LANG_SWITCH_BLOCK}}": lang_switch_html,
         "{{LOGO_BLOCK}}": build_logo(view),
-        "{{INTRO_BLOCK}}": build_intro(view, s),
+        "{{INTRO_BLOCK}}": build_intro(view, s) if motion_on else "",
         "{{HERO_KICKER_BLOCK}}": build_hero_kicker(view),
         "{{HERO_TITLE_BLOCK}}": build_hero_title(view),
         "{{CTA_ROW_BLOCK}}": build_cta_row(view, s),
@@ -1642,6 +1980,9 @@ def render_view(
         "{{SERVICES_BLOCK}}": build_services(view, s),
         "{{FEATURED_BLOCK}}": build_featured(view, s),
         "{{INFO_BLOCK}}": build_info(view, s, lang),
+        "{{REQUIRED_NOTICES_AFTER_HERO}}": build_required_notices(lang, "after_hero"),
+        "{{REQUIRED_NOTICES_AFTER_INFO}}": build_required_notices(lang, "after_info"),
+        "{{REQUIRED_NOTICES_BEFORE_FOOTER}}": build_required_notices(lang, "before_footer"),
         "{{INFO_STACK_CSS}}": INFO_STACK_CSS if stacked_rows else "",
         # La LINEA entera del FAQ, no solo su contenido: con el bloque apagado
         # no queda ni el salto de linea. Con el encendido el resultado es
@@ -1657,7 +1998,7 @@ def render_view(
         "{{FOOTER_BLOCK}}": build_footer(
             view,
             footer_text,
-            f"{DOMAIN}/privacy/" if lang == "en" else f"{DOMAIN}/es/privacidad/",
+            f"{DOMAIN}{LEGAL['privacy_paths'][lang]}",
             s["footer_privacy"] if _block_enabled(view, "footer_privacy") else "",
             # `legal.disclaimers` in vertical.yaml, in this page's language. The
             # generator inserts them so they are not removable by hand-editing a
@@ -1671,7 +2012,8 @@ def render_view(
 
     # Una sola pasada (hallazgo #17): un dato del negocio que contenga
     # literalmente otro token ya no se re-expande.
-    return fill_tokens(template, tokens)
+    rendered = fill_tokens(template, tokens)
+    return rendered if motion_on else without_motion_runtime(rendered)
 
 
 # --------------------------------------------------------------------------- #
@@ -1718,6 +2060,24 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "deposit_policy_text",
             "payment_methods",
             "invoicing",
+            # Salud (T2). Se aceptan tanto los campos planos que construye el
+            # intake generico como los objetos historicos del fork de Dr Link.
+            "country",
+            "profession",
+            "credentials",
+            "credentials_institution",
+            "cedula_profesional",
+            "cedula_especialidad",
+            "license_state",
+            "license_number",
+            "npi",
+            "board_name",
+            "languages",
+            "telemedicine",
+            "telemedicine_offered",
+            "telemedicine_modality",
+            "insurance",
+            "privacy_notice_url",
         )
     }
     content_block = payload["content"][lang]
@@ -1738,12 +2098,15 @@ def client_lang_view(payload: dict, lang: str) -> dict:
 
 
 def client_head_meta(canonical: str, es_url: str, en_url: str, default_url: str) -> str:
-    return (
+    meta = (
         f'<link rel="canonical" href="{esc(canonical)}">\n'
         f'<link rel="alternate" hreflang="es" href="{esc(es_url)}">\n'
         f'<link rel="alternate" hreflang="en" href="{esc(en_url)}">\n'
         f'<link rel="alternate" hreflang="x-default" href="{esc(default_url)}">'
     )
+    if SCHEMA.get("client_noindex"):
+        meta += '\n<meta name="robots" content="noindex">'
+    return meta
 
 
 def build_og_meta(view: dict, canonical_url: str, lang: str) -> str:

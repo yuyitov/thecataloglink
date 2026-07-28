@@ -1,0 +1,11 @@
+/* clinic-white - limpio, clinico y confiable. */
+:root{
+  --base-bg:#f7fafc; --base-ink:#1e293b; --base-soft:#64748b;
+  --base-hair:#e2e8f0; --base-accent:#2563a8; --base-accent-ink:#ffffff;
+  --alt-bg:#1e293b; --alt-ink:#f7fafc; --alt-soft:rgba(247,250,252,.72);
+  --alt-hair:rgba(226,232,240,.28); --alt-accent:#8ab4de; --alt-accent-ink:#152238;
+  --panel-bg:#e3edf7; --panel-ink:#1e293b; --panel-soft:#526174;
+  --panel-hair:#c8d9e9; --panel-accent:#2563a8;
+  --blob-a:#e3edf7; --blob-b:#cfe0f0; --blob-c:#ffffff; --blob-opacity:0;
+  --dock-glow:rgba(37,99,168,.22); --dock-glow-strong:rgba(37,99,168,.32);
+}

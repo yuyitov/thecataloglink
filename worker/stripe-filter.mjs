@@ -38,7 +38,8 @@ export const SUPPORTED_EVENT_TYPES = Object.freeze([
  * ausente, vacío o compuesto solo de comas/espacios devuelve `[]` — y `[]`
  * dispara el fail-closed aguas arriba.
  *
- * @param {string|undefined|null} rawValue  env.STRIPE_PAYMENT_LINK_ID
+ * @param {string|undefined|null} rawValue  STRIPE_PAYMENT_LINK_IDS (plural)
+ *                                          or its legacy singular alias
  * @returns {string[]}
  */
 export function parsePaymentLinkAllowlist(rawValue) {
@@ -49,10 +50,23 @@ export function parsePaymentLinkAllowlist(rawValue) {
 }
 
 /**
+ * Nombre nuevo (plural) con compatibilidad hacia atrás para los workers vivos.
+ *
+ * Si el plural EXISTE, incluso vacío, manda: un deploy a medias debe fallar
+ * cerrado y no rescatar silenciosamente una lista singular vieja.
+ */
+export function paymentLinkAllowlistValue(env) {
+  if (env && Object.prototype.hasOwnProperty.call(env, 'STRIPE_PAYMENT_LINK_IDS')) {
+    return env.STRIPE_PAYMENT_LINK_IDS;
+  }
+  return env?.STRIPE_PAYMENT_LINK_ID;
+}
+
+/**
  * Clasifica un evento de Stripe ya verificado.
  *
  * @param {object} event  El evento parseado de Stripe (firma ya validada).
- * @param {object} env    El entorno del Worker (se lee STRIPE_PAYMENT_LINK_ID).
+ * @param {object} env    El entorno del Worker (plural; singular legado).
  * @returns {{action: 'process'|'correction'|'ignore', reason?: string, type?: string,
  *            session?: object, observedPaymentLink?: string, expectedPaymentLinks?: string[]}}
  *
@@ -82,7 +96,7 @@ export function classifyStripeEvent(event, env) {
     return { action: 'correction', type, session };
   }
 
-  const expectedPaymentLinks = parsePaymentLinkAllowlist(env?.STRIPE_PAYMENT_LINK_ID);
+  const expectedPaymentLinks = parsePaymentLinkAllowlist(paymentLinkAllowlistValue(env));
   const observedPaymentLink = session.payment_link || '';
 
   // FAIL CLOSED: sin allowlist (o mal escrito) no se procesa ningún pago. Se

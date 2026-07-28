@@ -1,0 +1,11 @@
+/* gentle-rose - suave, cuidadoso y profesional. */
+:root{
+  --base-bg:#fdf3f4; --base-ink:#452530; --base-soft:#80606a;
+  --base-hair:#f2dce0; --base-accent:#b85068; --base-accent-ink:#ffffff;
+  --alt-bg:#452530; --alt-ink:#fdf3f4; --alt-soft:rgba(253,243,244,.72);
+  --alt-hair:rgba(242,220,224,.28); --alt-accent:#e3a1af; --alt-accent-ink:#3c2029;
+  --panel-bg:#fae0e5; --panel-ink:#452530; --panel-soft:#765660;
+  --panel-hair:#efc5ce; --panel-accent:#b85068;
+  --blob-a:#fae0e5; --blob-b:#f2c2cc; --blob-c:#fffafb; --blob-opacity:0;
+  --dock-glow:rgba(184,80,104,.22); --dock-glow-strong:rgba(184,80,104,.32);
+}

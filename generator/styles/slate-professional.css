@@ -1,0 +1,11 @@
+/* slate-professional - minimalista, serio y moderno. */
+:root{
+  --base-bg:#f4f5f6; --base-ink:#20242b; --base-soft:#5b6472;
+  --base-hair:#e2e4e8; --base-accent:#3a4756; --base-accent-ink:#ffffff;
+  --alt-bg:#20242b; --alt-ink:#f4f5f6; --alt-soft:rgba(244,245,246,.72);
+  --alt-hair:rgba(226,228,232,.28); --alt-accent:#aeb8c4; --alt-accent-ink:#20242b;
+  --panel-bg:#e6e9ec; --panel-ink:#20242b; --panel-soft:#555f6d;
+  --panel-hair:#cfd4da; --panel-accent:#3a4756;
+  --blob-a:#e6e9ec; --blob-b:#ccd2d9; --blob-c:#ffffff; --blob-opacity:0;
+  --dock-glow:rgba(58,71,86,.22); --dock-glow-strong:rgba(58,71,86,.32);
+}

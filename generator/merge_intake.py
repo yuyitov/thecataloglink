@@ -297,7 +297,6 @@ CONTENT_FIELD_SOURCES: dict[str, tuple[str, ...]] = {
     "class_schedule_text": ("class_schedule_text",),
     "tour_details_text": ("tour_details_text",),
     "pet_notes_text": ("pet_notes_text",),
-    "price_display": ("price_display",),
     "service_categories": SERVICE_KEYS,
     "services": SERVICE_KEYS,
     "policies": ("policies_text",),
@@ -380,24 +379,6 @@ def _merge_block(previous: dict, new: dict, sources: dict[str, tuple[str, ...]],
     return merged
 
 
-def _apply_price_policy(block: dict) -> None:
-    """Coherencia: si la página oculta precios, ningún precio sobrevive.
-
-    `price_display` y los servicios pueden venir de lados distintos tras la
-    fusión (el cliente reenvió su lista de servicios pero el formulario no traía
-    la pregunta de precios). Sin esta pasada, una página que el cliente había
-    dejado en "no mostrar precios" volvería a mostrarlos.
-    """
-    if block.get("price_display") != "hide":
-        return
-    for svc in block.get("services") or []:
-        if isinstance(svc, dict):
-            svc.pop("price_label", None)
-    featured = block.get("featured_package")
-    if isinstance(featured, dict):
-        featured.pop("price_label", None)
-
-
 def merge_client(previous: dict, new: dict, payload: dict,
                  cleared: set[str] | None = None) -> dict:
     """Fusiona el cliente recién construido sobre el `client.json` que ya existía.
@@ -428,8 +409,6 @@ def merge_client(previous: dict, new: dict, payload: dict,
                 content[lang] = _merge_block(prev_block, new_block, CONTENT_FIELD_SOURCES, answered)
             else:
                 content[lang] = new_block
-            if isinstance(content[lang], dict):
-                _apply_price_policy(content[lang])
         # Un idioma que existía antes y que el build nuevo no produjo se conserva:
         # perder la mitad bilingüe de una página vendida es exactamente la falla
         # que esta fusión ataca.

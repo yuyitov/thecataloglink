@@ -1,0 +1,11 @@
+/* calm-teal - sereno, terapeutico y sobrio. */
+:root{
+  --base-bg:#f1f8f7; --base-ink:#173832; --base-soft:#5c7d76;
+  --base-hair:#dcece8; --base-accent:#0e7b6d; --base-accent-ink:#ffffff;
+  --alt-bg:#173832; --alt-ink:#f1f8f7; --alt-soft:rgba(241,248,247,.72);
+  --alt-hair:rgba(220,236,232,.27); --alt-accent:#75c3b7; --alt-accent-ink:#102d28;
+  --panel-bg:#dcf0ec; --panel-ink:#173832; --panel-soft:#4d7069;
+  --panel-hair:#c2e0da; --panel-accent:#0e7b6d;
+  --blob-a:#dcf0ec; --blob-b:#bfe2da; --blob-c:#ffffff; --blob-opacity:0;
+  --dock-glow:rgba(14,123,109,.22); --dock-glow-strong:rgba(14,123,109,.32);
+}

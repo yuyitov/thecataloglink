@@ -1,0 +1,11 @@
+/* sage-serenity - natural, organico y sereno. */
+:root{
+  --base-bg:#f2f4ee; --base-ink:#2a3323; --base-soft:#69735a;
+  --base-hair:#e2e6d8; --base-accent:#536f3f; --base-accent-ink:#ffffff;
+  --alt-bg:#2a3323; --alt-ink:#f2f4ee; --alt-soft:rgba(242,244,238,.72);
+  --alt-hair:rgba(226,230,216,.28); --alt-accent:#a9bc8f; --alt-accent-ink:#25301f;
+  --panel-bg:#e6ecda; --panel-ink:#2a3323; --panel-soft:#606a52;
+  --panel-hair:#d0d9bf; --panel-accent:#536f3f;
+  --blob-a:#e6ecda; --blob-b:#cfdcb9; --blob-c:#ffffff; --blob-opacity:0;
+  --dock-glow:rgba(83,111,63,.22); --dock-glow-strong:rgba(83,111,63,.32);
+}

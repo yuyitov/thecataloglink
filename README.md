@@ -64,7 +64,7 @@
 
 ```powershell
 pip install -r requirements.txt
-python generator/generate_service_menu.py
+python generator/generate_catalog.py
 ```
 
 ## Antes de desplegar infra real

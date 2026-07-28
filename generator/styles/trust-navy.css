@@ -1,0 +1,11 @@
+/* trust-navy - autoridad tranquila para especialistas. */
+:root{
+  --base-bg:#f3f5f9; --base-ink:#152238; --base-soft:#5a6780;
+  --base-hair:#e1e5ee; --base-accent:#1c3d6e; --base-accent-ink:#ffffff;
+  --alt-bg:#152238; --alt-ink:#f3f5f9; --alt-soft:rgba(243,245,249,.72);
+  --alt-hair:rgba(225,229,238,.27); --alt-accent:#8da9d1; --alt-accent-ink:#102039;
+  --panel-bg:#e2e9f4; --panel-ink:#152238; --panel-soft:#4e5d76;
+  --panel-hair:#c9d6e8; --panel-accent:#1c3d6e;
+  --blob-a:#e2e9f4; --blob-b:#c9d6ec; --blob-c:#ffffff; --blob-opacity:0;
+  --dock-glow:rgba(28,61,110,.22); --dock-glow-strong:rgba(28,61,110,.34);
+}

@@ -95,6 +95,18 @@ TEMPLATE              = "catalog"
 # retoque se cobra al vuelo en /buy-correction con metadata catalog_correction;
 # si entraran, un pago de $6 se procesaría como venta completa de catálogo.
 STRIPE_PAYMENT_LINK_ID = "plink_1TxIjsG4Nw60erBPnXsLGjyr,plink_1TxIlyG4Nw60erBPYUjCe3IN,plink_1TxJ1uG4Nw60erBPYPesVk9F"
+# Payment links de los OTROS productos de la cuenta Stripe compartida. La cuenta
+# fanea CADA checkout.session.completed a TODOS los workers, así que sin esta
+# lista cada venta de un hermano llega aquí, se ignora bien… y dispara la alerta
+# "payment_link NO reconocido" a REPLY_TO_EMAIL. Con la lista, el ruido se apaga
+# y la alerta queda reservada para lo que sí importa: un link PROPIO desfasado.
+# Cableada 2026-07-27 (sesión guiada del worker) leyendo el STRIPE_PAYMENT_LINK_ID
+# vivo de los 5 hermanos — mismo patrón que ya traen PawContact y My Guest.
+#   Dr Link (5) · HMU Link (4) · ModaLink (5) · My Guest (3) · PawContact (3)
+# NO incluye los plink_ de $6/$59 (cambio extra MANUAL de ESTE catálogo): son
+# propios, no ajenos, y su alerta es justamente el aviso de que hay un retoque
+# pagado esperando trabajo a mano.
+KNOWN_OTHER_PAYMENT_LINKS = "plink_1Tq0sdG4Nw60erBPIGIWEKxk,plink_1Tq0slG4Nw60erBPoJXiDTMT,plink_1Tq2CUG4Nw60erBPqHG9gtdL,plink_1TuORfG4Nw60erBPNdw1QzYj,plink_1TuOTgG4Nw60erBPWSjHE7ZZ,plink_1TpW1pG4Nw60erBPpTk296oO,plink_1Tr7lEG4Nw60erBPZ51f4cOC,plink_1TuOQXG4Nw60erBPUus5heVm,plink_1TuOvXG4Nw60erBPQPwonRRP,plink_1TrBqKG4Nw60erBPqBWlwnCs,plink_1TrBqKG4Nw60erBPKa1ZXrKV,plink_1TrBqLG4Nw60erBPiRGaPNIv,plink_1TuOEyG4Nw60erBPX4UjGJxS,plink_1TuOP5G4Nw60erBPjC3zWs69,plink_1TUJUsG4Nw60erBPDOUoFGk2,plink_1TuOXjG4Nw60erBPwDgZIhEx,plink_1TuOu8G4Nw60erBP7Z9ognUk,plink_1TtvhdG4Nw60erBP9P6jrZM6,plink_1TtvjfG4Nw60erBPAjvz95od,plink_1TuPyHG4Nw60erBPSTXvS2cF"
 GITHUB_REPO          = "yuyitov/thecataloglink"
 GITHUB_ACTIONS_EVENT = "new-catalog-service-menu"
 TALLY_FORM_URL_EN    = "https://tally.so/r/kdX6L1?order_id="

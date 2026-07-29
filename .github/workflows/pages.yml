@@ -104,10 +104,12 @@ jobs:
 
       - name: Verify no obvious secrets committed
         run: |
-          # Matches secret-shaped VALUES (Stripe/OpenAI key prefixes, PEM
-          # headers), not mere mentions of words like "api_key" or "bearer"
-          # that legitimately appear in code/comments/docstrings.
-          if grep -rnE "sk_live_[A-Za-z0-9]+|sk_test_[A-Za-z0-9]+|rk_live_[A-Za-z0-9]+|sk-proj-[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----" \
+          # Matches secret-shaped VALUES (Stripe/SendGrid/Cloudflare/GitHub/
+          # Resend/OpenAI key prefixes, PEM headers), not mere mentions of
+          # words like "api_key" or "bearer" that legitimately appear in
+          # code/comments/docstrings. This is deliberately the same guard
+          # already used by the audited ModaLink and My Guest workflows.
+          if grep -rnE "sk_live_[A-Za-z0-9]+|sk_test_[A-Za-z0-9]+|rk_live_[A-Za-z0-9]+|sk-proj-[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9]{20,}|SG\.[A-Za-z0-9_-]{16,}|whsec_[A-Za-z0-9]{8,}|cfut_[A-Za-z0-9]{8,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|re_[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----" \
                generator/ data/ public/ ; then
             echo "Posible secreto detectado."
             exit 1

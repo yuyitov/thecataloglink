@@ -6,6 +6,35 @@
  * env vars en `wrangler.toml` (ver `wrangler.toml.tpl`), sin editar código.
  */
 
+// Un export nuevo siempre declara PRODUCT_ID. Desde ese momento estos valores
+// dejan de ser opcionales: caer a los defaults históricos de HMU enviaría
+// correos, CORS o enlaces de una marca a otra sin ningún error visible.
+//
+// El env completamente vacío se conserva como compatibilidad del deploy
+// histórico de HMU y de pruebas unitarias puras. No es una escotilla para una
+// vertical nueva: export_vertical.py siempre escribe PRODUCT_ID.
+export const REQUIRED_VERTICAL_ENV = [
+  'PRODUCT_ID',
+  'WORKER_NAME',
+  'BRAND_NAME',
+  'BRAND_TAGLINE',
+  'VALID_BRAND_STYLES',
+  'GITHUB_REPO',
+  'GITHUB_ACTIONS_EVENT',
+  'TALLY_FORM_URL_EN',
+  'TALLY_FORM_URL_ES',
+  'FROM_EMAIL',
+  'PUBLIC_BOOK_BASE_URL',
+]
+
+export function runtimeConfigErrors(env) {
+  const productId = String(env?.PRODUCT_ID ?? '').trim()
+  if (!productId) return []
+  return REQUIRED_VERTICAL_ENV.filter(
+    (name) => String(env?.[name] ?? '').trim() === '',
+  )
+}
+
 // Todas las KV keys del worker se namespacean por PRODUCT_ID (no por dominio:
 // el mismo Cloudflare account puede alojar varios Workers, cada uno con su
 // propio KV namespace, pero el prefijo evita ambigüedad si dos verticales

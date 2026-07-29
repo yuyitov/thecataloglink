@@ -283,6 +283,21 @@ FIELD_SOURCES: dict[str, tuple[str, ...]] = {
     "telemedicine": ("telemedicine",),
     "insurance": ("insurance",),
     "privacy_notice_url": ("privacy_notice_url",),
+    "languages": ("languages",),
+    "board_name": ("board_name",),
+    "cedula_especialidad": ("cedula_especialidad",),
+    "cedula_profesional": ("cedula_profesional",),
+    "license_state": ("license_state",),
+    "license_number": ("license_number",),
+    "npi": ("npi",),
+    "credentials_institution": ("credentials_institution",),
+    "telemedicine_offered": ("telemedicine_offered",),
+    "telemedicine_modality": ("telemedicine_modality",),
+    "location_1_hours": ("location_1_hours",),
+    "location_2_hours": ("location_2_hours",),
+    "location_3_hours": ("location_3_hours",),
+    "appointment_policy_text": ("appointment_policy_text",),
+    "emergency_policy_text": ("emergency_policy_text",),
 }
 
 # Campo dentro de content.<lang>  ->  respuestas del intake que lo alimentan.
@@ -307,6 +322,11 @@ CONTENT_FIELD_SOURCES: dict[str, tuple[str, ...]] = {
     "appointment_policy_text": ("appointment_policy_text",),
     "emergency_policy_text": ("emergency_policy_text",),
 }
+
+# Campos que existieron en clientes/formularios viejos pero que una decisión de
+# producto retiró. Se toleran al leer un client.json histórico, pero nunca se
+# conservan ni vuelven a escribirse durante una modificación.
+LEGACY_CONTENT_FIELDS = {"price_display"}
 
 # El slug es la dirección pública de la página: lo fija el worker desde la orden
 # y una regeneración jamás debe moverlo (mover una página que el cliente ya
@@ -368,6 +388,9 @@ def _merge_block(previous: dict, new: dict, sources: dict[str, tuple[str, ...]],
     for field in set(new) | set(previous):
         if field in skip:
             continue
+        if field in LEGACY_CONTENT_FIELDS:
+            merged.pop(field, None)
+            continue
         if _field_answered(field, sources, answered):
             continue
         if field in previous:
@@ -414,6 +437,10 @@ def merge_client(previous: dict, new: dict, payload: dict,
         # que esta fusión ataca.
         for lang, prev_block in prev_content.items():
             content.setdefault(lang, copy.deepcopy(prev_block))
+        for block in content.values():
+            if isinstance(block, dict):
+                for field in LEGACY_CONTENT_FIELDS:
+                    block.pop(field, None)
         merged["content"] = content
     elif isinstance(prev_content, dict) and not isinstance(new_content, dict):
         merged["content"] = copy.deepcopy(prev_content)
@@ -432,5 +459,9 @@ def unknown_fields(client: dict) -> set[str]:
     out = {f for f in client if f not in FIELD_SOURCES and f not in PINNED_FIELDS and f != "content"}
     for block in (client.get("content") or {}).values():
         if isinstance(block, dict):
-            out |= {f"content.{f}" for f in block if f not in CONTENT_FIELD_SOURCES}
+            out |= {
+                f"content.{f}"
+                for f in block
+                if f not in CONTENT_FIELD_SOURCES and f not in LEGACY_CONTENT_FIELDS
+            }
     return out

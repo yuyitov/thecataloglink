@@ -59,7 +59,7 @@
  */
 
 import { classifyStripeEvent } from './stripe-filter.mjs';
-import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, SALE_BUTTON_KINDS } from './product-config.mjs';
+import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
 // Mapa campo-público -> alias de título del intake de Tally, única fuente de
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
@@ -279,19 +279,34 @@ export {
 
 export default {
   async fetch(request, env, ctx) {
-    env = bindRuntimeEnv(env);
-    _workerEnv = env;
-    const url = new URL(request.url);
-    const pathname = url.pathname;
-
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: corsHeaders()
-      });
-    }
-
     try {
+      const missingConfig = runtimeConfigErrors(env);
+      if (missingConfig.length) {
+        return new Response(JSON.stringify({
+          ok: false,
+          error: 'Worker configuration incomplete',
+          missing: missingConfig,
+        }), {
+          status: 503,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cache-Control': 'no-store',
+          },
+        });
+      }
+
+      env = bindRuntimeEnv(env);
+      _workerEnv = env;
+      const url = new URL(request.url);
+      const pathname = url.pathname;
+
+      if (request.method === 'OPTIONS') {
+        return new Response(null, {
+          status: 204,
+          headers: corsHeaders()
+        });
+      }
+
       const ip = request.headers.get('cf-connecting-ip') || 'unknown';
       const minuteSlot = Math.floor(Date.now() / 60000);
 

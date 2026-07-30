@@ -1624,6 +1624,28 @@ def build_vcard_action(s: dict, vcf_src: str,
     )
 
 
+_ACCENT_RE = re.compile(r"--(?:base-)?accent\s*:\s*(#[0-9a-fA-F]{3,8})")
+
+
+def accent_hex(style_css: str) -> str:
+    """El color de marca del estilo que el cliente eligio, sacado de su CSS.
+
+    Existe para el pase de wallet: sin `hexBackgroundColor` Google pinta la
+    tarjeta de un gris de sistema, y Vero lo dijo con todas sus letras al ver
+    el primer pase — "es muy feo". El gris no lo decide Google: lo decide no
+    mandar color.
+
+    Sale del MISMO CSS que ya se inserta en la pagina, asi que el pase de un
+    cliente combina con su pagina sin que nadie mantenga una segunda tabla de
+    colores. Las dos plantillas base nombran su variable distinto
+    (`--base-accent` en service-menu, `--accent` en catalogo) y el patron
+    acepta las dos; devuelve "" si no encuentra nada, y entonces el pase sale
+    con el gris de Google en vez de con un color inventado.
+    """
+    m = _ACCENT_RE.search(style_css or "")
+    return m.group(1) if m else ""
+
+
 def build_wallet_action(s: dict, wallet_url: str) -> str:
     """La fila del boton "Agregar a Google Wallet" (bloque `wallet_google`).
 
@@ -1960,10 +1982,6 @@ def render_view(
     publicacion) viven donde se pueden auditar, no en la firma.
     """
     s = STRINGS[lang]
-    wallet_url = (
-        wallet.build_google_wallet_url(view, share_url, brand=BRAND_NAME)
-        if _block_enabled(view, "wallet_google") else ""
-    )
     brand = view["brand_style"]
     template_path = TEMPLATES_DIR / "base.html"
     if not template_path.exists():
@@ -1973,6 +1991,13 @@ def render_view(
         raise ValidationError(f"No existe el estilo para brand_style={brand!r}: {style_path}")
     template = template_path.read_text(encoding="utf-8")
     style_css = style_path.read_text(encoding="utf-8")
+    # El pase se arma DESPUES de leer el estilo, para que su tarjeta lleve el
+    # color de marca del estilo que el cliente eligio (ver accent_hex).
+    wallet_url = (
+        wallet.build_google_wallet_url(view, share_url, brand=BRAND_NAME,
+                                       background=accent_hex(style_css))
+        if _block_enabled(view, "wallet_google") else ""
+    )
     # Se calcula una sola vez: decide el bloque Y su CSS (ver LOOKBOOK_CSS).
     lookbook_html = build_lookbook(view, s)
     # Mismo criterio para los otros tres pares bloque+CSS. `faq_on` mira el

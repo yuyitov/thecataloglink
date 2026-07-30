@@ -59,6 +59,7 @@ from generate_service_menu import (
     VCARD_ASSET_NAME,
     ValidationError,
     _initials,
+    accent_hex,
     build_vcard_action,
     build_wallet_action,
     esc,
@@ -671,7 +672,11 @@ def render_page(
         raise ValidationError(f"No existe el estilo para brand_style={brand!r}: {style_path}")
 
     wallet_url = (
-        wallet.build_google_wallet_url(payload, share_url, brand=BRAND_NAME)
+        wallet.build_google_wallet_url(
+            payload, share_url, brand=BRAND_NAME,
+            # El color de marca del estilo del catalogo, del mismo CSS que ya
+            # se inserta en la pagina: sin el, la tarjeta sale gris.
+            background=accent_hex(style_path.read_text(encoding="utf-8")))
         if block_enabled(BLOCKS, "wallet_google", payload.get("business_type"))
         else ""
     )

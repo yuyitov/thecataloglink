@@ -161,14 +161,38 @@ def datos_del_pase(payload: dict, page_url: str) -> dict:
     }
 
 
+_HEX_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+
+
 def build_google_wallet_payload(datos: dict, *, issuer_id: str,
                                 class_suffix: str, slug: str,
-                                brand: str = "") -> dict:
+                                brand: str = "", background: str = "") -> dict:
     """El objeto genérico del pase. Solo datos que la página ya publica.
 
     La clase viaja DENTRO del JWT (`genericClasses`): Google la crea en el
     primer guardado y así no hace falta una llamada previa a la API REST. Es la
     misma forma que usa My Guest.
+
+    ⚠️ EL `id` ES LA IDENTIDAD, Y EL LINK DE GUARDADO **CREA, NO ACTUALIZA**.
+    Medido con Vero el 2026-07-30: arreglamos el pase, ella borró el anterior
+    de su Wallet, volvió a escanear… y salió **idéntico al viejo**, con los
+    campos de antes. La causa no era el teléfono: borrar un pase de la app lo
+    quita del teléfono, **no del servidor de Google**. Como el `id` del objeto
+    ya existía, Google devolvió el objeto guardado y **ignoró en silencio**
+    todos los campos nuevos del JWT.
+
+    Dos consecuencias, y las dos importan:
+
+    - **Para probar**, cada corrida necesita un `id` nuevo: eso es
+      `id_sufijo` en `build_google_wallet_url`, que usa
+      `scripts/probar_wallet_google.py --sufijo`.
+    - **Para producción**, el `id` tiene que seguir siendo estable por
+      cliente (si cambia, el pase que la gente ya guardó se queda huérfano) —
+      y por eso **cambiarle el teléfono o el nombre a un cliente NO actualiza
+      su pase ya guardado**. Eso se hace con un PATCH a la API REST de Google,
+      que hoy el motor no habla. Queda dicho aquí para que el día que Vero
+      pregunte "¿por qué el pase del cliente sigue con el teléfono viejo?" la
+      respuesta esté escrita y no haya que volver a descubrirla.
 
     OJO con `class_suffix`: en la consola de Vero ya existe la clase
     `bridge_generic_demo` (Activa, vacía) y **no se borra** — se publicará sola
@@ -191,42 +215,67 @@ def build_google_wallet_payload(datos: dict, *, issuer_id: str,
         "header": {"defaultValue": {"language": "es",
                                     "value": datos["business_name"]}},
     }
-    if datos["phone"]:
-        generico["subheader"] = {"defaultValue": {"language": "es",
-                                                  "value": datos["phone"]}}
+    # SIN esto la tarjeta sale de un gris de sistema. Vero lo dijo viendo el
+    # primer pase ("es muy feo"), y su lectura de que "el gris lo pone Google"
+    # era casi correcta: Google lo pone cuando NADIE manda color. El color sale
+    # del estilo que el cliente eligio, asi que su pase combina con su pagina.
+    # Se valida la forma: un valor con basura haria que Google rechace el pase
+    # entero, y perder el pase por un color seria un mal negocio.
+    if background and _HEX_RE.match(background.strip()):
+        generico["hexBackgroundColor"] = background.strip().lower()
+    # El teléfono NO va como `subheader` (texto muerto en la cara de la
+    # tarjeta). Va abajo como fila TOCABLE que llama — que es lo que Vero pidió
+    # al ver que el número se veía pero no se podía marcar. Tenerlo en los dos
+    # sitios costaba 98 caracteres del presupuesto del JWT, y ese presupuesto
+    # es lo que decide si el cliente TIENE botón: con las dos copias, el peor
+    # cliente vivo quedaba a 46 caracteres del límite. Sin la copia muerta,
+    # a 162.
+    # LAS DOS ACCIONES DEL PASE — todo esto salió de que Vero abriera el pase
+    # REAL en su teléfono el 2026-07-30, no de leer documentación.
+    #
+    # Hallazgo 1: el primer pase traía SOLO el QR (con `alternateText` vacío).
+    #   «si los clientes tienen el pase en su celular no pueden escanear el
+    #   código, necesitarían otro celular». Exacto: el QR sirve para ENSEÑARLE
+    #   la página a otra persona; para volver uno mismo hace falta un enlace.
+    #   Y el enlace era el punto entero del bloque.
+    #
+    # Hallazgo 2: puesto el enlace, seguía escondido. «Si das en esos tres
+    #   puntos, una de las opciones es abrir página… pero la gente nunca va a
+    #   llegar ahí».
+    #
+    # Hallazgo 3: «se ve el teléfono, pero no se le puede dar clic para
+    #   llamar». El teléfono estaba solo como TEXTO en `subheader`.
+    #
+    # Los tres se arreglan en el mismo sitio: `linksModuleData` es lo que
+    # Google pinta como FILAS CON ICONO, y decide el icono por el esquema de
+    # la URI — `tel:` da el icono de teléfono y llama al tocarlo; `https:` da
+    # el de globo y abre la página. Así el pase queda con las dos acciones que
+    # de verdad importan (llamar / abrir), visibles y tocables, en vez de un
+    # QR inservible y un texto muerto.
+    uris = []
     if datos["page_url"]:
-        # EL ENLACE VA DOS VECES, Y NINGUNA SOBRA (medido con Vero sobre el
-        # pase REAL el 2026-07-30, no supuesto).
-        #
-        # El primer intento puso el enlace SOLO en el QR, con `alternateText`
-        # vacío. Vero abrió el pase en su teléfono y cazó el fallo: **el QR es
-        # inútil para el dueño del pase.** Quien lo tiene guardado ya está en
-        # su teléfono; para escanear su propio código necesitaría un segundo
-        # aparato. El QR sirve para ENSEÑARLE la página a otra persona; para
-        # volver uno mismo hace falta un enlace que se pueda tocar. Y el
-        # enlace era el punto entero del bloque: el cliente recurrente olvida
-        # el link.
-        #
-        #   1. `alternateText` — el renglón que Google pinta DEBAJO del QR.
-        #      Vacío no salía nada. Es el sitio más visible del pase.
-        #   2. `linksModuleData` — el enlace TOCABLE de la vista de detalle.
-        #      Es el que abre la página de un toque.
-        #
-        # PRESUPUESTO DE BYTES — por qué no van TRES veces.
-        # El arreglo se probó primero con un `textModulesData` extra (el
-        # enlace también como texto, por si una versión de la app no pinta el
-        # módulo de enlaces). Al medirlo contra los slugs REALES de los
-        # clientes vivos, **3 de 7 cruzaban los 1800 caracteres y se quedaban
-        # SIN botón** — o sea, la redundancia de más borraba el botón entero
-        # justo en los clientes de nombre largo. `textModulesData` costaba 163
-        # caracteres; quitarlo devolvió el margen. La regla que queda: antes de
-        # agregar un campo al pase, medirlo contra el peor cliente vivo, no
-        # contra un demo corto.
-        generico["linksModuleData"] = {
-            "uris": [{"uri": datos["page_url"], "description": "Abrir"}]
-        }
-        generico["barcode"] = {"type": "QR_CODE", "value": datos["page_url"],
-                               "alternateText": datos["page_url"]}
+        uris.append({"uri": datos["page_url"], "description": "Ver la carta"})
+    tel = re.sub(r"[^\d+]", "", datos["phone"] or "")
+    if tel:
+        uris.append({"uri": f"tel:{tel}", "description": "Llamar"})
+    if uris:
+        generico["linksModuleData"] = {"uris": uris}
+    if datos["page_url"]:
+        # `alternateText` es el renglón que Google pinta DEBAJO del QR. Vacío,
+        # ahí no salía nada. Se escribe sin el `https://www.`, igual que la
+        # propia página escribe su enlace en la sección "Comparte": se lee
+        # mejor y de paso son 17 caracteres menos de JWT.
+        generico["barcode"] = {
+            "type": "QR_CODE", "value": datos["page_url"],
+            "alternateText": re.sub(r"^https?://(www\.)?", "",
+                                    datos["page_url"]).rstrip("/")}
+    # PRESUPUESTO DE BYTES — por qué el pase no lleva todo lo que uno querría.
+    # Una versión intermedia repetía el enlace también en `textModulesData`.
+    # Contra los demos cabía; contra los slugs REALES de los clientes vivos,
+    # **3 de 7 cruzaban los 1800 caracteres y se quedaban SIN botón**, sin
+    # error y sin avisar. Se quitó. La regla que queda: antes de agregar un
+    # campo al pase, medirlo contra el PEOR CLIENTE VIVO, no contra un demo
+    # corto — lo hace test_el_pase_cabe_para_EL_PEOR_CLIENTE_VIVO.
     return {"genericClasses": [{"id": class_id}], "genericObjects": [generico]}
 
 
@@ -248,6 +297,7 @@ def _firmar_rs256(entrada: bytes, private_key_pem: str):
 
 
 def build_google_wallet_url(payload: dict, page_url: str, *, brand: str = "",
+                            background: str = "", id_sufijo: str = "",
                             ignorar_interruptor: bool = False) -> str:
     """La URL de "Agregar a Google Wallet", o "" si no se puede/no se debe.
 
@@ -299,8 +349,9 @@ def build_google_wallet_url(payload: dict, page_url: str, *, brand: str = "",
         "origins": [origen.group(0)] if origen else [],
         "payload": build_google_wallet_payload(
             datos, issuer_id=issuer_id, class_suffix=class_suffix,
-            slug=payload.get("public_slug") or datos["business_name"],
-            brand=brand),
+            slug=(payload.get("public_slug") or datos["business_name"])
+                 + (f"-{id_sufijo}" if id_sufijo else ""),
+            brand=brand, background=background),
     }
     cabecera = {"alg": "RS256", "typ": "JWT"}
     entrada = ".".join([

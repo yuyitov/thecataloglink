@@ -83,6 +83,23 @@ ENGINE_BLOCKS = {
     "vcard": {
         "enabled_for": "none",
     },
+    # `wallet_google` (linkFactory/18, decision 2a de Vero 2026-07-27): el pase
+    # generico de Google Wallet. Mismo patron que el vcard —agrega contenido
+    # nuevo, asi que su default es "none"— pero con una diferencia que importa:
+    # encender el bloque NO basta. Hay un SEGUNDO interruptor,
+    # `LINK_FACTORY_GOOGLE_WALLET_PUBLISH` (engine/generator/wallet.py), que
+    # responde a algo que no es decision de producto sino un hecho externo:
+    # si Google ya nos dejo publicar. Con ese interruptor apagado —hoy lo esta,
+    # el Issuer "Bridge Company" sigue EN REVISION— ninguna pagina generada
+    # menciona pay.google.com aunque las cinco verticales enciendan el bloque.
+    # Se enciende SOLO al llegar el correo de aprobacion de Google (charly/37).
+    #
+    # Apple Wallet NO tiene entrada aqui ni codigo en el motor, a proposito:
+    # esta sellado hasta que Vero pague los $99/ano. La referencia y lo que lo
+    # desbloquea estan en el encabezado de wallet.py.
+    "wallet_google": {
+        "enabled_for": "none",
+    },
     # Opciones estructurales incorporadas para Dr Link. Ambas conservan el
     # comportamiento histórico por default; una vertical debe apagarlas de
     # forma explícita.

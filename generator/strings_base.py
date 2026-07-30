@@ -89,6 +89,10 @@ BASE_STRINGS = {
         # Boton del bloque `vcard` (linkFactory/14). Solo lo imprime una
         # vertical que active el bloque; agregar la clave no mueve un byte.
         "vcard_button": "Guardar en contactos",
+        # Boton del bloque `wallet_google` (linkFactory/18). Mismo trato que el
+        # de arriba: la clave existe siempre, el boton solo con el bloque
+        # activo Y el interruptor de publicacion encendido (ver wallet.py).
+        "wallet_google_button": "Agregar a Google Wallet",
         "footer_credit": "Hecho con {brand_name}",
         "footer_privacy": "Privacidad",
         "footer_demo_credit": "Demo hecho con {brand_name}",
@@ -188,6 +192,8 @@ BASE_STRINGS = {
         # `vcard` block button (linkFactory/14). Only printed by verticals
         # that enable the block; adding the key moves no bytes.
         "vcard_button": "Save to contacts",
+        # `wallet_google` block button (linkFactory/18).
+        "wallet_google_button": "Add to Google Wallet",
         "footer_credit": "Made with {brand_name}",
         "footer_privacy": "Privacy",
         "footer_demo_credit": "Demo made with {brand_name}",

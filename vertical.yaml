@@ -53,7 +53,16 @@ strings_overrides:
 
 # La plantilla catalog no usa el registro de bloques condicionales de
 # service-menu; se deja en el default del engine.
-blocks: {}
+blocks:
+  # ACTIVACION del vCard (linkFactory/22). Ver la nota larga en
+  # verticals/hmu/vertical.yaml. Aqui hubo trabajo extra y conviene que quede
+  # dicho: al medir el 2026-07-30 se vio que encender el bloque en esta
+  # vertical NO habria producido ningun boton, porque el catalogo se renderiza
+  # con otra plantilla base donde el bloque no existia. Se porto (misma
+  # `make_vcard`, mismas clases que las 3 plantillas ya declaran). El telefono
+  # sale del `sale_button`, que es el numero publico que el catalogo captura.
+  vcard:
+    enabled_for: all
 
 # Cómo se LEE el intake de esta vertical (ver INTAKE_DEFAULTS en
 # vertical_config.py). El worker extrae estos campos como texto —solo porque el

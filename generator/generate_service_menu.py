@@ -54,6 +54,7 @@ except ImportError:  # pragma: no cover - clear guidance if dependency missing
     segno = None
 
 import directory
+import wallet
 from blocks import block_enabled, fill_tokens
 # El botón que el negocio eligió: la tabla de alias es DATO compartido con el
 # worker, no una copia local (ver primary_cta.py — tres copias divergidas).
@@ -1596,22 +1597,57 @@ def make_vcard(view: dict, page_url: str) -> str:
     return "\r\n".join(lines) + "\r\n"
 
 
-def build_vcard_action(s: dict, vcf_src: str) -> str:
+def build_vcard_action(s: dict, vcf_src: str,
+                       css_class: str = "btn btn--ghost btn--sm",
+                       extra_style: str = "") -> str:
     """La fila de accion del boton "Guardar en contactos".
 
     Un `<a download>` al archivo estatico: cero JS. GitHub Pages sirve `.vcf`
     como text/vcard, con lo que iPhone abre la tarjeta de contacto directo y
     Android la descarga a Contactos. Reusa `.share__actions` y `.btn` tal
     cual: sin CSS nuevo no hay bytes nuevos para quien no activa el bloque.
+
+    Cero JS y cero terceros a proposito: es lo que deja al boton pasar la
+    sobriedad de Dr Link (`blocks.motion` y `blocks.third_party_assets` en
+    none, ver Dr Link/docs/DESVIOS_ESPERADOS.md B1 y C1) sin una sola
+    excepcion — el mismo marcado sirve para los cinco.
+
+    `css_class`/`extra_style` existen para la SEGUNDA plantilla base del motor
+    (generate_catalog.py, linkFactory/22): sus paginas no tienen `.btn`, pero
+    si `.share__actions` y `.card__cta`. El default deja byte-identico a quien
+    ya usa el bloque.
+    """
+    style = f' style="{esc(extra_style)}"' if extra_style else ""
+    return (
+        f'<div class="share__actions"><a class="{esc(css_class)}" '
+        f'href="{esc(vcf_src)}" download{style}>{s["vcard_button"]}</a></div>'
+    )
+
+
+def build_wallet_action(s: dict, wallet_url: str) -> str:
+    """La fila del boton "Agregar a Google Wallet" (bloque `wallet_google`).
+
+    Un `<a>` al link firmado de `pay.google.com`: cero JS propio, como el del
+    vCard. La diferencia con aquel es que ESTE si carga un tercero al tocarlo
+    (el dominio de Google), asi que una vertical con `third_party_assets`
+    apagado no deberia encenderlo sin decidirlo — hoy Dr Link es la unica en
+    ese caso y el bloque nace apagado en las cinco, asi que no hay conflicto
+    que resolver todavia.
+
+    NOTA DE MARCA, para cuando Google apruebe: Google exige su boton oficial
+    antes de salir a produccion (brand guidelines). Hoy usa el estilo de la
+    pagina, igual que My Guest, y se cambia en el mismo momento en que se
+    enciende LINK_FACTORY_GOOGLE_WALLET_PUBLISH.
     """
     return (
         f'<div class="share__actions"><a class="btn btn--ghost btn--sm" '
-        f'href="{esc(vcf_src)}" download>{s["vcard_button"]}</a></div>'
+        f'href="{esc(wallet_url)}" target="_blank" rel="noopener noreferrer">'
+        f'{s["wallet_google_button"]}</a></div>'
     )
 
 
 def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME,
-                vcard_html: str = "") -> str:
+                vcard_html: str = "", wallet_html: str = "") -> str:
     """"Share" section: QR image + visible link, centered, base theme.
 
     The QR references the static asset written next to the page (qr.svg) or at
@@ -1641,7 +1677,7 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME,
         f'<p class="lead" data-reveal>{s["share_lead"]}</p>'
         f'<div class="qrbox" data-reveal><img src="{esc(qr_src)}" '
         f'alt="{alt}" width="180" height="180"></div>'
-        f'{link_line}{share_button}{vcard_html}'
+        f'{link_line}{share_button}{vcard_html}{wallet_html}'
         "</div></section>"
     )
 
@@ -1918,8 +1954,16 @@ def render_view(
     `vcard_src` es la ruta relativa al contact.vcf del cliente (misma mecanica
     que `qr_src`). El boton solo se imprime con el bloque `vcard` encendido Y
     una ruta dada: el default vacio deja a todo llamador existente byte-identico.
+
+    El pase de Google Wallet no necesita parametro: se arma aqui a partir del
+    mismo `view` y `share_url`, y sus DOS puertas (bloque + interruptor de
+    publicacion) viven donde se pueden auditar, no en la firma.
     """
     s = STRINGS[lang]
+    wallet_url = (
+        wallet.build_google_wallet_url(view, share_url, brand=BRAND_NAME)
+        if _block_enabled(view, "wallet_google") else ""
+    )
     brand = view["brand_style"]
     template_path = TEMPLATES_DIR / "base.html"
     if not template_path.exists():
@@ -1994,6 +2038,12 @@ def render_view(
             share_url, s, qr_src,
             build_vcard_action(s, vcard_src)
             if vcard_src and _block_enabled(view, "vcard") else "",
+            # DOS puertas, no una (linkFactory/18): el bloque de la vertical Y
+            # el interruptor de publicacion de wallet.py, que hoy esta APAGADO
+            # porque el Issuer sigue en revision. Con cualquiera de las dos
+            # cerrada, `build_google_wallet_url` devuelve "" y la pagina no
+            # menciona pay.google.com.
+            build_wallet_action(s, wallet_url) if wallet_url else "",
         ),
         "{{FOOTER_BLOCK}}": build_footer(
             view,

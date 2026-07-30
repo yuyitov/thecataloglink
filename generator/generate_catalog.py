@@ -45,7 +45,8 @@ import shutil
 import sys
 import unicodedata
 
-from blocks import fill_tokens
+import wallet
+from blocks import block_enabled, fill_tokens
 from pathlib import Path
 from urllib.parse import quote
 
@@ -55,16 +56,20 @@ from urllib.parse import quote
 from generate_service_menu import (
     QR_ASSET_NAME,
     QR_PNG_ASSET_NAME,
+    VCARD_ASSET_NAME,
     ValidationError,
     _initials,
+    build_vcard_action,
+    build_wallet_action,
     esc,
     make_qr_png,
     make_qr_svg,
+    make_vcard,
     safe_href,
 )
 from strings_base import CATALOG_CATEGORY_EN
 from vertical_config import (
-    BRAND_NAME, DOMAIN, LEGAL, STRINGS, STYLES_CATALOG, TEMPLATE,
+    BLOCKS, BRAND_NAME, DOMAIN, LEGAL, STRINGS, STYLES_CATALOG, TEMPLATE,
 )
 
 # Repo layout (this file lives in <repo>/generator/) — standalone export,
@@ -507,7 +512,58 @@ def products_count_label(n: int, s: dict) -> str:
     return s["catalog_results_count_many"].replace("{n}", str(n))
 
 
-def build_share(share_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
+# --------------------------------------------------------------------------- #
+# vCard — bloque `vcard` en la SEGUNDA plantilla base (linkFactory/22)
+#
+# El bloque nacio en generate_service_menu.py (linkFactory/14). El catalogo no
+# lo heredaba: se renderiza aqui, con otras plantillas, y encender el bloque en
+# su vertical.yaml no habria producido un solo boton — medido el 2026-07-30 y
+# anotado en la ficha. Portarlo es lo que hace que "activado" y "visible"
+# signifiquen lo mismo en las cinco verticales.
+#
+# El FORMATO del .vcf no se duplica: se reusa `make_vcard` tal cual. Lo unico
+# que vive aqui es el adaptador de payload, porque el catalogo no captura
+# `phone` — captura `sale_button`, que cuando es whatsapp/sms/tel ES el
+# telefono publico del negocio.
+# --------------------------------------------------------------------------- #
+def vcard_view(payload: dict) -> dict:
+    """El payload del catalogo en los campos que `make_vcard` sabe leer.
+
+    Solo datos que la pagina YA publica: el nombre, la direccion del heroe y el
+    numero del boton de venta. Si el boton de venta no es un canal telefonico
+    (hoy los tres lo son) el vCard sale sin TEL, no con un dato inventado.
+    """
+    sale = payload.get("sale_button")
+    phone = ""
+    if isinstance(sale, dict) and sale.get("kind") in SALE_KINDS:
+        phone = str(sale.get("value", "") or "").strip()
+    return {
+        "business_name": payload.get("business_name", ""),
+        "phone": phone,
+        "address": payload.get("address", ""),
+        "website": payload.get("website", ""),
+    }
+
+
+def vcard_enabled(payload: dict) -> bool:
+    """El mismo gate del otro generador: registro del motor + vertical.yaml."""
+    return block_enabled(BLOCKS, "vcard", payload.get("business_type"))
+
+
+def write_vcard(payload: dict, root_dir: Path, page_url: str) -> None:
+    """Escribe el contact.vcf del cliente/demo SOLO con el bloque encendido.
+
+    `newline=""`: el RFC pide CRLF y `make_vcard` ya los pone; sin esto Windows
+    los duplicaria y el archivo dejaria de ser el mismo en los dos sistemas.
+    """
+    if not vcard_enabled(payload):
+        return
+    with (root_dir / VCARD_ASSET_NAME).open("w", encoding="utf-8", newline="") as fh:
+        fh.write(make_vcard(vcard_view(payload), page_url))
+
+
+def build_share(share_url: str, s: dict, qr_src: str = QR_ASSET_NAME,
+                vcard_html: str = "", wallet_html: str = "") -> str:
     href = safe_href(share_url)
     shown = esc(re.sub(r"^https?://(www\.)?", "", str(share_url)).rstrip("/"))
     alt = esc(f"{s['qr_alt']} {share_url}")
@@ -527,7 +583,7 @@ def build_share(share_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
         f'<h2 class="share__title">{s["share_title_html"]}</h2>'
         f'<p class="share__lead">{esc(s["share_lead"])}</p>'
         f'<div class="qrbox"><img src="{esc(qr_src)}" alt="{alt}" width="180" height="180"></div>'
-        f'<div>{link_line}</div>{share_button}'
+        f'<div>{link_line}</div>{share_button}{vcard_html}{wallet_html}'
         '</section>'
     )
 
@@ -602,6 +658,7 @@ def render_page(
     share_url: str,
     images: list[dict],
     qr_src: str = QR_ASSET_NAME,
+    vcard_src: str = "",
 ) -> str:
     s = STRINGS[lang]
     brand = payload["brand_style"]
@@ -612,6 +669,12 @@ def render_page(
     style_path = STYLES_DIR / f"{brand}.css"
     if not style_path.exists():
         raise ValidationError(f"No existe el estilo para brand_style={brand!r}: {style_path}")
+
+    wallet_url = (
+        wallet.build_google_wallet_url(payload, share_url, brand=BRAND_NAME)
+        if block_enabled(BLOCKS, "wallet_google", payload.get("business_type"))
+        else ""
+    )
 
     products = payload.get("products", [])
     short_desc = str((payload.get("content", {}).get(lang) or {}).get("short_description") or "").strip()
@@ -645,7 +708,22 @@ def render_page(
         "{{FILTER_CHIPS}}": build_filters(products, s, lang),
         "{{PRODUCT_CARDS}}": build_product_cards(payload, s, lang, images),
         "{{NO_RESULTS}}": esc(s["catalog_no_results"]),
-        "{{SHARE_BLOCK}}": build_share(share_url, s, qr_src),
+        # El boton del vCard reusa `.share__actions` y `.card__cta`, las dos
+        # clases que las TRES plantillas de catalogo ya declaran identicas.
+        # `display:inline-block` va inline por la misma razon que los
+        # disclaimers de abajo: `.card__cta` nacio como item de un flex y aqui
+        # no lo es — meter la regla en el CSS moveria los bytes de las 12
+        # demos aunque el bloque este apagado.
+        "{{SHARE_BLOCK}}": build_share(
+            share_url, s, qr_src,
+            build_vcard_action(s, vcard_src, css_class="card__cta",
+                               extra_style="display:inline-block")
+            if vcard_src and vcard_enabled(payload) else "",
+            # Las MISMAS dos puertas que en la otra plantilla base: el bloque
+            # de la vertical y el interruptor de publicacion de wallet.py, hoy
+            # apagado (Issuer en revision).
+            build_wallet_action(s, wallet_url) if wallet_url else "",
+        ),
         "{{FOOTER_BLOCK}}": build_footer(payload, footer_text, lang),
         "{{DOCK_BLOCK}}": build_sale_cta(payload, s, variant="dock"),
         "{{JS_STRINGS}}": js_strings,
@@ -711,11 +789,16 @@ def build_demo(json_path: Path) -> Path:
             share_url=root_url,
             images=images,
             qr_src=qr_src,
+            vcard_src=(VCARD_ASSET_NAME if lang == default_lang
+                       else f"../{VCARD_ASSET_NAME}"),
         )
         out_dir = root_dir if lang == default_lang else root_dir / alt_lang
         (out_dir / "index.html").write_text(html, encoding="utf-8")
 
     (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
+    # La demo enseña el producto completo: con el bloque encendido lleva su
+    # contact.vcf igual que una página de cliente.
+    write_vcard(payload, root_dir, root_url)
     return root_dir / "index.html"
 
 
@@ -758,12 +841,15 @@ def build_client(json_path: Path) -> Path:
             share_url=root_url,
             images=images,
             qr_src=qr_src,
+            vcard_src=(VCARD_ASSET_NAME if lang == default_lang
+                       else f"../{VCARD_ASSET_NAME}"),
         )
         out_dir = root_dir if lang == default_lang else root_dir / alt_lang
         (out_dir / "index.html").write_text(html, encoding="utf-8")
 
     (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
     (root_dir / QR_PNG_ASSET_NAME).write_bytes(make_qr_png(root_url))
+    write_vcard(payload, root_dir, root_url)
     return root_dir / "index.html"
 
 

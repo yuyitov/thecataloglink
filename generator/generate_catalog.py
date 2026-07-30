@@ -726,8 +726,8 @@ def render_page(
                                extra_style="display:inline-block")
             if vcard_src and vcard_enabled(payload) else "",
             # Las MISMAS dos puertas que en la otra plantilla base: el bloque
-            # de la vertical y el interruptor de publicacion de wallet.py, hoy
-            # apagado (Issuer en revision).
+            # de la vertical y el interruptor de publicacion de wallet.py,
+            # ENCENDIDO desde el 2026-07-30 (Google aprobo el Issuer).
             build_wallet_action(s, wallet_url) if wallet_url else "",
         ),
         "{{FOOTER_BLOCK}}": build_footer(payload, footer_text, lang),

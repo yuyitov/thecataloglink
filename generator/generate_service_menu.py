@@ -1650,16 +1650,23 @@ def build_wallet_action(s: dict, wallet_url: str) -> str:
     """La fila del boton "Agregar a Google Wallet" (bloque `wallet_google`).
 
     Un `<a>` al link firmado de `pay.google.com`: cero JS propio, como el del
-    vCard. La diferencia con aquel es que ESTE si carga un tercero al tocarlo
-    (el dominio de Google), asi que una vertical con `third_party_assets`
-    apagado no deberia encenderlo sin decidirlo — hoy Dr Link es la unica en
-    ese caso y el bloque nace apagado en las cinco, asi que no hay conflicto
-    que resolver todavia.
+    vCard, y cero recursos de terceros. La distincion importa y es la que dejo
+    entrar el bloque a Dr Link, la unica vertical con `third_party_assets`
+    apagado: al ABRIR la pagina el navegador no le pide un byte a Google; solo
+    si el usuario TOCA el boton sale de la pagina, igual que con "como llegar"
+    o WhatsApp. El desvio C1 de Dr Link habla de lo que la pagina CARGA, y esto
+    no carga nada. Justificado en verticals/drlink/vertical.yaml y medido por
+    su scripts/verificar_t7.py.
 
-    NOTA DE MARCA, para cuando Google apruebe: Google exige su boton oficial
-    antes de salir a produccion (brand guidelines). Hoy usa el estilo de la
-    pagina, igual que My Guest, y se cambia en el mismo momento en que se
-    enciende LINK_FACTORY_GOOGLE_WALLET_PUBLISH.
+    NOTA DE MARCA — PENDIENTE MEDIDO, no resuelto aqui. Las brand guidelines de
+    Google piden su boton oficial ("Add to Google Wallet", asset propio) en vez
+    de uno con el estilo de la pagina. Hoy sigue con el estilo de la pagina,
+    igual que My Guest. No se cambio junto con el encendido por una razon
+    concreta: el asset oficial es un archivo de Google, y meterlo por su CDN
+    seria justo el tercero que Dr Link no admite — la forma correcta es
+    incrustarlo (SVG en linea o data URI), lo que exige bajar el asset oficial
+    y volver a medir el peso de la pagina. Queda escrito para que se decida a
+    la vista, no se descubra despues.
     """
     return (
         f'<div class="share__actions"><a class="btn btn--ghost btn--sm" '
@@ -2069,10 +2076,13 @@ def render_view(
             build_vcard_action(s, vcard_src)
             if vcard_src and _block_enabled(view, "vcard") else "",
             # DOS puertas, no una (linkFactory/18): el bloque de la vertical Y
-            # el interruptor de publicacion de wallet.py, que hoy esta APAGADO
-            # porque el Issuer sigue en revision. Con cualquiera de las dos
+            # el interruptor de publicacion de wallet.py, ENCENDIDO desde el
+            # 2026-07-30 (Google aprobo el Issuer). Con cualquiera de las dos
             # cerrada, `build_google_wallet_url` devuelve "" y la pagina no
-            # menciona pay.google.com.
+            # menciona pay.google.com. Y hay una TERCERA condicion que no es
+            # una puerta sino un insumo: sin las credenciales del Issuer en el
+            # entorno tampoco hay boton, y eso avisa por stderr en vez de
+            # tumbar la generacion de la pagina de un cliente que ya pago.
             build_wallet_action(s, wallet_url) if wallet_url else "",
         ),
         "{{FOOTER_BLOCK}}": build_footer(
@@ -2104,6 +2114,31 @@ def client_lang_view(payload: dict, lang: str) -> dict:
     view = {
         key: payload.get(key)
         for key in (
+            # `public_slug` no lo pinta ninguna plantilla: viaja porque es la
+            # IDENTIDAD del pase de Google Wallet (linkFactory/18). Sin esta
+            # linea el id del pase caia al `business_name` —el respaldo de
+            # wallet.build_google_wallet_url— y eso rompe las dos cosas que un
+            # id estable tiene que garantizar:
+            #
+            #   · DOS clientes con el mismo nombre comparten pase. El slug
+            #     lleva sufijo aleatorio justo porque los nombres chocan
+            #     ("unveil-mexico-4ao6bay"); el nombre no. Y como el link de
+            #     guardado CREA y NO ACTUALIZA, el segundo negocio no obtiene
+            #     un pase suyo: Google le devuelve EL DEL PRIMERO, con el
+            #     nombre y la pagina del otro.
+            #   · Corregirle el nombre a un cliente le CAMBIA el id, o sea que
+            #     el pase que ya guardo en su telefono queda huerfano y se le
+            #     crea uno nuevo al lado. `apply_correction.py` cambia el
+            #     nombre; es un camino vivo, no una hipotesis.
+            #
+            # Medido el 2026-07-30 al encender el bloque: HMU, PawContact y
+            # Dr Link (las bilingues, que pasan por aqui) firmaban el pase con
+            # el nombre; ModaLink y el catalogo con el slug. El mismo motor
+            # daba dos identidades distintas segun el camino. Se corrige antes
+            # de que exista un solo pase en produccion — hoy hay cero, asi que
+            # cambiar el id no deja a nadie huerfano. Lo afirma
+            # tests/python/test_candado_wallet.py.
+            "public_slug",
             "business_name",
             "brand_style",
             "business_type",

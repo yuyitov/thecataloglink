@@ -89,10 +89,16 @@ ENGINE_BLOCKS = {
     # encender el bloque NO basta. Hay un SEGUNDO interruptor,
     # `LINK_FACTORY_GOOGLE_WALLET_PUBLISH` (engine/generator/wallet.py), que
     # responde a algo que no es decision de producto sino un hecho externo:
-    # si Google ya nos dejo publicar. Con ese interruptor apagado —hoy lo esta,
-    # el Issuer "Bridge Company" sigue EN REVISION— ninguna pagina generada
-    # menciona pay.google.com aunque las cinco verticales enciendan el bloque.
-    # Se enciende SOLO al llegar el correo de aprobacion de Google (charly/37).
+    # si Google ya nos dejo publicar.
+    #
+    # Ese hecho ya es TRUE: el 2026-07-30 llego el correo de aprobacion del
+    # Issuer "Bridge Company" y el interruptor de publicacion quedo ENCENDIDO
+    # por default (la variable de entorno paso a ser el apagador). El default
+    # de ESTE registro sigue en "none" a proposito: que Google nos deje no
+    # significa que un producto nuevo deba nacer con el pase. Esa sigue siendo
+    # una decision por vertical, y las cinco de hoy la tomaron (`enabled_for:
+    # all` en sus vertical.yaml, activacion de linkFactory/18).
+    # Que ninguna se quede atras lo afirma tests/python/test_candado_wallet.py.
     #
     # Apple Wallet NO tiene entrada aqui ni codigo en el motor, a proposito:
     # esta sellado hasta que Vero pague los $99/ano. La referencia y lo que lo

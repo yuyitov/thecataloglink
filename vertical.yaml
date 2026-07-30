@@ -63,6 +63,14 @@ blocks:
   # sale del `sale_button`, que es el numero publico que el catalogo captura.
   vcard:
     enabled_for: all
+  # ACTIVACION del pase de Google Wallet (linkFactory/18). Ver la nota larga en
+  # el vertical.yaml de HMU Link. Aqui vale la misma advertencia que dejo el
+  # vCard: el catalogo se renderiza con OTRA plantilla base, asi que encender el
+  # bloque solo produce boton porque generate_catalog.py tambien lo cablea. El
+  # telefono del pase sale del `sale_button`, que es el numero publico que el
+  # catalogo captura.
+  wallet_google:
+    enabled_for: all
 
 # Cómo se LEE el intake de esta vertical (ver INTAKE_DEFAULTS en
 # vertical_config.py). El worker extrae estos campos como texto —solo porque el

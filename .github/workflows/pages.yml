@@ -42,6 +42,14 @@ jobs:
           fi
 
       - name: Generate the demos from scratch
+        # El pase de Google Wallet (linkFactory/18). El Issuer es una VARIABLE
+        # (un numero publico, el mismo para los cinco productos); la cuenta de
+        # servicio es un SECRETO de este repo y jamas sale de aqui. Sin ellos
+        # las paginas se generan igual, sin boton y con un aviso por stderr:
+        # la pagina es el producto, el pase es el extra.
+        env:
+          GOOGLE_WALLET_ISSUER_ID: ${{ vars.GOOGLE_WALLET_ISSUER_ID }}
+          GOOGLE_WALLET_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_WALLET_SERVICE_ACCOUNT_JSON }}
         run: python generator/generate_catalog.py
 
       - name: Verify expected outputs exist (index.html + qr.svg per demo)

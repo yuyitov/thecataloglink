@@ -28,24 +28,50 @@ LOS DOS INTERRUPTORES — y por qué son DOS y no uno
    Responde a *"¿Google ya nos dejó publicar?"*, que **no es una decisión de
    producto sino un hecho externo**, y por eso no vive en el YAML de nadie.
 
-   ⛔ **HOY ESTÁ APAGADO, Y NO SE ENCIENDE HASTA QUE LLEGUE EL CORREO DE
-   APROBACIÓN DE GOOGLE.** Estado al 2026-07-30: Issuer "Bridge Company"
-   (Merchant ID BCR2DN6DTKVJTFR6) **EN REVISIÓN**. Google permite CREAR y
-   PROBAR pases; publicar espera la aprobación. La ficha que espera ese correo
-   es `charly/37`.
+   ✅ **ENCENDIDO desde el 2026-07-30**: llegó el correo de aprobación del
+   Issuer "Bridge Company" (Merchant ID BCR2DN6DTKVJTFR6, Issuer ID
+   3388000000023177248). Ese hecho externo ya es TRUE, así que el default de
+   `publicacion_encendida()` pasó a ser True y **la variable de entorno se
+   convirtió en el APAGADOR**, no en el encendedor.
 
-   La razón de fondo está medida en el checklist de My Guest: **mientras la
-   cuenta está en demo mode el pase sale marcado `[TEST ONLY]` y solo lo pueden
-   guardar las cuentas admin/developer y las de prueba dadas de alta.** Un
-   cliente real toca el botón y **no pasa nada** — no da error, no hace nada.
-   Publicarlo hoy sería poner un botón muerto en la página de alguien que ya
-   pagó, que es exactamente la clase de fallo silencioso que persigue el PLAN
-   CERO REGRESIONES.
+   Por qué el default y no "que cada CI ponga la variable": si el interruptor
+   siguiera siendo opt-in habría CINCO sitios donde olvidarlo, y olvidarlo no
+   da error — da una página SIN botón, que es exactamente el fallo silencioso
+   que persigue el PLAN CERO REGRESIONES. El hecho es uno solo; se escribe una
+   sola vez, aquí.
+
+   Cómo se APAGA (y por qué se querría): poner
+   `LINK_FACTORY_GOOGLE_WALLET_PUBLISH=0` (o `false`, `no`, `off`) donde corra
+   el generador. Sirve si Google alguna vez revoca el acceso, o para medir el
+   contraste. **Cualquier valor que no sea afirmativo apaga**: un apagador que
+   se quede encendido por un valor mal escrito no es un apagador. Solo "sin
+   variable" toma el default.
+
+   Antes de la aprobación este interruptor era lo único que impedía publicar un
+   botón muerto: en demo mode el pase sale marcado `[TEST ONLY]` y **solo lo
+   pueden guardar las cuentas admin/developer y las de prueba dadas de alta**;
+   un cliente real lo tocaba y no pasaba nada — no daba error, no hacía nada.
+   Eso se acabó con la aprobación, y el `[TEST ONLY]` desaparece solo, sin
+   volver a firmar ningún pase.
 
    Con este interruptor apagado, `build_google_wallet_url()` devuelve "" pase lo
    que pase, y **ninguna página generada menciona `pay.google.com`** aunque el
    bloque esté encendido en las cinco verticales y las credenciales estén
-   puestas. Lo afirma `tests/python/test_wallet_google.py` con mutación.
+   puestas. Lo afirma `tests/python/test_wallet_google.py` con mutación, y
+   `tests/python/test_candado_wallet.py` afirma lo recíproco sobre la
+   configuración VIVA: encendido, las cinco producen el botón.
+
+LO QUE EL ENCENDIDO **NO** HACE POR SÍ SOLO
+-------------------------------------------
+Con el interruptor encendido y **sin credenciales en el entorno**, esto avisa
+por stderr y devuelve "" — la página sale sin botón y el cliente no se entera.
+O sea: el botón llega a producción cuando el CI de cada producto tenga
+`GOOGLE_WALLET_ISSUER_ID` y `GOOGLE_WALLET_SERVICE_ACCOUNT_JSON`, no antes. Los
+workflows del motor ya los pasan al generador (`.github/workflows/
+generate-hmu-page.yml` y `engine/store/templates/pages.yml`); los valores son
+secretos de cada repo y los pone Vero. Quien mida si ya llegó:
+`scripts/verificar_paginas_publicadas.py`, que cuenta los botones que sirve
+producción.
 
 APPLE WALLET: CERO CÓDIGO, A PROPÓSITO
 --------------------------------------
@@ -96,6 +122,17 @@ GOOGLE_JWT_SAFE_LENGTH = 1800
 # El interruptor de PUBLICACIÓN. Ver la nota larga del encabezado.
 PUBLISH_FLAG = "LINK_FACTORY_GOOGLE_WALLET_PUBLISH"
 
+# El hecho externo que ese interruptor describe, tal como está HOY: Google
+# aprobó el Issuer el 2026-07-30. Vive en una constante y no en un literal
+# suelto para que se pueda apagar el producto entero de un solo sitio si Google
+# alguna vez revocara el acceso — y para que la prueba por mutación tenga UNA
+# línea que mutar.
+PUBLICACION_POR_DEFECTO = True
+
+# Los únicos valores que ENCIENDEN cuando la variable está puesta. Todo lo demás
+# apaga, a propósito: ver la nota del encabezado.
+_AFIRMATIVOS = ("1", "true", "yes", "on")
+
 
 def _env(name: str, default: str = "") -> str:
     return (os.getenv(name) or default).strip()
@@ -111,12 +148,22 @@ def _warn(mensaje: str) -> None:
 
 
 def publicacion_encendida() -> bool:
-    """True solo con un valor afirmativo EXPLÍCITO.
+    """¿Google ya nos dejó publicar? Hoy sí — ver `PUBLICACION_POR_DEFECTO`.
 
-    Nada de "si la variable existe": una variable vacía, un `0` o un `false`
-    dejan el interruptor apagado. Encenderlo tiene que ser un acto deliberado.
+    Las dos mitades no son simétricas, y es deliberado:
+
+    - **Sin variable** manda el default (hoy True). Es lo que hace que el
+      encendido sea UNA decisión escrita en el motor y no cinco variables de
+      CI que se pueden olvidar de una en una, sin error y sin botón.
+    - **Con variable puesta**, solo un valor afirmativo enciende. Un `0`, un
+      `false`, un `apagado` o un valor con un dedazo APAGAN. Un apagador de
+      emergencia que se quedara encendido por un valor mal escrito no serviría
+      de apagador, y este es el único freno si Google revocara el acceso.
     """
-    return _env(PUBLISH_FLAG).lower() in ("1", "true", "yes", "on")
+    valor = _env(PUBLISH_FLAG).lower()
+    if not valor:
+        return PUBLICACION_POR_DEFECTO
+    return valor in _AFIRMATIVOS
 
 
 def _b64url(crudo: bytes) -> str:
@@ -319,11 +366,13 @@ def build_google_wallet_url(payload: dict, page_url: str, *, brand: str = "",
 
     Nunca lanza: la página se genera con o sin botón.
 
-    `ignorar_interruptor` existe SOLO para el camino de prueba en modo test
+    `ignorar_interruptor` existe SOLO para el camino de prueba
     (`scripts/probar_wallet_google.py`), que imprime el link en la terminal para
-    guardarlo a mano en un Android. **Ningún generador lo pasa** — si algún día
-    alguien lo pasa desde el camino de las páginas, el pase `[TEST ONLY]` acaba
-    publicado en la página de un cliente. Lo vigila
+    guardarlo a mano en un Android. **Ningún generador lo pasa**, y eso sigue
+    importando ahora que el interruptor está encendido por default: el día que
+    alguien lo APAGUE —porque Google revocó el acceso, o porque quiere medir el
+    contraste— un generador con puerta trasera seguiría publicando botones que
+    ya no funcionan. Lo vigila
     test_wallet_google.py::test_ningun_generador_ignora_el_interruptor.
     """
     if not (ignorar_interruptor or publicacion_encendida()):
@@ -357,6 +406,25 @@ def build_google_wallet_url(payload: dict, page_url: str, *, brand: str = "",
         _warn("el payload no trae business_name: no se arma ningún pase.")
         return ""
 
+    # EL SLUG ES LA IDENTIDAD, y sin él NO se arma el pase.
+    #
+    # Aquí había un respaldo al `business_name`, y costó caro: como
+    # `client_lang_view` no copiaba `public_slug`, las tres verticales
+    # bilingües firmaron todos sus pases con el nombre del negocio sin que
+    # nada se pusiera rojo (medido el 2026-07-30 al encender el bloque). El
+    # respaldo no avisaba: hacía algo razonable y equivocado.
+    #
+    # No se restaura, porque con el nombre como id y sabiendo que el link de
+    # guardado CREA y NO ACTUALIZA, dos negocios que se llamen igual comparten
+    # pase — al segundo Google le devuelve EL DEL PRIMERO, con la página del
+    # primero. El slug lleva sufijo aleatorio justo porque los nombres chocan.
+    # Preferible: página sin botón y un aviso, que es un defecto que se ve.
+    slug = str(payload.get("public_slug", "") or "").strip()
+    if not slug:
+        _warn("el payload no trae public_slug: sin él el pase no tiene una "
+              "identidad estable, así que la página sale sin botón.")
+        return ""
+
     origen = re.match(r"^https?://[^/]+", datos["page_url"] or "")
     claims = {
         "iss": client_email,
@@ -365,8 +433,7 @@ def build_google_wallet_url(payload: dict, page_url: str, *, brand: str = "",
         "origins": [origen.group(0)] if origen else [],
         "payload": build_google_wallet_payload(
             datos, issuer_id=issuer_id, class_suffix=class_suffix,
-            slug=(payload.get("public_slug") or datos["business_name"])
-                 + (f"-{id_sufijo}" if id_sufijo else ""),
+            slug=slug + (f"-{id_sufijo}" if id_sufijo else ""),
             brand=brand, background=background, etiquetas=etiquetas),
     }
     cabecera = {"alg": "RS256", "typ": "JWT"}

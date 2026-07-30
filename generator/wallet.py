@@ -166,7 +166,8 @@ _HEX_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
 
 def build_google_wallet_payload(datos: dict, *, issuer_id: str,
                                 class_suffix: str, slug: str,
-                                brand: str = "", background: str = "") -> dict:
+                                brand: str = "", background: str = "",
+                                etiquetas: dict | None = None) -> dict:
     """El objeto genérico del pase. Solo datos que la página ya publica.
 
     La clase viaja DENTRO del JWT (`genericClasses`): Google la crea en el
@@ -198,6 +199,7 @@ def build_google_wallet_payload(datos: dict, *, issuer_id: str,
     `bridge_generic_demo` (Activa, vacía) y **no se borra** — se publicará sola
     cuando Google conceda el acceso.
     """
+    etiquetas = etiquetas or {}
     object_id = f"{issuer_id}.{_id_suffix(slug)}"
     class_id = f"{issuer_id}.{class_suffix}"
 
@@ -254,10 +256,12 @@ def build_google_wallet_payload(datos: dict, *, issuer_id: str,
     # QR inservible y un texto muerto.
     uris = []
     if datos["page_url"]:
-        uris.append({"uri": datos["page_url"], "description": "Ver la carta"})
+        uris.append({"uri": datos["page_url"],
+                     "description": etiquetas.get("abrir") or "Ver mi página"})
     tel = re.sub(r"[^\d+]", "", datos["phone"] or "")
     if tel:
-        uris.append({"uri": f"tel:{tel}", "description": "Llamar"})
+        uris.append({"uri": f"tel:{tel}",
+                     "description": etiquetas.get("llamar") or "Llamar"})
     if uris:
         generico["linksModuleData"] = {"uris": uris}
     if datos["page_url"]:
@@ -298,6 +302,7 @@ def _firmar_rs256(entrada: bytes, private_key_pem: str):
 
 def build_google_wallet_url(payload: dict, page_url: str, *, brand: str = "",
                             background: str = "", id_sufijo: str = "",
+                            etiquetas: dict | None = None,
                             ignorar_interruptor: bool = False) -> str:
     """La URL de "Agregar a Google Wallet", o "" si no se puede/no se debe.
 
@@ -351,7 +356,7 @@ def build_google_wallet_url(payload: dict, page_url: str, *, brand: str = "",
             datos, issuer_id=issuer_id, class_suffix=class_suffix,
             slug=(payload.get("public_slug") or datos["business_name"])
                  + (f"-{id_sufijo}" if id_sufijo else ""),
-            brand=brand, background=background),
+            brand=brand, background=background, etiquetas=etiquetas),
     }
     cabecera = {"alg": "RS256", "typ": "JWT"}
     entrada = ".".join([

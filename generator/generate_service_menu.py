@@ -1994,8 +1994,14 @@ def render_view(
     # El pase se arma DESPUES de leer el estilo, para que su tarjeta lleve el
     # color de marca del estilo que el cliente eligio (ver accent_hex).
     wallet_url = (
-        wallet.build_google_wallet_url(view, share_url, brand=BRAND_NAME,
-                                       background=accent_hex(style_css))
+        wallet.build_google_wallet_url(
+            view, share_url, brand=BRAND_NAME,
+            background=accent_hex(style_css),
+            # Las filas del pase se escriben en el idioma de la pagina y
+            # salen de STRINGS, no del codigo: "Ver la carta" habria sido
+            # correcto en un restaurante y falso en un consultorio.
+            etiquetas={"abrir": s["wallet_pass_open"],
+                       "llamar": s["wallet_pass_call"]})
         if _block_enabled(view, "wallet_google") else ""
     )
     # Se calcula una sola vez: decide el bloque Y su CSS (ver LOOKBOOK_CSS).

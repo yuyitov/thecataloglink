@@ -232,54 +232,60 @@ def build_google_wallet_payload(datos: dict, *, issuer_id: str,
     # es lo que decide si el cliente TIENE botón: con las dos copias, el peor
     # cliente vivo quedaba a 46 caracteres del límite. Sin la copia muerta,
     # a 162.
-    # LAS DOS ACCIONES DEL PASE — todo esto salió de que Vero abriera el pase
-    # REAL en su teléfono el 2026-07-30, no de leer documentación.
+    # EL BOTÓN — y por qué es UN botón y no una lista de acciones.
     #
-    # Hallazgo 1: el primer pase traía SOLO el QR (con `alternateText` vacío).
-    #   «si los clientes tienen el pase en su celular no pueden escanear el
-    #   código, necesitarían otro celular». Exacto: el QR sirve para ENSEÑARLE
-    #   la página a otra persona; para volver uno mismo hace falta un enlace.
-    #   Y el enlace era el punto entero del bloque.
+    # Todo esto salió de que Vero abriera pase tras pase en su teléfono el
+    # 2026-07-30. Ninguna de estas conclusiones se puede sacar leyendo la
+    # documentación, y las dos primeras versiones fueron equivocadas:
     #
-    # Hallazgo 2: puesto el enlace, seguía escondido. «Si das en esos tres
-    #   puntos, una de las opciones es abrir página… pero la gente nunca va a
-    #   llegar ahí».
+    #   1er intento — solo el QR. «si los clientes tienen el pase en su celular
+    #     no pueden escanear el código, necesitarían otro celular». Cierto: el
+    #     QR sirve para ENSEÑARLE la página a alguien más, no para volver uno.
+    #   2o intento — `linksModuleData` (enlace + `tel:`). Google los guarda,
+    #     pero **NO los pinta en el pase**: los manda al menú de los tres
+    #     puntos, junto a "agregar un sobrenombre" y "archivar". Medido: en la
+    #     cara del pase no aparece nada, y deslizar hacia abajo tampoco hace
+    #     nada. «nadie va a encontrarlo tan escondido en esos tres puntos».
+    #   3o — `appLinkData`. ES el único campo que Google dibuja como BOTÓN en
+    #     el pase mismo. Comprobado en el teléfono, no supuesto.
     #
-    # Hallazgo 3: «se ve el teléfono, pero no se le puede dar clic para
-    #   llamar». El teléfono estaba solo como TEXTO en `subheader`.
+    # Y el texto del botón sale de `displayText`, no de `title` ni de la
+    # descripción del enlace: con esas dos Google ignora lo que se le manda y
+    # escribe su etiqueta genérica, "Abrir sitio de entidad emisora". Se
+    # midieron las tres formas en pases separados; solo `displayText` mandó.
     #
-    # Los tres se arreglan en el mismo sitio: `linksModuleData` es lo que
-    # Google pinta como FILAS CON ICONO, y decide el icono por el esquema de
-    # la URI — `tel:` da el icono de teléfono y llama al tocarlo; `https:` da
-    # el de globo y abre la página. Así el pase queda con las dos acciones que
-    # de verdad importan (llamar / abrir), visibles y tocables, en vez de un
-    # QR inservible y un texto muerto.
-    uris = []
+    # POR QUÉ NO VA TAMBIÉN EL TELÉFONO. Se midió: el botón cuesta ~190
+    # caracteres de JWT, y con el `tel:` además el peor cliente vivo quedaba a
+    # 18 del límite de 1800 — o sea, sin botón y sin aviso para el siguiente
+    # cliente de nombre largo. Se quitó, y no se pierde nada: el `tel:` vivía
+    # en el menú de los tres puntos, donde ya medimos que nadie entra. El
+    # teléfono tiene mejor casa — el botón "Guardar en contactos" de la propia
+    # página, que lo mete en la agenda. Reparto: el .vcf guarda el contacto,
+    # el pase abre la página.
     if datos["page_url"]:
-        uris.append({"uri": datos["page_url"],
-                     "description": etiquetas.get("abrir") or "Ver mi página"})
-    tel = re.sub(r"[^\d+]", "", datos["phone"] or "")
-    if tel:
-        uris.append({"uri": f"tel:{tel}",
-                     "description": etiquetas.get("llamar") or "Llamar"})
-    if uris:
-        generico["linksModuleData"] = {"uris": uris}
-    if datos["page_url"]:
+        generico["appLinkData"] = {
+            "displayText": {"defaultValue": {
+                "language": "es",
+                "value": etiquetas.get("abrir") or "Abrir mi página"}},
+            "webAppLinkInfo": {
+                "appTarget": {"targetUri": {"uri": datos["page_url"]}}},
+        }
         # `alternateText` es el renglón que Google pinta DEBAJO del QR. Vacío,
         # ahí no salía nada. Se escribe sin el `https://www.`, igual que la
-        # propia página escribe su enlace en la sección "Comparte": se lee
-        # mejor y de paso son 17 caracteres menos de JWT.
+        # página escribe su enlace en "Comparte": se lee mejor y son 17
+        # caracteres menos. NO es tocable (al tocarlo Google abre el QR a
+        # pantalla completa, que es su comportamiento) — el que se toca es el
+        # botón de arriba.
         generico["barcode"] = {
             "type": "QR_CODE", "value": datos["page_url"],
             "alternateText": re.sub(r"^https?://(www\.)?", "",
                                     datos["page_url"]).rstrip("/")}
-    # PRESUPUESTO DE BYTES — por qué el pase no lleva todo lo que uno querría.
-    # Una versión intermedia repetía el enlace también en `textModulesData`.
-    # Contra los demos cabía; contra los slugs REALES de los clientes vivos,
-    # **3 de 7 cruzaban los 1800 caracteres y se quedaban SIN botón**, sin
-    # error y sin avisar. Se quitó. La regla que queda: antes de agregar un
-    # campo al pase, medirlo contra el PEOR CLIENTE VIVO, no contra un demo
-    # corto — lo hace test_el_pase_cabe_para_EL_PEOR_CLIENTE_VIVO.
+    # PRESUPUESTO DE BYTES — es lo que decide si el cliente TIENE pase.
+    # Pasarse de 1800 no da error: se deja de imprimir el botón. Cada campo que
+    # se agregue aquí se mide contra el PEOR CLIENTE VIVO, nunca contra un demo
+    # corto — lo hace test_el_pase_cabe_para_EL_PEOR_CLIENTE_VIVO, que además
+    # exige 100 de holgura. Si se pone rojo: se recorta el pase, no se sube el
+    # umbral. El límite lo pone Google.
     return {"genericClasses": [{"id": class_id}], "genericObjects": [generico]}
 
 

@@ -93,14 +93,14 @@ BASE_STRINGS = {
         # de arriba: la clave existe siempre, el boton solo con el bloque
         # activo Y el interruptor de publicacion encendido (ver wallet.py).
         "wallet_google_button": "Agregar a Google Wallet",
-        # Las dos filas TOCABLES de dentro del pase. Google decide el icono por
-        # el tipo de enlace; el texto es este. Van aqui —y no escritas en
-        # wallet.py— porque una vertical puede querer otras palabras y porque
-        # el pase se arma por idioma. Neutras a proposito: "Ver la carta" solo
-        # tiene sentido en un restaurante, y el mismo motor pinta veterinarias,
-        # consultorios y catalogos.
-        "wallet_pass_open": "Ver mi página",
-        "wallet_pass_call": "Llamar",
+        # El texto del BOTON de dentro del pase (appLinkData.displayText). Va
+        # aqui —y no escrito en wallet.py— porque una vertical puede querer
+        # otras palabras y porque el pase se escribe en el idioma de la pagina.
+        # Neutro a proposito: "Ver la carta" solo tiene sentido en un
+        # restaurante, y el mismo motor pinta veterinarias y consultorios.
+        # Sin este campo Google escribe su etiqueta generica, "Abrir sitio de
+        # entidad emisora" — medido en el telefono de Vero.
+        "wallet_pass_open": "Abrir mi página",
         "footer_credit": "Hecho con {brand_name}",
         "footer_privacy": "Privacidad",
         "footer_demo_credit": "Demo hecho con {brand_name}",
@@ -202,9 +202,8 @@ BASE_STRINGS = {
         "vcard_button": "Save to contacts",
         # `wallet_google` block button (linkFactory/18).
         "wallet_google_button": "Add to Google Wallet",
-        # The two TAPPABLE rows inside the pass (see the ES note above).
+        # The pass BUTTON label (see the ES note above).
         "wallet_pass_open": "Open my page",
-        "wallet_pass_call": "Call",
         "footer_credit": "Made with {brand_name}",
         "footer_privacy": "Privacy",
         "footer_demo_credit": "Demo made with {brand_name}",

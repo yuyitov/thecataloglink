@@ -677,8 +677,7 @@ def render_page(
             # El color de marca del estilo del catalogo, del mismo CSS que ya
             # se inserta en la pagina: sin el, la tarjeta sale gris.
             background=accent_hex(style_path.read_text(encoding="utf-8")),
-            etiquetas={"abrir": s["wallet_pass_open"],
-                       "llamar": s["wallet_pass_call"]})
+            etiquetas={"abrir": s["wallet_pass_open"]})
         if block_enabled(BLOCKS, "wallet_google", payload.get("business_type"))
         else ""
     )

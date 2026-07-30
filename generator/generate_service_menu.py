@@ -2000,8 +2000,7 @@ def render_view(
             # Las filas del pase se escriben en el idioma de la pagina y
             # salen de STRINGS, no del codigo: "Ver la carta" habria sido
             # correcto en un restaurante y falso en un consultorio.
-            etiquetas={"abrir": s["wallet_pass_open"],
-                       "llamar": s["wallet_pass_call"]})
+            etiquetas={"abrir": s["wallet_pass_open"]})
         if _block_enabled(view, "wallet_google") else ""
     )
     # Se calcula una sola vez: decide el bloque Y su CSS (ver LOOKBOOK_CSS).

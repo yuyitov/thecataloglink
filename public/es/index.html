@@ -180,11 +180,25 @@ p { max-width: 66ch; }
 .style { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
 .style__sw { height: 76px; display: flex; }
 .style__sw i { flex: 1; }
+.style__shot { background: var(--paper); border-bottom: 1px solid var(--line); }
+.style__shot img { display: block; width: 100%; aspect-ratio: 8 / 5; object-fit: cover; object-position: top; }
 .style__body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
 .style__body p { color: var(--muted); font-size: .93rem; margin-bottom: 6px; }
 .style__for { font-size: .84rem; color: var(--brand-deep); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
 .style__link { margin-top: auto; font-weight: 700; color: var(--accent); text-decoration: none; font-size: .93rem; }
 .style__link:hover { text-decoration: underline; }
+/* Selector de paleta: para un catalogo de pocos disenos con varias paletas.
+   Repinta la captura de la tarjeta sin recargar la pagina. */
+.style__palname { font-size: .84rem; color: var(--muted); margin-bottom: 6px; }
+.style__palname strong { color: var(--ink); }
+/* Las cuatro paletas caben SIEMPRE en una fila: en dos filas de 3+1 la cuarta
+   parece un añadido y no una hermana de las otras tres. */
+.style__palettes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.style__palette { display: flex; height: 28px; padding: 0; overflow: hidden; cursor: pointer; background: none; border: 1px solid var(--line); border-radius: 6px; }
+.style__palette i { flex: 1; }
+.style__palette:hover { border-color: var(--brand-deep); }
+.style__palette.is-on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.style__palette:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Pricing */
 .pricing { background: var(--accent); color: var(--paper); }
@@ -347,7 +361,7 @@ footer a:hover { color: #fff; text-decoration: underline; }
     <h2 class="reveal">12 estilos — 3 diseños, 4 paletas cada uno.</h2>
     <p class="lead reveal">Elegimos el que le queda a tu negocio y a tus fotos; puedes cambiarlo por cualquiera de los otros 11 con uno de tus cambios incluidos. Los tres ejemplos de abajo son catálogos publicados con datos ficticios.</p>
     <div class="styles">
-      <article class="style reveal"><div class="style__sw" aria-hidden="true"><i style="background:#F7F1E7"></i><i style="background:#B4552D"></i><i style="background:#2B2119"></i></div><div class="style__body"><h3>Vitrina</h3><p>Cuadrícula luminosa y densa. Para cuando tienes muchos productos y todos tienen que verse de un vistazo.</p><div class="style__for">Repostería, regalos, fiesta</div><a class="style__link" href="../demos/dulce-marea/">Ver Dulce Marea →</a></div></article><article class="style reveal"><div class="style__sw" aria-hidden="true"><i style="background:#EBF1E8"></i><i style="background:#47764C"></i><i style="background:#1D2820"></i></div><div class="style__body"><h3>Revista</h3><p>Editorial, una foto grande a la vez. Para cuando cada pieza es distinta y la foto es la que vende.</p><div class="style__for">Florerías, charcutería, gourmet</div><a class="style__link" href="../demos/mesa-bonita/">Ver Mesa Bonita →</a></div></article><article class="style reveal"><div class="style__sw" aria-hidden="true"><i style="background:#141110"></i><i style="background:#C9A35E"></i><i style="background:#F3ECE1"></i></div><div class="style__body"><h3>Elegante</h3><p>Oscuro y silencioso, para que el producto sea lo único brillante en la pantalla. Para piezas de autor.</p><div class="style__for">Chocolatería, velas, joyería</div><a class="style__link" href="../demos/casa-cacao/">Ver Casa Cacao →</a></div></article>
+      <article class="style reveal"><div class="style__shot"><img src="../assets/style-previews/vitrina-crema.jpg" alt="Catálogo Vitrina en la paleta Crema" loading="lazy" decoding="async"></div><div class="style__body"><h3>Vitrina</h3><p>Cuadrícula luminosa y densa. Para cuando tienes muchos productos y todos tienen que verse de un vistazo.</p><div class="style__for">Repostería, regalos, fiesta</div><p class="style__palname">Paleta: <strong data-palette-name>Crema</strong></p><div class="style__palettes" role="group" aria-label="Paleta"><button type="button" class="style__palette is-on" aria-pressed="true" data-preview="../assets/style-previews/vitrina-crema.jpg" data-alt="Catálogo Vitrina en la paleta Crema" data-palette="Crema" title="Crema" aria-label="Crema"><i style="background:#f7f1e7"></i><i style="background:#b4552d"></i><i style="background:#2b2119"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/vitrina-durazno.jpg" data-alt="Catálogo Vitrina en la paleta Durazno" data-palette="Durazno" title="Durazno" aria-label="Durazno"><i style="background:#fdeee8"></i><i style="background:#d9557a"></i><i style="background:#3a2230"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/vitrina-rosa.jpg" data-alt="Catálogo Vitrina en la paleta Rosa" data-palette="Rosa" title="Rosa" aria-label="Rosa"><i style="background:#fbf0f3"></i><i style="background:#c33c63"></i><i style="background:#38202b"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/vitrina-salvia.jpg" data-alt="Catálogo Vitrina en la paleta Salvia" data-palette="Salvia" title="Salvia" aria-label="Salvia"><i style="background:#eef3ec"></i><i style="background:#4e7c52"></i><i style="background:#1f2a22"></i></button></div><a class="style__link" href="../demos/dulce-marea/">Ver Dulce Marea →</a></div></article><article class="style reveal"><div class="style__shot"><img src="../assets/style-previews/revista-crema.jpg" alt="Catálogo Revista en la paleta Crema" loading="lazy" decoding="async"></div><div class="style__body"><h3>Revista</h3><p>Editorial, una foto grande a la vez. Para cuando cada pieza es distinta y la foto es la que vende.</p><div class="style__for">Florerías, charcutería, gourmet</div><p class="style__palname">Paleta: <strong data-palette-name>Crema</strong></p><div class="style__palettes" role="group" aria-label="Paleta"><button type="button" class="style__palette is-on" aria-pressed="true" data-preview="../assets/style-previews/revista-crema.jpg" data-alt="Catálogo Revista en la paleta Crema" data-palette="Crema" title="Crema" aria-label="Crema"><i style="background:#f5efe4"></i><i style="background:#a8482a"></i><i style="background:#25201a"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/revista-durazno.jpg" data-alt="Catálogo Revista en la paleta Durazno" data-palette="Durazno" title="Durazno" aria-label="Durazno"><i style="background:#fce9e1"></i><i style="background:#d24e6f"></i><i style="background:#37222e"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/revista-rosa.jpg" data-alt="Catálogo Revista en la paleta Rosa" data-palette="Rosa" title="Rosa" aria-label="Rosa"><i style="background:#faedf0"></i><i style="background:#bd355c"></i><i style="background:#35202a"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/revista-salvia.jpg" data-alt="Catálogo Revista en la paleta Salvia" data-palette="Salvia" title="Salvia" aria-label="Salvia"><i style="background:#ebf1e8"></i><i style="background:#47764c"></i><i style="background:#1d2820"></i></button></div><a class="style__link" href="../demos/mesa-bonita/">Ver Mesa Bonita →</a></div></article><article class="style reveal"><div class="style__shot"><img src="../assets/style-previews/elegante-onix.jpg" alt="Catálogo Elegante en la paleta Ónix" loading="lazy" decoding="async"></div><div class="style__body"><h3>Elegante</h3><p>Oscuro y silencioso, para que el producto sea lo único brillante en la pantalla. Para piezas de autor.</p><div class="style__for">Chocolatería, velas, joyería</div><p class="style__palname">Paleta: <strong data-palette-name>Ónix</strong></p><div class="style__palettes" role="group" aria-label="Paleta"><button type="button" class="style__palette is-on" aria-pressed="true" data-preview="../assets/style-previews/elegante-onix.jpg" data-alt="Catálogo Elegante en la paleta Ónix" data-palette="Ónix" title="Ónix" aria-label="Ónix"><i style="background:#141110"></i><i style="background:#c9a35e"></i><i style="background:#f3ece1"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/elegante-vino.jpg" data-alt="Catálogo Elegante en la paleta Vino" data-palette="Vino" title="Vino" aria-label="Vino"><i style="background:#181012"></i><i style="background:#c76b83"></i><i style="background:#f2e6e6"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/elegante-esmeralda.jpg" data-alt="Catálogo Elegante en la paleta Esmeralda" data-palette="Esmeralda" title="Esmeralda" aria-label="Esmeralda"><i style="background:#0f1512"></i><i style="background:#5cae83"></i><i style="background:#e7f0e9"></i></button><button type="button" class="style__palette" aria-pressed="false" data-preview="../assets/style-previews/elegante-medianoche.jpg" data-alt="Catálogo Elegante en la paleta Medianoche" data-palette="Medianoche" title="Medianoche" aria-label="Medianoche"><i style="background:#101319"></i><i style="background:#8ea6cb"></i><i style="background:#e9edf4"></i></button></div><a class="style__link" href="../demos/casa-cacao/">Ver Casa Cacao →</a></div></article>
     </div>
   </div>
 </section>
@@ -469,6 +483,34 @@ try {
 } catch (e) {
   revealAll();
 }
+
+// Selector de paleta dentro de cada diseno. Solo actua si la tarjeta lo trae:
+// una vertical sin `palettes:` no ejecuta nada de esto. Fail-open igual que el
+// reveal: si algo truena, la tarjeta se queda con la captura que ya sirvio el
+// servidor, que es una imagen valida del diseno.
+try {
+  document.querySelectorAll('.style').forEach(function (card) {
+    var buttons = card.querySelectorAll('.style__palette');
+    if (!buttons.length) { return; }
+    var shot = card.querySelector('.style__shot img');
+    var label = card.querySelector('[data-palette-name]');
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        if (shot) {
+          shot.setAttribute('loading', 'eager');
+          shot.src = button.getAttribute('data-preview');
+          shot.alt = button.getAttribute('data-alt') || '';
+        }
+        if (label) { label.textContent = button.getAttribute('data-palette'); }
+        buttons.forEach(function (other) {
+          var on = other === button;
+          other.classList.toggle('is-on', on);
+          other.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      });
+    });
+  });
+} catch (e) { /* la captura servida sigue siendo valida */ }
 </script>
 </body>
 </html>

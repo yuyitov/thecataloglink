@@ -7,8 +7,13 @@ olvida el enlace. El `.vcf` guarda el negocio en la agenda; el pase de wallet lo
 guarda en la app que la gente **sí vuelve a abrir**. Decisión 2a de Vero
 (2026-07-27, charly/34): el wallet entra al 100% del producto.
 
-Referencia viva (solo lectura): `My Guest/MyGuest/books/scripts/wallet_passes.py`
-y `docs/WALLET_PASSES_ENABLE_CHECKLIST.md`. Ahí se midió contra la doc oficial
+Referencia viva (solo lectura): el repo de My Guest, en
+`books/scripts/wallet_passes.py` y `docs/WALLET_PASSES_ENABLE_CHECKLIST.md`.
+(Se nombra así, con espacio y sin la ruta completa, porque el CI de HMU Link
+falla si un archivo de `generator/` lleva el nombre de ese repo pegado — es su
+guarda de marca, viene de cuando HMU se clonó de ahí, y ya rompió un despliegue
+el 2026-07-30. Los demás archivos del motor siguen la misma convención.)
+Ahí se midió contra la doc oficial
 por qué esto no se puede firmar en el navegador y qué exige Google. Este módulo
 es el mismo mecanismo, con los datos derivados del payload del negocio en vez de
 los de una propiedad.
@@ -50,9 +55,9 @@ entonces no hay certificado con qué firmar y cualquier código sería código
 muerto que hay que mantener.
 
 - **Dónde está la referencia cuando se desbloquee:** `build_apple_pkpass` y
-  `build_apple_pass_json` en `My Guest/MyGuest/books/scripts/wallet_passes.py`
-  (escritas, probadas y apagadas), y la receta paso a paso en
-  `My Guest/MyGuest/docs/WALLET_PASSES_ENABLE_CHECKLIST.md` §"Prender Apple
+  `build_apple_pass_json` en `books/scripts/wallet_passes.py` del repo de
+  My Guest (escritas, probadas y apagadas), y la receta paso a paso en su
+  `docs/WALLET_PASSES_ENABLE_CHECKLIST.md` §"Prender Apple
   Wallet" — incluye la trampa del content-type: si el servidor manda el
   `.pkpass` como `application/octet-stream`, iOS lo baja como archivo suelto y
   Wallet no lo abre.

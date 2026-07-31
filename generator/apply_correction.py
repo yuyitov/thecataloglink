@@ -40,17 +40,26 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from vertical_config import STYLES_CATALOG
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLIENTS_DIR = REPO_ROOT / "data" / "clients"
 LINKS_DIR = REPO_ROOT / "public" / "links"
 
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$")
 
-VALID_BRAND_STYLES = [
-    "black-gold", "soft-blush", "charcoal-clean", "warm-sand",
-    "aqua-clean", "sage-calm", "electric-slate", "terracotta-warm",
-    "sunny-paws", "midnight-ink", "clarity-editorial", "horizon-teal",
-]
+# linkFactory/23. Hasta el 2026-07-30 esto era HMU's 12 estilos escritos a
+# mano, y este archivo viaja VERBATIM (sin adaptar) a las cinco verticales
+# (`export_vertical.py::GENERATOR_COPY_FILES`): una clienta de Dr Link,
+# ModaLink o el catálogo que pidiera "cámbiame el estilo" a uno de SU propio
+# catálogo veía la corrección rechazada por el de HMU, silenciosamente — el
+# fallback a `original["brand_style"]` en `validate_and_sanitize` no distingue
+# "el LLM no tocó el estilo" de "lo cambió a algo válido que esta lista no
+# conocía". Ahora sale de `vertical_config.STYLES_CATALOG`, que YA resuelve la
+# vertical activa (`LINK_FACTORY_VERTICAL` en la fábrica; `vertical.yaml` del
+# repo en un export standalone) — la misma fuente que usa el generador para
+# decidir qué estilos existen.
+VALID_BRAND_STYLES = STYLES_CATALOG
 
 # Campos que una corrección de texto NUNCA puede tocar (se restauran del
 # original sin avisar): identidad de la página e imágenes.

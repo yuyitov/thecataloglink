@@ -45,6 +45,80 @@
 }
 
 
+/* ---- Las otras paletas de este layout, inertes hasta que ?p= las encienda (solo demos) ---- */
+/* Vitrina · paleta "crema" — marfil cálido, tinta espresso, acento terracota.
+   Nicho tipo: charcutería, panadería, gourmet. Luminoso y apetitoso. */
+html[data-palette="vitrina-crema"]{
+  --bg:#f7f1e7;
+  --surface:#fffdf8;
+  --ink:#2b2119;
+  --soft:#7a6b5b;
+  --hair:#e6dccb;
+  --accent:#b4552d;
+  --accent-ink:#fff8f2;
+  --accent-soft:#f3e3d6;
+  --price-bg:#efe6d5;
+  --price-ink:#8a6a4a;
+  --shadow:24px 40px -32px rgba(74,48,26,.45);
+  --hero-a:#f6e7d4;
+  --hero-b:#f7f1e7;
+}
+
+/* Vitrina · paleta "durazno" — durazno suave, tinta ciruela, acento coral.
+   Nicho tipo: repostería, pastelería, postres. Dulce y luminoso. */
+html[data-palette="vitrina-durazno"]{
+  --bg:#fdeee8;
+  --surface:#fffaf8;
+  --ink:#3a2230;
+  --soft:#8a6472;
+  --hair:#f4dcd2;
+  --accent:#d9557a;
+  --accent-ink:#fff6f8;
+  --accent-soft:#fadce4;
+  --price-bg:#f8e0d8;
+  --price-ink:#a4657a;
+  --shadow:24px 40px -32px rgba(120,44,68,.38);
+  --hero-a:#fbdccb;
+  --hero-b:#fdeee8;
+}
+
+/* Vitrina · paleta "rosa" — blanco rosado, tinta vino, acento rosa profundo.
+   Nicho tipo: florería, arreglos, regalos. Fresco y romántico. */
+html[data-palette="vitrina-rosa"]{
+  --bg:#fbf0f3;
+  --surface:#fffbfc;
+  --ink:#38202b;
+  --soft:#8a6270;
+  --hair:#f1dce3;
+  --accent:#c33c63;
+  --accent-ink:#fff5f8;
+  --accent-soft:#f8d8e2;
+  --price-bg:#f6dee6;
+  --price-ink:#9c5a72;
+  --shadow:24px 40px -32px rgba(120,30,60,.34);
+  --hero-a:#f7d9e2;
+  --hero-b:#fbf0f3;
+}
+
+/* Vitrina · paleta "salvia" — verde salvia pálido, tinta bosque, acento salvia.
+   Nicho tipo: gourmet natural, orgánico, saludable. Sereno y limpio. */
+html[data-palette="vitrina-salvia"]{
+  --bg:#eef3ec;
+  --surface:#fbfdf9;
+  --ink:#1f2a22;
+  --soft:#5f6f60;
+  --hair:#d9e3d5;
+  --accent:#4e7c52;
+  --accent-ink:#f5faf2;
+  --accent-soft:#dceadb;
+  --price-bg:#e2ecdf;
+  --price-ink:#5c7160;
+  --shadow:24px 40px -32px rgba(30,54,32,.34);
+  --hero-a:#dfe9da;
+  --hero-b:#eef3ec;
+}
+
+
 :root{
   --serif:"Fraunces",Georgia,serif;
   --sans:"Outfit","Segoe UI",sans-serif;
@@ -191,6 +265,17 @@ a{color:inherit}
   .card__img{transform:none}
 }
 </style>
+<script>
+(function () {
+  try {
+    var permitidas = ["vitrina-crema", "vitrina-durazno", "vitrina-rosa", "vitrina-salvia"];
+    var p = new URLSearchParams(location.search).get('p');
+    if (p && permitidas.indexOf(p) !== -1) {
+      document.documentElement.setAttribute('data-palette', p);
+    }
+  } catch (e) { /* la paleta horneada sigue siendo valida */ }
+})();
+</script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
@@ -239,7 +324,7 @@ a{color:inherit}
     </div>
   </section>
 
-  <section class="share" id="compartir"><p class="share__eyebrow">Share</p><h2 class="share__title">Take us <em>with you</em></h2><p class="share__lead">Scan the code or share the direct link.</p><div class="qrbox"><img src="../qr.svg" alt="QR code for https://www.thecataloglink.com/demos/dulce-marea/" width="180" height="180"></div><div><a class="share__url" href="https://www.thecataloglink.com/demos/dulce-marea/" target="_blank" rel="noopener noreferrer">thecataloglink.com/demos/dulce-marea</a></div><div class="share__actions"><button class="btn-sale share-btn" type="button" data-share-url="https://www.thecataloglink.com/demos/dulce-marea/" data-share-title="https://www.thecataloglink.com/demos/dulce-marea/" data-copied="Link copied">Share link</button></div><div class="share__actions"><a class="card__cta" href="../contact.vcf" download style="display:inline-block">Save to contacts</a></div></section>
+  <section class="share" id="compartir"><p class="share__eyebrow">Share</p><h2 class="share__title">Take us <em>with you</em></h2><p class="share__lead">Scan the code or share the direct link.</p><div class="qrbox"><img src="../qr.svg" alt="QR code for https://www.thecataloglink.com/demos/dulce-marea/" width="180" height="180"></div><div><a class="share__url" href="https://www.thecataloglink.com/demos/dulce-marea/" target="_blank" rel="noopener noreferrer">thecataloglink.com/demos/dulce-marea</a></div><div class="share__actions"><button class="btn-sale share-btn" type="button" data-share-url="https://www.thecataloglink.com/demos/dulce-marea/" data-share-title="https://www.thecataloglink.com/demos/dulce-marea/" data-copied="Link copied">Share link</button></div><div class="share__actions"><a class="card__cta" href="../contact.vcf" download style="display:inline-block">Save to contacts</a></div><p style="margin-top:8px;text-align:center;font-size:13px;line-height:1.45;opacity:.75">A contact file will download — open it and choose Contacts.</p></section>
 </main>
 
 <footer class="footer"><div class="shell"><span class="serif">Dulce Marea</span><a class="footer__link" href="https://www.thecataloglink.com/" target="_blank" rel="noopener">Demo made with The Catalog Link</a><span aria-hidden="true"> · </span><a class="footer__link" href="https://www.thecataloglink.com/privacy/" target="_blank" rel="noopener">Privacy</a><div class="footer__disclaimers" style="margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85"><p style="margin:0 0 4px">Informational catalog. Products, availability and prices are confirmed directly with the business; this is not an online store.</p></div></div></footer>

@@ -48,6 +48,80 @@
 }
 
 
+/* ---- Las otras paletas de este layout, inertes hasta que ?p= las encienda (solo demos) ---- */
+/* Revista · paleta "crema" — papel marfil, tinta espresso, acento terracota.
+   Nicho tipo: charcutería, gourmet, panadería. Editorial y apetitoso. */
+html[data-palette="revista-crema"]{
+  --bg:#f5efe4;
+  --surface:#fffdf9;
+  --ink:#25201a;
+  --soft:#786a58;
+  --hair:#e4dac7;
+  --accent:#a8482a;
+  --accent-ink:#fff8f3;
+  --accent-soft:#efdfd0;
+  --price-bg:#ece2d0;
+  --price-ink:#836247;
+  --shadow:28px 52px -34px rgba(60,38,20,.5);
+  --hero-a:#efe0cd;
+  --hero-b:#f5efe4;
+}
+
+/* Revista · paleta "durazno" — durazno suave, tinta ciruela, acento coral.
+   Nicho tipo: repostería, postres, fresas con chocolate. Dulce y editorial. */
+html[data-palette="revista-durazno"]{
+  --bg:#fce9e1;
+  --surface:#fffaf7;
+  --ink:#37222e;
+  --soft:#8a6472;
+  --hair:#f2d9cf;
+  --accent:#d24e6f;
+  --accent-ink:#fff6f8;
+  --accent-soft:#f8dbe1;
+  --price-bg:#f6ded4;
+  --price-ink:#a4657a;
+  --shadow:28px 52px -34px rgba(120,44,68,.4);
+  --hero-a:#fbd8c7;
+  --hero-b:#fce9e1;
+}
+
+/* Revista · paleta "rosa" — blanco rosado, tinta vino, acento rosa profundo.
+   Nicho tipo: florería, arreglos, regalos. Fresco, romántico y editorial. */
+html[data-palette="revista-rosa"]{
+  --bg:#faedf0;
+  --surface:#fffbfc;
+  --ink:#35202a;
+  --soft:#8a6270;
+  --hair:#efdae1;
+  --accent:#bd355c;
+  --accent-ink:#fff5f8;
+  --accent-soft:#f6d7e0;
+  --price-bg:#f4dce4;
+  --price-ink:#9c5a72;
+  --shadow:28px 52px -34px rgba(120,30,60,.36);
+  --hero-a:#f6d6e0;
+  --hero-b:#faedf0;
+}
+
+/* Revista · paleta "salvia" — verde salvia pálido, tinta bosque, acento salvia.
+   Nicho tipo: gourmet natural, orgánico, plantas. Sereno y editorial. */
+html[data-palette="revista-salvia"]{
+  --bg:#ebf1e8;
+  --surface:#fbfdf9;
+  --ink:#1d2820;
+  --soft:#5f6f60;
+  --hair:#d6e1d1;
+  --accent:#47764c;
+  --accent-ink:#f5faf2;
+  --accent-soft:#dae8d8;
+  --price-bg:#e0ebdd;
+  --price-ink:#5c7160;
+  --shadow:28px 52px -34px rgba(30,54,32,.36);
+  --hero-a:#dde8d7;
+  --hero-b:#ebf1e8;
+}
+
+
 :root{
   --serif:"Fraunces",Georgia,serif;
   --sans:"Outfit","Segoe UI",sans-serif;
@@ -195,6 +269,17 @@ a{color:inherit}
   .card__img{transform:none}
 }
 </style>
+<script>
+(function () {
+  try {
+    var permitidas = ["revista-crema", "revista-durazno", "revista-rosa", "revista-salvia"];
+    var p = new URLSearchParams(location.search).get('p');
+    if (p && permitidas.indexOf(p) !== -1) {
+      document.documentElement.setAttribute('data-palette', p);
+    }
+  } catch (e) { /* la paleta horneada sigue siendo valida */ }
+})();
+</script>
 </head>
 <body>
 <a class="skip" href="#content">Saltar al contenido</a>
@@ -243,7 +328,7 @@ a{color:inherit}
     </div>
   </section>
 
-  <section class="share" id="compartir"><p class="share__eyebrow">Comparte</p><h2 class="share__title">Llévanos <em>contigo</em></h2><p class="share__lead">Escanea el código o comparte el link directo.</p><div class="qrbox"><img src="qr.svg" alt="Codigo QR de https://www.thecataloglink.com/demos/mesa-bonita/" width="180" height="180"></div><div><a class="share__url" href="https://www.thecataloglink.com/demos/mesa-bonita/" target="_blank" rel="noopener noreferrer">thecataloglink.com/demos/mesa-bonita</a></div><div class="share__actions"><button class="btn-sale share-btn" type="button" data-share-url="https://www.thecataloglink.com/demos/mesa-bonita/" data-share-title="https://www.thecataloglink.com/demos/mesa-bonita/" data-copied="Link copiado">Compartir link</button></div><div class="share__actions"><a class="card__cta" href="contact.vcf" download style="display:inline-block">Guardar en contactos</a></div></section>
+  <section class="share" id="compartir"><p class="share__eyebrow">Comparte</p><h2 class="share__title">Llévanos <em>contigo</em></h2><p class="share__lead">Escanea el código o comparte el link directo.</p><div class="qrbox"><img src="qr.svg" alt="Codigo QR de https://www.thecataloglink.com/demos/mesa-bonita/" width="180" height="180"></div><div><a class="share__url" href="https://www.thecataloglink.com/demos/mesa-bonita/" target="_blank" rel="noopener noreferrer">thecataloglink.com/demos/mesa-bonita</a></div><div class="share__actions"><button class="btn-sale share-btn" type="button" data-share-url="https://www.thecataloglink.com/demos/mesa-bonita/" data-share-title="https://www.thecataloglink.com/demos/mesa-bonita/" data-copied="Link copiado">Compartir link</button></div><div class="share__actions"><a class="card__cta" href="contact.vcf" download style="display:inline-block">Guardar en contactos</a></div><p style="margin-top:8px;text-align:center;font-size:13px;line-height:1.45;opacity:.75">Se descargará un archivo de contacto — ábrelo y elige Contactos.</p></section>
 </main>
 
 <footer class="footer"><div class="shell"><span class="serif">Mesa Bonita</span><a class="footer__link" href="https://www.thecataloglink.com/" target="_blank" rel="noopener">Demo hecho con The Catalog Link</a><span aria-hidden="true"> · </span><a class="footer__link" href="https://www.thecataloglink.com/es/privacidad/" target="_blank" rel="noopener">Privacidad</a><div class="footer__disclaimers" style="margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85"><p style="margin:0 0 4px">Catálogo informativo. Los productos, la disponibilidad y los precios se confirman directamente con el negocio; no es una tienda en línea.</p></div></div></footer>

@@ -162,6 +162,75 @@ def layout_for_style(brand_style: str) -> str:
     return str(brand_style or "").split("-", 1)[0]
 
 
+def palettes_hermanas(brand_style: str) -> list[str]:
+    """TODAS las paletas del mismo layout, incluida la propia, en orden.
+
+    `vitrina-crema` -> ['vitrina-crema', 'vitrina-durazno', 'vitrina-rosa',
+    'vitrina-salvia'].
+
+    Incluye la propia a proposito. La tienda no sabe con que paleta se horneo
+    cada demo —y no siempre es la primera de la lista: `mesa-bonita` esta
+    horneada en `revista-salvia` mientras la tienda pinta Crema de primera— asi
+    que el enlace manda SIEMPRE la paleta elegida y la pagina la aplica sea cual
+    sea. Suponer "la primera es la horneada" dejaba justo ese caso roto.
+    """
+    layout = layout_for_style(brand_style)
+    return [estilo for estilo in BRAND_STYLES if layout_for_style(estilo) == layout]
+
+
+def bloque_paletas_alternas(brand_style: str) -> str:
+    """CSS de las paletas hermanas, listo para activarse por atributo.
+
+    Cada `<paleta>.css` es exactamente un `:root{...}` de variables de color, asi
+    que reescribirlo como `html[data-palette="<slug>"]{...}` deja las cuatro
+    paletas en la pagina y hace que gane la elegida (0,1,1 le gana a 0,1,0 de
+    `:root`). Sin `?p=` no se activa ninguna y la pagina se ve exactamente como
+    antes.
+
+    Por que existe (fallo de Vero, 2026-07-31): en la tienda, elegir una paleta
+    repinta la MINIATURA, pero el enlace "ver demo" siempre abria la demo con la
+    paleta horneada. La clienta elegia Salvia y se le abria Crema.
+
+    Solo se hornea en las DEMOS. Una pagina de cliente real vendio UNA paleta:
+    no debe traer las otras tres ni poder cambiarse con un parametro.
+    """
+    # Las cuatro, la propia incluida: `:root` sigue siendo el default sin `?p=`,
+    # y la version por atributo es la que permite pedirla explicitamente.
+    fragmentos = []
+    for slug in palettes_hermanas(brand_style):
+        ruta = STYLES_DIR / f"{slug}.css"
+        if not ruta.exists():
+            continue
+        css = ruta.read_text(encoding="utf-8")
+        if ":root{" not in css.replace(" ", ""):
+            continue
+        fragmentos.append(
+            css.replace(":root{", f'html[data-palette="{slug}"]{{', 1)
+        )
+    if not fragmentos:
+        return ""
+    return (
+        "\n/* ---- Las otras paletas de este layout, inertes hasta que ?p= las "
+        "encienda (solo demos) ---- */\n" + "\n".join(fragmentos)
+    )
+
+
+# Corre en el <head>, antes de pintar: sin esto la demo se veria un instante con
+# la paleta horneada y luego saltaria a la elegida. Solo acepta un slug de la
+# lista horneada, asi que ?p= no puede inyectar nada.
+PALETTE_SWITCH_JS = """<script>
+(function () {
+  try {
+    var permitidas = %s;
+    var p = new URLSearchParams(location.search).get('p');
+    if (p && permitidas.indexOf(p) !== -1) {
+      document.documentElement.setAttribute('data-palette', p);
+    }
+  } catch (e) { /* la paleta horneada sigue siendo valida */ }
+})();
+</script>"""
+
+
 def translate_category(category: str, lang: str) -> str:
     """Categoría (F2 la entrega SOLO en español) -> etiqueta a MOSTRAR por idioma.
 
@@ -660,6 +729,7 @@ def render_page(
     images: list[dict],
     qr_src: str = QR_ASSET_NAME,
     vcard_src: str = "",
+    palettes_alternas: bool = False,
 ) -> str:
     s = STRINGS[lang]
     brand = payload["brand_style"]
@@ -696,6 +766,14 @@ def render_page(
         "{{HEAD_META}}": head_meta,
         "{{STYLE_NAME}}": esc(brand),
         "{{STYLE_CSS}}": style_path.read_text(encoding="utf-8"),
+        "{{PALETTE_ALTS}}": (
+            bloque_paletas_alternas(brand) if palettes_alternas else ""
+        ),
+        "{{PALETTE_SWITCH_JS}}": (
+            PALETTE_SWITCH_JS % json.dumps(palettes_hermanas(brand))
+            if palettes_alternas and palettes_hermanas(brand)
+            else ""
+        ),
         "{{PAGE_TITLE}}": esc(f'{payload.get("business_name")} · {s["catalog_title_suffix"]}'),
         "{{SKIP_LINK_BLOCK}}": f'<a class="skip" href="#content">{esc(s["skip_to_content"])}</a>',
         "{{LOGO_BLOCK}}": build_logo(payload),
@@ -797,6 +875,10 @@ def build_demo(json_path: Path) -> Path:
             qr_src=qr_src,
             vcard_src=(VCARD_ASSET_NAME if lang == default_lang
                        else f"../{VCARD_ASSET_NAME}"),
+            # Solo la demo lleva las otras paletas del layout: es la vitrina, y
+            # el selector de la tienda enlaza aqui con ?p=<paleta>. Una pagina
+            # de cliente real vendio UNA paleta y no debe traer las otras.
+            palettes_alternas=True,
         )
         out_dir = root_dir if lang == default_lang else root_dir / alt_lang
         (out_dir / "index.html").write_text(html, encoding="utf-8")

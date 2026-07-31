@@ -48,6 +48,80 @@
 }
 
 
+/* ---- Las otras paletas de este layout, inertes hasta que ?p= las encienda (solo demos) ---- */
+/* Elegante · paleta "ónix" — negro cálido, tinta marfil, acento oro.
+   Nicho tipo: joyería fina, relojería, piezas de autor. Oscuro y premium. */
+html[data-palette="elegante-onix"]{
+  --bg:#141110;
+  --surface:#1e1a17;
+  --ink:#f3ece1;
+  --soft:#a99e8d;
+  --hair:#332c26;
+  --accent:#c9a35e;
+  --accent-ink:#1a1512;
+  --accent-soft:#3a3025;
+  --price-bg:#26201a;
+  --price-ink:#cbb389;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.82);
+  --hero-a:#1c1815;
+  --hero-b:#141110;
+}
+
+/* Elegante · paleta "vino" — ciruela profundo, tinta rosada, acento vino/rosa.
+   Nicho tipo: velas, perfumería, joyería en oro rosa. Cálido y romántico oscuro. */
+html[data-palette="elegante-vino"]{
+  --bg:#181012;
+  --surface:#221619;
+  --ink:#f2e6e6;
+  --soft:#b39aa0;
+  --hair:#392830;
+  --accent:#c76b83;
+  --accent-ink:#1a0f12;
+  --accent-soft:#3d262e;
+  --price-bg:#271a1f;
+  --price-ink:#d29aab;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.82);
+  --hero-a:#20151a;
+  --hero-b:#181012;
+}
+
+/* Elegante · paleta "esmeralda" — verde casi negro, tinta menta, acento esmeralda.
+   Nicho tipo: joyería en plata/jade, botánica premium, velas de eucalipto. */
+html[data-palette="elegante-esmeralda"]{
+  --bg:#0f1512;
+  --surface:#17201b;
+  --ink:#e7f0e9;
+  --soft:#94a89b;
+  --hair:#26332c;
+  --accent:#5cae83;
+  --accent-ink:#0c1410;
+  --accent-soft:#213029;
+  --price-bg:#182219;
+  --price-ink:#8fc7a5;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.82);
+  --hero-a:#141d18;
+  --hero-b:#0f1512;
+}
+
+/* Elegante · paleta "medianoche" — azul noche, tinta hielo, acento platino/acero.
+   Nicho tipo: joyería en plata/platino, piezas minimalistas, velas frías. */
+html[data-palette="elegante-medianoche"]{
+  --bg:#101319;
+  --surface:#191d26;
+  --ink:#e9edf4;
+  --soft:#98a1b3;
+  --hair:#282e3a;
+  --accent:#8ea6cb;
+  --accent-ink:#0d1016;
+  --accent-soft:#232b39;
+  --price-bg:#1a1f2a;
+  --price-ink:#a9bcda;
+  --shadow:0 34px 64px -30px rgba(0,0,0,.85);
+  --hero-a:#151a24;
+  --hero-b:#101319;
+}
+
+
 :root{
   --serif:"Fraunces",Georgia,serif;
   --sans:"Outfit","Segoe UI",sans-serif;
@@ -189,6 +263,17 @@ a{color:inherit}
   .card__img{transform:none}
 }
 </style>
+<script>
+(function () {
+  try {
+    var permitidas = ["elegante-onix", "elegante-vino", "elegante-esmeralda", "elegante-medianoche"];
+    var p = new URLSearchParams(location.search).get('p');
+    if (p && permitidas.indexOf(p) !== -1) {
+      document.documentElement.setAttribute('data-palette', p);
+    }
+  } catch (e) { /* la paleta horneada sigue siendo valida */ }
+})();
+</script>
 </head>
 <body>
 <a class="skip" href="#content">Saltar al contenido</a>
@@ -237,7 +322,7 @@ a{color:inherit}
     </div>
   </section>
 
-  <section class="share" id="compartir"><p class="share__eyebrow">Comparte</p><h2 class="share__title">Llévanos <em>contigo</em></h2><p class="share__lead">Escanea el código o comparte el link directo.</p><div class="qrbox"><img src="qr.svg" alt="Codigo QR de https://www.thecataloglink.com/demos/casa-cacao/" width="180" height="180"></div><div><a class="share__url" href="https://www.thecataloglink.com/demos/casa-cacao/" target="_blank" rel="noopener noreferrer">thecataloglink.com/demos/casa-cacao</a></div><div class="share__actions"><button class="btn-sale share-btn" type="button" data-share-url="https://www.thecataloglink.com/demos/casa-cacao/" data-share-title="https://www.thecataloglink.com/demos/casa-cacao/" data-copied="Link copiado">Compartir link</button></div><div class="share__actions"><a class="card__cta" href="contact.vcf" download style="display:inline-block">Guardar en contactos</a></div></section>
+  <section class="share" id="compartir"><p class="share__eyebrow">Comparte</p><h2 class="share__title">Llévanos <em>contigo</em></h2><p class="share__lead">Escanea el código o comparte el link directo.</p><div class="qrbox"><img src="qr.svg" alt="Codigo QR de https://www.thecataloglink.com/demos/casa-cacao/" width="180" height="180"></div><div><a class="share__url" href="https://www.thecataloglink.com/demos/casa-cacao/" target="_blank" rel="noopener noreferrer">thecataloglink.com/demos/casa-cacao</a></div><div class="share__actions"><button class="btn-sale share-btn" type="button" data-share-url="https://www.thecataloglink.com/demos/casa-cacao/" data-share-title="https://www.thecataloglink.com/demos/casa-cacao/" data-copied="Link copiado">Compartir link</button></div><div class="share__actions"><a class="card__cta" href="contact.vcf" download style="display:inline-block">Guardar en contactos</a></div><p style="margin-top:8px;text-align:center;font-size:13px;line-height:1.45;opacity:.75">Se descargará un archivo de contacto — ábrelo y elige Contactos.</p></section>
 </main>
 
 <footer class="footer"><div class="shell"><span class="serif">Casa Cacao</span><a class="footer__link" href="https://www.thecataloglink.com/" target="_blank" rel="noopener">Demo hecho con The Catalog Link</a><span aria-hidden="true"> · </span><a class="footer__link" href="https://www.thecataloglink.com/es/privacidad/" target="_blank" rel="noopener">Privacidad</a><div class="footer__disclaimers" style="margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85"><p style="margin:0 0 4px">Catálogo informativo. Los productos, la disponibilidad y los precios se confirman directamente con el negocio; no es una tienda en línea.</p></div></div></footer>

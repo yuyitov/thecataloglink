@@ -89,6 +89,13 @@ BASE_STRINGS = {
         # Boton del bloque `vcard` (linkFactory/14). Solo lo imprime una
         # vertical que active el bloque; agregar la clave no mueve un byte.
         "vcard_button": "Guardar en contactos",
+        # Microcopy bajo el boton (linkFactory/27). Redaccion APROBADA por
+        # Vero el 2026-07-31, palabra por palabra. Existe porque ella probo
+        # el flujo real en su Android: FUNCIONA, pero son ~6 pasos y el
+        # primero (se descarga un archivo) no se parece a "guardar un
+        # contacto", asi que parece roto. Decir lo que va a pasar cuesta una
+        # linea y evita el abandono.
+        "vcard_hint": "Se descargará un archivo de contacto — ábrelo y elige Contactos.",
         # Boton del bloque `wallet_google` (linkFactory/18). Mismo trato que el
         # de arriba: la clave existe siempre, el boton solo con el bloque
         # activo Y el interruptor de publicacion encendido (ver wallet.py).
@@ -200,6 +207,8 @@ BASE_STRINGS = {
         # `vcard` block button (linkFactory/14). Only printed by verticals
         # that enable the block; adding the key moves no bytes.
         "vcard_button": "Save to contacts",
+        # See the Spanish note above: wording approved by Vero 2026-07-31.
+        "vcard_hint": "A contact file will download — open it and choose Contacts.",
         # `wallet_google` block button (linkFactory/18).
         "wallet_google_button": "Add to Google Wallet",
         # The pass BUTTON label (see the ES note above).

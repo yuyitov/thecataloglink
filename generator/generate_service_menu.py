@@ -1641,10 +1641,18 @@ def build_vcard_action(s: dict, vcf_src: str,
                        extra_style: str = "") -> str:
     """La fila de accion del boton "Guardar en contactos".
 
-    Un `<a download>` al archivo estatico: cero JS. GitHub Pages sirve `.vcf`
-    como text/vcard, con lo que iPhone abre la tarjeta de contacto directo y
-    Android la descarga a Contactos. Reusa `.share__actions` y `.btn` tal
-    cual: sin CSS nuevo no hay bytes nuevos para quien no activa el bloque.
+    Un `<a download>` al archivo estatico: cero JS. Reusa `.share__actions` y
+    `.btn` tal cual: sin CSS nuevo no hay bytes nuevos para quien no activa el
+    bloque.
+
+    Content-Type, MEDIDO en los cinco el 2026-07-31 (linkFactory/27 punto 3, que
+    pedia medir y no suponer): los cinco sirven `text/x-vcard` —GitHub Pages en
+    PawContact, el catalogo y HMU; Cloudflare Pages en Dr Link y ModaLink, con
+    `; charset=utf-8`. Este comentario decia "text/vcard" y era falso. No se
+    cambia nada: `text/x-vcard` es el tipo historico, iOS y Android lo abren
+    igual, y forzarlo a `text/vcard` solo seria posible en los dos de Cloudflare
+    (con `_headers`), asi que dejaria a los cinco DESIGUALES para arreglar algo
+    que no esta roto. Si algun dia hay que moverlo, se mueve en los cinco.
 
     Cero JS y cero terceros a proposito: es lo que deja al boton pasar la
     sobriedad de Dr Link (`blocks.motion` y `blocks.third_party_assets` en
@@ -1657,9 +1665,23 @@ def build_vcard_action(s: dict, vcf_src: str,
     ya usa el bloque.
     """
     style = f' style="{esc(extra_style)}"' if extra_style else ""
+    # El microcopy va FUERA de `.share__actions` (que es un flex centrado: dentro
+    # se pondria al lado del boton, no debajo) y con estilo en linea, no con una
+    # clase nueva: las dos plantillas base del motor tienen CSS distinto y sus
+    # nombres de variable de color no coinciden. `opacity` sobre el color
+    # heredado se ve bien en las doce paletas sin agregar un byte de CSS a quien
+    # no enciende el bloque.
+    hint = esc(s.get("vcard_hint", ""))
+    nota = (
+        f'<p style="margin-top:8px;text-align:center;font-size:13px;'
+        f'line-height:1.45;opacity:.75">{hint}</p>'
+        if hint
+        else ""
+    )
     return (
         f'<div class="share__actions"><a class="{esc(css_class)}" '
         f'href="{esc(vcf_src)}" download{style}>{s["vcard_button"]}</a></div>'
+        f"{nota}"
     )
 
 

@@ -317,12 +317,44 @@ def _validate_required_true(payload: dict) -> None:
     Son casillas de cumplimiento que el negocio firma en el intake y que NO son
     opcionales: sin ellas no se genera la pagina. ModaLink usa
     `photo_rights_confirmed` (la marca declara que las fotos son suyas).
+
+    NO se llama desde el camino de demo. Ver `_declaracion_de_demo`.
     """
     for field in SCHEMA.get("require_true") or []:
         if payload.get(field) is not True:
             raise ValidationError(
                 f"Cliente: {field} debe ser true (declaracion obligatoria de la vertical)."
             )
+
+
+DECLARACION_DE_DEMO = (
+    "material de demostracion: imagenes de muestra, sin cliente que las suba ni "
+    "que consienta su uso"
+)
+
+
+def declaraciones_relajadas_por_ser_demo() -> tuple[str, ...]:
+    """Lo que una DEMO declara en lugar de las casillas del intake.
+
+    Una declaracion de `schema.require_true` es un CONSENTIMIENTO: la marca
+    firma en su intake que las fotos que subio son suyas. En una demo no la
+    firma nadie —no hay cliente, y las imagenes no las subio nadie— asi que
+    exigirla ahi no protege a nadie: solo obliga a que alguien la escriba en un
+    payload armado por la maquina, que es firmar un consentimiento en nombre de
+    un tercero. Medido el 2026-07-30 (modalink/7): el generador de ModaLink
+    contestaba `Cliente: photo_rights_confirmed debe ser true` a un demo, y por
+    eso ModaLink era la unica de las cinco sin demos.
+
+    Lo que se relaja es SOLO el camino de demo. El de cliente no se toca: un
+    intake sin consentimiento sigue fallando exactamente igual (regla 14), y su
+    prueba de mutacion lo exige. Es el mismo criterio que ya usaba el camino
+    monolingue de Cory en `validate_client_flat`.
+
+    A cambio queda dicho en voz alta QUE se relajo y POR QUE: esta funcion
+    devuelve las declaraciones que el camino de demo no exige, y la prueba de
+    ambos lados las lee de aqui en vez de repetir la lista.
+    """
+    return tuple(SCHEMA.get("require_true") or [])
 
 
 def _validate_locations(payload: dict, content: dict) -> None:
@@ -386,8 +418,14 @@ def validate_client_flat(payload: dict) -> None:
     _validate_lookbook(payload)
 
 
-def validate_client(payload: dict) -> None:
-    """Validate a bilingual real-client payload (client_payload_public v1)."""
+def validate_client(payload: dict, *, demo: bool = False) -> None:
+    """Validate a bilingual real-client payload (client_payload_public v1).
+
+    `demo=True` lo pasa SOLO `build_demo`. Lo unico que cambia son las
+    declaraciones de consentimiento de la vertical, que en una demo no las firma
+    nadie — ver `declaraciones_relajadas_por_ser_demo`. Todo lo demas se valida
+    igual: una demo rota tiene que fallar igual de temprano que una ficha rota.
+    """
     slug = str(payload.get("public_slug", "")).strip()
     if not slug:
         raise ValidationError("Cliente: falta public_slug.")
@@ -445,7 +483,8 @@ def validate_client(payload: dict) -> None:
                 )
     _validate_lookbook(payload)
     _validate_catalog_fields(payload)
-    _validate_required_true(payload)
+    if not demo:
+        _validate_required_true(payload)
     _validate_locations(payload, content)
     validate_language_quality(payload)
 
@@ -2402,7 +2441,10 @@ def build_demo(json_path: Path) -> Path:
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     if SCHEMA.get("demo_mode") == "flexible" and not isinstance(payload.get("content"), dict):
         return build_demo_monolingual(json_path)
-    validate_client(payload)
+    # `demo=True`: una demo no trae las declaraciones de consentimiento del
+    # intake porque no hay cliente que las firme (modalink/7). El camino de
+    # cliente —build_client— sigue exigiendolas sin cambio.
+    validate_client(payload, demo=True)
 
     slug = str(payload["public_slug"]).strip()
     default_lang = payload.get("default_language", "es")

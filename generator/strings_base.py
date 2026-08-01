@@ -131,7 +131,19 @@ BASE_STRINGS = {
         "catalog_sale_sms": "Pedir por mensaje",
         "catalog_sale_tel": "Llamar para pedir",
         "catalog_sale_generic": "Hacer un pedido",
+        # Boton por producto cuando el canal de venta NO es WhatsApp (sms/tel
+        # en negocios de EE. UU.): se queda el copy generico de siempre.
         "catalog_product_cta": "Preguntar por este",
+        # Copy aprobado por Vero (charly/44, opcion A, 2026-08-01) SOLO para el
+        # canal WhatsApp: el boton dice el canal y la accion, no un "preguntar"
+        # ambiguo. Un demo de EE. UU. vende por sms y NO debe decir WhatsApp
+        # (candado test_canal_por_pais).
+        "catalog_product_cta_whatsapp": "Pedir este por WhatsApp",
+        # El texto precargado del wa.me del boton por producto. {{product}}
+        # sobrevive el .format() de build_strings como el literal {product},
+        # que build_product_cards reemplaza por el nombre del producto (mismo
+        # mecanismo que {{n}} en catalog_results_count_many).
+        "catalog_product_wa_text": "Hola 👋 Vi su catálogo y me interesa: {{product}}",
         "catalog_results_count_one": "1 producto",
         # {{n}} sobrevive el .format(brand_name=...) de build_strings como el
         # literal {n}, que el JS del catálogo reemplaza por el conteo.
@@ -234,6 +246,9 @@ BASE_STRINGS = {
         "catalog_sale_tel": "Call to order",
         "catalog_sale_generic": "Place an order",
         "catalog_product_cta": "Ask about this",
+        # Approved copy (charly/44, option A, 2026-08-01) — see the ES note.
+        "catalog_product_cta_whatsapp": "Order this on WhatsApp",
+        "catalog_product_wa_text": "Hi 👋 I saw your catalog and I'm interested in: {{product}}",
         "catalog_results_count_one": "1 product",
         "catalog_results_count_many": "{{n}} products",
     },

@@ -392,17 +392,35 @@ def hero_title_html(business_name: str) -> str:
     return f"{head} <em>{tail}</em>"
 
 
+_PIN_SVG = (
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" '
+    'stroke="currentColor" stroke-width="2" aria-hidden="true">'
+    '<path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/>'
+    '<circle cx="12" cy="10" r="3"/></svg>'
+)
+
+
 def hero_meta_html(payload: dict) -> str:
     parts = []
-    city = _city_from_address(payload.get("address"))
-    if city:
+    address = str(payload.get("address") or "").strip()
+    maps_url = safe_href(payload.get("maps_url"))
+    if address and maps_url:
+        # Con `maps_url` en el payload (los demos del prospector de Cory lo
+        # traen de Places) el chip pinta la DIRECCION COMPLETA como link a su
+        # Google Maps — decision de Vero en charly/44 (2026-08-01): "Granja" a
+        # secas era el dato correcto pareciendo categoria equivocada. Sin
+        # `maps_url` (paginas de clientes por intake) se queda la ciudad de
+        # siempre: ese comportamiento lo fija linkFactory/9 (C) y no cambia.
+        # safe_href ya devuelve la URL escapada — re-escaparla rompería los
+        # `&` que los maps_url reales sí traen.
         parts.append(
-            '<span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" '
-            'stroke="currentColor" stroke-width="2" aria-hidden="true">'
-            '<path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/>'
-            '<circle cx="12" cy="10" r="3"/></svg>'
-            f'{esc(city)}</span>'
+            f'<a href="{maps_url}" target="_blank" rel="noopener noreferrer">'
+            f'{_PIN_SVG}{esc(address)}</a>'
         )
+    else:
+        city = _city_from_address(address)
+        if city:
+            parts.append(f"<span>{_PIN_SVG}{esc(city)}</span>")
     rating = payload.get("rating")
     if isinstance(rating, (int, float)) and rating > 0:
         count = payload.get("rating_count")
@@ -410,6 +428,16 @@ def hero_meta_html(payload: dict) -> str:
         if isinstance(count, int) and count > 0:
             label += f" · {count}"
         parts.append(f'<span aria-hidden="true">★</span><span>{esc(label)}</span>')
+    # Redes sociales del negocio, si el payload las trae (demos del prospector:
+    # el Instagram/Facebook real cosechado de Places) — misma decision charly/44.
+    for link in payload.get("social_links") or []:
+        url = safe_href((link or {}).get("url"))
+        label_txt = str((link or {}).get("label") or "").strip()
+        if url and label_txt:
+            parts.append(
+                f'<a href="{url}" target="_blank" rel="noopener noreferrer">'
+                f'{esc(label_txt)}</a>'
+            )
     if not parts:
         return ""
     return f'<div class="hero__meta">{"".join(parts)}</div>'
@@ -553,12 +581,21 @@ def build_product_cards(payload: dict, s: dict, lang: str, images: list[dict]) -
         cat_display = translate_category(cat, lang)
         cat_badge = f'<span class="card__cat">{esc(cat_display)}</span>' if cat else ""
         desc_html = f'<p class="card__desc">{esc(desc)}</p>' if desc else ""
-        # Per-card CTA reuses the sale channel, prefilled with the product name
-        # (only WhatsApp honors the text; sms/tel just open the composer/dialer).
-        cta_href = sale_href(kind, sale.get("value"), text=name or None)
+        # Per-card CTA reuses the sale channel. En WhatsApp lleva el copy y la
+        # precarga aprobados por Vero (charly/44, 2026-08-01): saludo + nombre
+        # del producto, no el nombre a secas. En sms/tel NO se menciona
+        # WhatsApp (candado test_canal_por_pais: un demo de EE. UU. vende por
+        # texto) y el composer/dialer no honra texto precargado.
+        is_wa = str(kind or "").strip().lower() == "whatsapp"
+        wa_text = (
+            s["catalog_product_wa_text"].replace("{product}", name)
+            if is_wa and name else None
+        )
+        cta_href = sale_href(kind, sale.get("value"), text=wa_text)
+        cta_label = s["catalog_product_cta_whatsapp"] if is_wa else s["catalog_product_cta"]
         cta = (
             f'<a class="card__cta" href="{esc(cta_href)}" target="_blank" '
-            f'rel="noopener noreferrer">{esc(s["catalog_product_cta"])}</a>'
+            f'rel="noopener noreferrer">{esc(cta_label)}</a>'
             if cta_href else ""
         )
         # Índice de búsqueda: nombre + descripción (ya por idioma) + categoría en

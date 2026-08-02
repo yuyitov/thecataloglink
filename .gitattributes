@@ -7,3 +7,9 @@
 *.jpg binary
 *.webp binary
 *.woff2 binary
+# vCard: el RFC exige CRLF y el generador lo escribe así. Sin esta regla git
+# normaliza distinto entre Windows y el runner Linux y el drift-check del CI
+# queda rojo eterno (le pasó a HMU 5 días — lote A, hmuLink/9). La regla debe
+# vivir AQUÍ porque export_vertical.py copia este archivo a cada producto:
+# si solo vive en un producto, el siguiente export completo la revierte.
+*.vcf text eol=crlf

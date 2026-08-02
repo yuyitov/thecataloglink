@@ -91,6 +91,10 @@ CLIENT_LANGS = ("es", "en")
 
 DEMO_HEAD_META = '<meta name="robots" content="noindex">'
 
+# Favicon del catálogo (lote v3, H2 de charly/45): mismo criterio que el
+# generador de tarjetas — toda página generada lleva el favicon del producto.
+FAVICON_LINK = '<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">'
+
 # Slug shape guard (same alphabet as the service-menu generator).
 CATALOG_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$")
 
@@ -800,7 +804,7 @@ def render_page(
 
     tokens = {
         "{{LANG}}": lang,
-        "{{HEAD_META}}": head_meta,
+        "{{HEAD_META}}": FAVICON_LINK + "\n" + head_meta,
         "{{STYLE_NAME}}": esc(brand),
         "{{STYLE_CSS}}": style_path.read_text(encoding="utf-8"),
         "{{PALETTE_ALTS}}": (

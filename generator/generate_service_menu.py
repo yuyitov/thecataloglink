@@ -2014,6 +2014,12 @@ def build_footer(
 # --------------------------------------------------------------------------- #
 DEMO_HEAD_META = '<meta name="robots" content="noindex">'
 
+# Favicon de la tarjeta (lote v3, H2 de charly/45): TODA página que este
+# generador produce —demo o cliente, ES o EN— lleva el favicon del producto.
+# Root-relative porque las tarjetas siempre se sirven en el dominio del
+# producto, y ese archivo es obligatorio por _validate_favicon (linkFactory/25).
+FAVICON_LINK = '<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">'
+
 # Los 3 comentarios de cabecera de la plantilla. Son tokens con DEFAULT LITERAL
 # —no se derivan de `brand_name` ni de la cuenta de estilos— justamente para que
 # ninguna vertical pueda moverlos sin decirlo: derivarlos habria cambiado los
@@ -2090,7 +2096,7 @@ def render_view(
 
     tokens = {
         "{{LANG}}": lang,
-        "{{HEAD_META}}": head_meta,
+        "{{HEAD_META}}": FAVICON_LINK + "\n" + head_meta,
         "{{THIRD_PARTY_FONT_LINKS}}": THIRD_PARTY_FONT_LINKS if third_party_on else "",
         "{{THIRD_PARTY_GSAP_LINKS}}": (
             THIRD_PARTY_GSAP_LINKS if third_party_on and motion_on else ""

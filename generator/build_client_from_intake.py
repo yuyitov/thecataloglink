@@ -576,6 +576,46 @@ def split_category_name_description(text: str, known: dict[str, str]) -> tuple[s
     return category, name, description
 
 
+def _categoria_por_raiz(nombre: str, known: dict[str, str]) -> str | None:
+    """Categoría cuyo nombre es la RAÍZ del servicio ('Tintes' <- 'Tinte de raíz').
+
+    Solo se usa cuando la clienta NO escribió encabezados propios (ver
+    `parse_services`). Nació de un fallo real de Vero (2026-08-02): declaró
+    cuatro grupos —Cortes, Tintes, Uñas, Maquillaje—, listó sus servicios
+    de corrido, y los CUATRO cayeron en 'Cortes' porque ninguna línea era un
+    encabezado. La página anunciaba cuatro grupos arriba y mostraba uno abajo.
+
+    Coincide por prefijo tolerando el plural del español ('Cortes' <- 'Corte'),
+    y exige que el corte caiga en frontera de palabra para que 'Manicura' no
+    entre en una categoría llamada 'Manos'. Devuelve None si no hay certeza:
+    ante la duda, el servicio se queda donde iba.
+    """
+    plano = plain_latin(nombre).strip()
+    mejor = None
+    for clave, cat in known.items():
+        # El plural español pide DOS raíces, no una: 'cortes'->'corte' (-s) pero
+        # 'faciales'->'facial' y 'rituales'->'ritual' (-es). Con solo -s,
+        # 'Facial hidratante' no casaba con 'Faciales' y caía en el primer
+        # grupo — medido con un spa el 2026-08-02.
+        raices = {clave}
+        if len(clave) > 4:
+            if clave.endswith("es"):
+                raices.add(clave[:-2])
+            if clave.endswith("s"):
+                raices.add(clave[:-1])
+        for raiz in raices:
+            if not raiz:
+                continue
+            if plano == raiz:
+                return cat
+            if plano.startswith(raiz) and plano[len(raiz):][:1] in ("", " ", "s", "e"):
+                # gana la raíz más larga, para que un servicio no caiga en una
+                # categoría corta cuando otra más específica también casa.
+                if mejor is None or len(raiz) > mejor[0]:
+                    mejor = (len(raiz), cat)
+    return mejor[1] if mejor else None
+
+
 def parse_services(services_text: str, categories: list[str]) -> list[dict]:
     """Each non-empty line is one service; headings ending in ':' become categories.
 
@@ -583,10 +623,22 @@ def parse_services(services_text: str, categories: list[str]) -> list[dict]:
     category: that prefix sets the service's category (and the running category
     for the plain lines that follow) and is stripped from the visible name, and
     any remaining "Name — Description" is split into a name and a description.
+
+    Si la clienta NO escribió NINGÚN encabezado —el caso normal: declara sus
+    grupos en la pregunta de categorías y luego lista los servicios de
+    corrido— se reparte por raíz (`_categoria_por_raiz`). Con encabezados
+    propios manda lo que ella escribió y esta ayuda no corre: su intención
+    explícita gana siempre.
     """
     services = []
     current_category = categories[0] if categories else "Services"
     known = {plain_latin(cat): cat for cat in categories}
+    lineas = [clean_line(raw) for raw in (services_text or "").splitlines()]
+    hay_encabezados = any(
+        raw.strip().endswith(":") or plain_latin(TRAIL_SEP_RE.sub("", clean_line(raw)).strip()) in known
+        for raw in (services_text or "").splitlines()
+        if clean_line(raw)
+    )
     for raw in (services_text or "").splitlines():
         line = clean_line(raw)
         if not line:
@@ -602,6 +654,8 @@ def parse_services(services_text: str, categories: list[str]) -> list[dict]:
 
         name, price_label = split_price_label(line)
         category, name, description = split_category_name_description(name, known)
+        if not category and not hay_encabezados:
+            category = _categoria_por_raiz(name, known)
         if category:
             current_category = category
         svc = {"category": category or current_category, "name": name[:120]}

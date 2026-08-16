@@ -50,6 +50,11 @@ BASE_STRINGS = {
         "reservations_title": "Reservaciones",
         "address_title": "Dónde estamos",
         "address_map": "Ver en Google Maps",
+        # Teléfono y correo ESCRITOS, no solo como botón: es una tarjeta de
+        # presentación y el dato tiene que poder leerse y copiarse (Vero,
+        # 2026-08-02).
+        "phone_title": "Teléfono",
+        "email_title": "Correo",
         "location_label": "Ubicacion",
         "service_area_title": "Area de servicio",
         "class_schedule_title": "Horario de clases",
@@ -180,6 +185,8 @@ BASE_STRINGS = {
         "reservations_title": "Reservations",
         "address_title": "Where we are",
         "address_map": "View on Google Maps",
+        "phone_title": "Phone",
+        "email_title": "Email",
         "location_label": "Location",
         "service_area_title": "Service area",
         "class_schedule_title": "Class schedule",

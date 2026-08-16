@@ -1063,6 +1063,41 @@ def _location_block(loc: dict, s: dict, with_name: bool) -> str:
     return f'<div class="address__item">{name_html}<p>{main}{tail}</p>{hours_html}{notes_html}</div>'
 
 
+def _contact_rows(payload: dict, s: dict) -> list[str]:
+    """Teléfono y correo ESCRITOS, además de su botón.
+
+    Pedido de Vero (2026-08-02) sobre su propia página: «como era tarjeta de
+    presentación también deberían aparecer escritos». Hasta hoy el número y el
+    correo existían solo como botones ('Llamar', 'Enviar correo'): quien abre
+    la tarjeta en una computadora no puede marcar, y quien quiere anotar el
+    número o pasárselo a alguien no tiene qué leer. Una tarjeta de presentación
+    que esconde el teléfono deja de ser una tarjeta de presentación.
+
+    La dirección ya se imprimía así (texto + 'Ver en Google Maps'); esto le da
+    a los otros dos datos de contacto la misma forma. Cada fila aparece solo si
+    el negocio dio ese dato: la vertical que no pregunta teléfono no estrena
+    una fila vacía.
+    """
+    filas = []
+    telefono = str(payload.get("phone") or "").strip()
+    href_tel = tel_href(telefono)
+    if telefono and href_tel:
+        filas.append(
+            f'<div class="info-row" data-reveal><h3>{s["phone_title"]}</h3>'
+            f'<p>{esc(telefono)}<br>'
+            f'<a href="{href_tel}">{s["btn_phone"]}</a></p></div>'
+        )
+    correo = str(payload.get("public_email") or "").strip()
+    href_mail = mailto_href(correo)
+    if correo and href_mail:
+        filas.append(
+            f'<div class="info-row" data-reveal><h3>{s["email_title"]}</h3>'
+            f'<p>{esc(correo)}<br>'
+            f'<a href="{href_mail}">{s["btn_email"]}</a></p></div>'
+        )
+    return filas
+
+
 def _address_row_body(payload: dict, s: dict) -> str:
     """Inner HTML for the address info-row ('' if the payload has no address).
 
@@ -1433,6 +1468,8 @@ def build_info(payload: dict, s: dict, lang: str) -> str:
             f'<div class="info-row" data-reveal><h3>{s["address_title"]}</h3>'
             f'{address_body}</div>'
         )
+
+    rows.extend(_contact_rows(payload, s))
 
     payment_row = (
         _health_billing_row(payload, s, lang)

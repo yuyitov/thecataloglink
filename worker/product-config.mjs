@@ -326,6 +326,28 @@ export function validBrandStyles(env) {
   return parsed.length ? parsed : [...DEFAULT_BRAND_STYLES];
 }
 
+// NOMBRE COMERCIAL -> SLUG del catálogo. Existe porque el estilo que la clienta
+// elige se resuelve haciendo slugify() del NOMBRE que lee en el formulario, así
+// que el nombre visible estaba atado al nombre del archivo CSS: al repintar una
+// paleta y renombrarla (2026-08-16: Sunny Paws -> Pink Grapefruit, Horizon Teal
+// -> Blue Chocolate, Warm Sand -> Ink & Ivory) las tres opciones dejaban de
+// resolver y TODA clienta que las eligiera recibía el estilo de respaldo — una
+// página del color equivocado, sin aviso. Un nombre es marketing y cambia; un
+// slug es identidad y no debe cambiar (lo llevan los clientes ya publicados,
+// las capturas y los demos). Este mapa los desacopla: renombrar una paleta es
+// desde ahora una línea en styles.aliases del vertical.yaml.
+// Formato: "alias:slug,alias:slug". Un alias que apunte a un slug fuera del
+// catálogo se ignora — no puede colar un estilo que la vertical no vende.
+export function brandStyleAliases(env, styles) {
+  const validos = styles || validBrandStyles(env || {});
+  const fuera = {};
+  for (const par of String((env || {}).BRAND_STYLE_ALIASES || '').split(',')) {
+    const [alias, slug] = par.split(':').map((s) => (s || '').trim());
+    if (alias && slug && validos.includes(slug)) fuera[alias] = slug;
+  }
+  return fuera;
+}
+
 // Estilo al que cae un intake cuyo estilo elegido no está en el catálogo.
 // 'warm-sand' es el neutro histórico de HMU (y está en el catálogo de PawContact),
 // así que se prefiere cuando existe — conservando el comportamiento actual;

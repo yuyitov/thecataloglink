@@ -59,7 +59,7 @@
  */
 
 import { classifyStripeEvent } from './stripe-filter.mjs';
-import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
+import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
 // Mapa campo-público -> alias de título del intake de Tally, única fuente de
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
@@ -2445,8 +2445,17 @@ function intakeIdentity(normalized, orderId, env) {
   let styleUnmapped = false;
   const validStyles = validBrandStyles(env || {});
   if (!validStyles.includes(brandStyle)) {
-    styleUnmapped = true;
-    brandStyle = fallbackBrandStyle(validStyles);
+    // Antes del respaldo, el mapa nombre-comercial -> slug: una paleta que se
+    // repinta cambia de nombre pero NO de slug (ver brandStyleAliases). Sin
+    // este paso, renombrar 'Sunny Paws' a 'Pink Grapefruit' hacía que cada
+    // clienta que lo eligiera recibiera el estilo de respaldo en silencio.
+    const alias = brandStyleAliases(env || {}, validStyles)[brandStyle];
+    if (alias) {
+      brandStyle = alias;
+    } else {
+      styleUnmapped = true;
+      brandStyle = fallbackBrandStyle(validStyles);
+    }
   }
 
   // fieldAliases('default_language') solo trae alias genéricos (sin marca); los

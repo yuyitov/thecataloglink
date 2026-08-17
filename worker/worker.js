@@ -2474,6 +2474,13 @@ function answerFileUrl(answers, keys) {
   return '';
 }
 
+// Devuelve las URLs TAL COMO Tally las entrega. Ojo: ese orden es el INVERSO
+// al de subida (medido el 2026-08-16 con una respuesta real de HMU: 6 archivos
+// con la hora en el nombre, de 21:03 a 20:59). Quien necesite el orden en que
+// la clienta las subio lo pide explicitamente — ver `gallery_image_urls` en
+// buildPublicPayload. No se invierte aqui porque esta funcion tambien alimenta
+// las fotos de PRODUCTO del catalogo, donde cada foto se empareja con un
+// producto y el efecto de invertir no esta medido todavia.
 function answerFileUrls(answers, keys, limit = 6) {
   for (const k of keys) {
     const v = getAnswer(answers, k);
@@ -2637,7 +2644,12 @@ function buildPublicPayload(normalized, orderId, env) {
     policies_text: answerAny(a, fieldAliases('policies_text')),
     logo_url: answerFileUrl(a, fieldAliases('logo_url')),
     image_url: answerFileUrl(a, fieldAliases('image_url')),
-    gallery_image_urls: answerFileUrls(a, fieldAliases('gallery_image_urls'), 5),
+    // Al reves de como Tally las entrega, o sea en el orden en que la clienta
+    // las subio: es el unico que ella puede predecir. Vero, viendo su pagina el
+    // 2026-08-16: "la primera foto se muestra como la ultima". Se invierte
+    // ANTES del recorte (el limite va dentro de answerFileUrls sobre el orden
+    // de Tally), asi que aqui se pide el tope y se invierte lo que llegue.
+    gallery_image_urls: answerFileUrls(a, fieldAliases('gallery_image_urls'), 5).reverse(),
     location_1_name: answerAny(a, fieldAliases('location_1_name')),
     location_2_name: answerAny(a, fieldAliases('location_2_name')),
     location_2_address: answerAny(a, fieldAliases('location_2_address')),

@@ -110,6 +110,23 @@ def esc(value) -> str:
     return html.escape(str(value), quote=True)
 
 
+def esc_renglones(value) -> str:
+    """Escapa igual que `esc`, pero conserva los renglones que escribio el negocio.
+
+    Vero (2026-08-16), sobre el recuadro destacado de su propia pagina: "me
+    asegure de poner en un renglon diferente 'Una tarjeta que no se queda
+    obsoleta...' y no lo respeto el diseno". Tenia razon: el texto se escapaba
+    y se metia en un <p>, donde HTML colapsa los saltos de linea. Quien escribe
+    tres renglones espera tres renglones.
+
+    Se escapa PRIMERO y se meten los <br> despues, para que un salto de linea
+    nunca pueda servir para colar etiquetas.
+    """
+    escapado = esc(value)
+    lineas = [l.strip() for l in escapado.replace('\r\n', '\n').split('\n')]
+    return "<br>".join(linea for linea in lineas if linea)
+
+
 def safe_href(value):
     """Return an escaped http(s) URL, or None if the value is unsafe/empty.
 
@@ -891,9 +908,17 @@ def build_marquee(payload: dict) -> str:
         parts.append(f'<span>{text} <span class="dot">✦</span></span>')
     base_repeat = max(4, 12 // len(parts))
     track = "".join(parts * base_repeat) * 2  # duplicated for the seamless CSS loop
+    # La duracion NO puede ser fija: la animacion recorre medio track, y el
+    # track crece con cuantas categorias tenga el negocio. Con 18s fijos, un
+    # negocio de 3 categorias se leia bien y uno de 10 volaba (Vero, 2026-08-16:
+    # "se desplaza tan rapido que no se puede leer"). Se fija la VELOCIDAD, no el
+    # tiempo: ~7 segundos por cada elemento visible del recorrido, con un piso de
+    # 18s para que un banner corto no quede lento.
+    visibles = len(parts) * base_repeat
+    segundos = max(18, round(visibles * 7))
     return (
         '<div class="marquee" aria-hidden="true">'
-        f'<div class="marquee__track">{track}</div></div>'
+        f'<div class="marquee__track" style="--marquee-seconds:{segundos}s">{track}</div></div>'
     )
 
 
@@ -1016,11 +1041,15 @@ def build_featured(payload: dict, s: dict) -> str:
     if not isinstance(pkg, dict) or not str(pkg.get("name", "")).strip():
         return ""
     name = esc(pkg.get("name"))
-    desc = esc(pkg.get("description"))
+    desc = esc_renglones(pkg.get("description"))
     price = pkg.get("price_label")
     price_html = f'<div class="ritual__price">{esc(price)}</div>' if price else ""
     # Sin descripción (o igual al nombre) no se repite el texto.
-    desc_html = f'<p class="ritual__desc">{desc}</p>' if desc and desc != name else ""
+    desc_html = (
+        f'<p class="ritual__desc">{desc}</p>'
+        if desc and desc != esc_renglones(pkg.get("name"))
+        else ""
+    )
     return (
         '<section class="section section--featured" data-theme="alt"><div class="shell">'
         '<div class="ritual" data-reveal><div class="ritual__in">'

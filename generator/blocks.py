@@ -59,11 +59,16 @@ ENGINE_BLOCKS = {
     "faq": {
         "enabled_for": "all",
     },
-    # `price_ask_legend`: la leyenda "Consultar"/"Ask us" que el motor imprime
-    # en un servicio SIN precio cuando la politica no es "ocultar". ModaLink no
-    # la imprime: deja el renglon sin columna de precio.
+    # `price_ask_legend`: la leyenda "Consultar"/"Ask us" en un servicio SIN
+    # precio. APAGADA para todos desde el 2026-08-16 (decision de Vero, al ver
+    # su propia pagina): ella listo servicios sin precio a proposito y cada
+    # renglon salio con un "Consultar" que ella no escribio, repetido linea tras
+    # linea. La regla de la casa es la que ella dicto: "si pusieron el precio que
+    # aparezca, y si no pusieron que no aparezca nada". Una vertical que la
+    # quiera de vuelta la enciende en su vertical.yaml (`blocks:`), pero el
+    # default ya no inventa texto que el negocio no escribio.
     "price_ask_legend": {
-        "enabled_for": "all",
+        "enabled_for": "none",
     },
     # `footer_privacy`: el enlace de Privacidad del pie. ModaLink no lo lleva en
     # las paginas de cliente.

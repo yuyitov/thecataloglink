@@ -139,7 +139,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 /* ---------- marquee ---------- */
 .marquee{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
   overflow:hidden;padding:16px 0;white-space:nowrap;margin-top:8px}
-.marquee__track{display:inline-flex;min-width:max-content;animation:slide 18s linear infinite;will-change:transform}
+.marquee__track{display:inline-flex;min-width:max-content;animation:slide var(--marquee-seconds,18s) linear infinite;will-change:transform}
 .marquee__track>span{display:inline-flex;align-items:baseline;gap:.6em;padding-right:1.6em;
   font-family:var(--serif);font-size:25px;letter-spacing:.05em;color:var(--soft)}
 .marquee__track em{font-style:italic;color:var(--accent)}

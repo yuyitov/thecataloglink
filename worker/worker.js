@@ -725,6 +725,17 @@ async function handleTallyWebhook(request, env) {
       JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, blocked_by_status: existingOrder.status, attempted_at: now }),
       { expirationTtl: 2592000 }
     ).catch(() => {});
+    // El caso REAL que esto atiende (Vero, 2026-08-16): el cliente vuelve a
+    // abrir el formulario del correo de compra —no el de modificacion— y lo
+    // llena entero. Tally lo acepta y le dice "enviado", pero aqui la orden ya
+    // esta 'delivered' y el envio muere en este 409: ni su pagina cambia, ni el
+    // se entera, ni nosotros. Perdio 50 preguntas de trabajo en silencio.
+    // Ahora se le contesta con SU enlace de modificacion, y se avisa aqui.
+    await guideResubmissionBackToModification(env, {
+      order: existingOrder,
+      orderId: incomingOrderId,
+      submissionId: normalized.submission_id
+    });
     return jsonResponse({ ok: false, status: 'invalid_order_status' }, 409);
   }
 
@@ -1171,6 +1182,91 @@ function modificationFormUrl(env, { token, slug, lang, orderId, customerEmail, p
   url += `&correction_token=${encodeURIComponent(token)}`;
   url += buildPrefillQuery(prefill, MODIFICATION_PREFILL_MAX);
   return url;
+}
+
+/**
+ * El cliente reenvio el formulario de COMPRA cuando su pagina ya esta entregada.
+ *
+ * Tally se lo acepto y le dijo "enviado", pero el intake muere en el 409 de
+ * `invalid_order_status`: sin `correction_token` no es una modificacion, y la
+ * orden ya no esta en 'paid'. Antes eso era silencio total — el cliente creia
+ * haber pedido sus cambios y nadie los aplicaba nunca.
+ *
+ * Aqui se le responde con SU enlace de modificacion (el que YA tiene acuñado,
+ * no uno nuevo: acuñarlo le gastaria una modificacion incluida que no pidio) y
+ * se avisa al buzon de alertas. Si ya no le quedan modificaciones incluidas, el
+ * correo lo manda a responder — no se le vende nada en un correo que ya es una
+ * mala noticia.
+ *
+ * Idempotente por submission_id: Tally reintenta webhooks, y este correo no
+ * puede llegar dos veces por el mismo envio.
+ */
+async function guideResubmissionBackToModification(env, { order, orderId, submissionId }) {
+  try {
+    const customerEmail = (order?.customer_email || '').trim();
+    const slug = (order?.slug || '').trim();
+    if (!customerEmail || !slug) return;
+
+    const dedupKey = `resubmit_guided:${orderId}:${submissionId}`;
+    const already = await env.SERVICE_MENU_KV.get(kvKey(env, 'flag', dedupKey)).catch(() => null);
+    if (already) return;
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'flag', dedupKey), '1', { expirationTtl: 2592000 }).catch(() => {});
+
+    const lang = emailLangFromCurrency(order?.currency) || 'en';
+    const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+    const pageUrl = `${baseUrl}/links/${slug}/`;
+
+    // El enlace vigente, si le quedan modificaciones incluidas sin usar.
+    const delivery = await env.SERVICE_MENU_KV
+      .get(kvKey(env, 'delivery', slug), { type: 'json' }).catch(() => null);
+    const token = delivery?.correction_token || '';
+    let modificationUrl = '';
+    if (token) {
+      const record = await env.SERVICE_MENU_KV
+        .get(kvKey(env, 'correction', token), { type: 'json' }).catch(() => null);
+      if (record && !record.used_at) {
+        modificationUrl = await bestModificationUrl(env, { token, slug, lang, orderId });
+      }
+    }
+
+    if (secret(env, 'SENDGRID_API_KEY')) {
+      await sendEmail({
+        env,
+        to: customerEmail,
+        subject: lang === 'es'
+          ? `Recibimos tu envío — así se piden los cambios`
+          : `We got your submission — here's how to request changes`,
+        html: buildResubmissionEmail({ pageUrl, lang, modificationUrl, env }),
+        text: buildResubmissionText({ pageUrl, lang, modificationUrl, env })
+      });
+    }
+
+    await alertOnce(
+      env,
+      dedupKey,
+      2592000,
+      `[${brandName(env)}] Un cliente reenvió el formulario de compra`,
+      [
+        'Un cliente volvió a llenar el formulario de COMPRA en vez del de modificación.',
+        'Tally se lo aceptó, pero su página NO cambió: el envío se bloqueó por estado de orden.',
+        '',
+        `Orden: ${orderId}`,
+        `Envío de Tally: ${submissionId}`,
+        `Cliente: ${customerEmail}`,
+        `Página: ${pageUrl}`,
+        `Estado de la orden: ${order?.status || '(desconocido)'}`,
+        '',
+        modificationUrl
+          ? 'Ya se le respondió por correo con su enlace de modificación vigente.'
+          : 'Ya se le respondió por correo. OJO: NO le quedan modificaciones incluidas, así que el correo lo invita a responder — revisa qué quería cambiar.',
+        '',
+        'Sus respuestas quedaron guardadas en Tally: si de verdad quería esos cambios, están ahí.'
+      ]
+    );
+  } catch (err) {
+    // Nunca romper el 409 por un correo de cortesía.
+    console.error('guideResubmissionBackToModification failed:', safeError(err));
+  }
 }
 
 // Enlace de modificación con caída al camino viejo: formulario completo
@@ -3131,6 +3227,75 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl,
     ${nextBlock}${buyBlock}
     <p style="color: #666; font-size: 14px;">${t.alt}</p>
   `, env);
+}
+
+// Correo de "reenviaste el formulario de compra". Tono: no fue tu culpa, no
+// perdiste nada, esto es lo que hay que hacer. Nunca vende una correccion
+// extra aqui — el cliente ya se llevo una decepcion en este mismo correo.
+function buildResubmissionEmail({ pageUrl, lang, modificationUrl, env }) {
+  const es = lang !== 'en';
+  const copy = modificationCopy(env, es);
+  const cuerpo = es
+    ? `
+    <p style="margin: 0 0 16px;">Recibimos tu envío, pero ese era el formulario de <strong>compra</strong>, no el de cambios — por eso tu página no se actualizó todavía.</p>
+    <p style="margin: 0 0 16px;">Tranquilo, no perdiste nada: <strong>guardamos todo lo que escribiste</strong>.</p>
+    ${modificationUrl
+      ? `<p style="margin: 0 0 16px;">Para que los cambios se apliquen, ${copy.open}:</p>
+         <p style="margin: 0 0 24px;"><a href="${escapeHtml(modificationUrl)}" style="background: #111; color: #fff; padding: 12px 22px; border-radius: 999px; text-decoration: none; display: inline-block;">Pedir mis cambios</a></p>`
+      : `<p style="margin: 0 0 24px;"><strong>Responde a este correo</strong> con los cambios que quieres y los revisamos contigo.</p>`}
+    <p style="margin: 0 0 16px;">Tu página sigue publicada aquí: <a href="${escapeHtml(pageUrl)}">${escapeHtml(pageUrl)}</a></p>
+    <p style="margin: 0 0 16px;">Si tienes dudas, responde a este correo.</p>`
+    : `
+    <p style="margin: 0 0 16px;">We got your submission, but that was the <strong>purchase</strong> form, not the changes one — so your page hasn't been updated yet.</p>
+    <p style="margin: 0 0 16px;">Nothing is lost: <strong>we saved everything you wrote</strong>.</p>
+    ${modificationUrl
+      ? `<p style="margin: 0 0 16px;">To have your changes applied, ${copy.open}:</p>
+         <p style="margin: 0 0 24px;"><a href="${escapeHtml(modificationUrl)}" style="background: #111; color: #fff; padding: 12px 22px; border-radius: 999px; text-decoration: none; display: inline-block;">Request my changes</a></p>`
+      : `<p style="margin: 0 0 24px;"><strong>Just reply to this email</strong> with the changes you want and we'll go through them with you.</p>`}
+    <p style="margin: 0 0 16px;">Your page is still live here: <a href="${escapeHtml(pageUrl)}">${escapeHtml(pageUrl)}</a></p>
+    <p style="margin: 0 0 16px;">Any questions, just reply to this email.</p>`;
+  return `<!doctype html><html><body style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; color: #222; line-height: 1.6; max-width: 560px; margin: 0 auto; padding: 24px;">
+    ${cuerpo}
+    <hr style="border: none; border-top: 1px solid #eee; margin: 28px 0 16px;">
+    <p style="color: #999; font-size: 12px; margin: 0;">${emailFooterHtml(env)}</p>
+  </body></html>`;
+}
+
+function buildResubmissionText({ pageUrl, lang, modificationUrl, env }) {
+  const es = lang !== 'en';
+  const copy = modificationCopy(env, es);
+  const lines = es
+    ? [
+        'Recibimos tu envío, pero ese era el formulario de COMPRA, no el de cambios:',
+        'por eso tu página no se actualizó todavía.',
+        '',
+        'Tranquilo, no perdiste nada: guardamos todo lo que escribiste.',
+        '',
+        ...(modificationUrl
+          ? [`Para que los cambios se apliquen, ${copy.openHere} ${modificationUrl}`, '']
+          : ['Responde a este correo con los cambios que quieres y los revisamos contigo.', '']),
+        `Tu página sigue publicada aquí: ${pageUrl}`,
+        '',
+        'Si tienes dudas, responde a este correo.',
+        '',
+        emailFooterText(env)
+      ]
+    : [
+        "We got your submission, but that was the PURCHASE form, not the changes one:",
+        "that's why your page hasn't been updated yet.",
+        '',
+        'Nothing is lost: we saved everything you wrote.',
+        '',
+        ...(modificationUrl
+          ? [`To have your changes applied, ${copy.openHere} ${modificationUrl}`, '']
+          : ["Just reply to this email with the changes you want and we'll go through them with you.", '']),
+        `Your page is still live here: ${pageUrl}`,
+        '',
+        'Any questions, just reply to this email.',
+        '',
+        emailFooterText(env)
+      ];
+  return lines.join('\n');
 }
 
 function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, env }) {

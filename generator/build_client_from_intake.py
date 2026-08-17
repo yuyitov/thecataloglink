@@ -36,6 +36,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import struct
 import shutil
 import subprocess
 import sys
@@ -187,6 +188,101 @@ def download_image(url: str, dest_dir: Path, basename: str) -> str | None:
     filename = f"{basename}{ext}"
     (dest_dir / filename).write_bytes(data)
     return filename
+
+
+def medir_imagen(ruta: Path) -> tuple[int, int] | None:
+    """Ancho y alto de una imagen, leyendo solo su cabecera. Sin dependencias.
+
+    Se lee a mano (y no con Pillow) porque Pillow no esta en el requirements.txt
+    de los repos de producto: sumar una dependencia al CI de los cinco por medir
+    dos numeros es un precio alto. Cubre lo que el intake acepta —PNG, JPEG y
+    WebP— mas GIF de propina. Cualquier otra cosa devuelve None, y quien llama
+    se queda con su valor por defecto.
+    """
+    try:
+        datos = ruta.read_bytes()
+    except OSError:
+        return None
+    try:
+        if datos[:8] == b"\x89PNG\r\n\x1a\n" and len(datos) >= 24:
+            return struct.unpack(">II", datos[16:24])
+        if datos[:3] == b"GIF" and len(datos) >= 10:
+            return struct.unpack("<HH", datos[6:10])
+        if datos[:4] == b"RIFF" and datos[8:12] == b"WEBP":
+            formato = datos[12:16]
+            if formato == b"VP8 ":
+                ancho, alto = struct.unpack("<HH", datos[26:30])
+                return ancho & 0x3FFF, alto & 0x3FFF
+            if formato == b"VP8L":
+                bits = struct.unpack("<I", datos[21:25])[0]
+                return (bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1
+            if formato == b"VP8X":
+                ancho = int.from_bytes(datos[24:27], "little") + 1
+                alto = int.from_bytes(datos[27:30], "little") + 1
+                return ancho, alto
+            return None
+        if datos[:2] == b"\xff\xd8":
+            i = 2
+            while i + 9 < len(datos):
+                if datos[i] != 0xFF:
+                    i += 1
+                    continue
+                marca = datos[i + 1]
+                # SOF0..SOF15 menos los marcadores que no describen la trama
+                if 0xC0 <= marca <= 0xCF and marca not in (0xC4, 0xC8, 0xCC):
+                    alto, ancho = struct.unpack(">HH", datos[i + 5:i + 9])
+                    return ancho, alto
+                if marca in (0xD8, 0x01) or 0xD0 <= marca <= 0xD7:
+                    i += 2
+                    continue
+                largo = struct.unpack(">H", datos[i + 2:i + 4])[0]
+                i += 2 + largo
+            return None
+    except (struct.error, IndexError):
+        return None
+    return None
+
+
+# Las tres formas de marco que usa el diseno. Una foto no se recorta "un poco":
+# se recorta a la forma del marco, asi que manda la orientacion de la MAYORIA.
+ASPECTOS = {"vertical": "3/4", "cuadrado": "1/1", "horizontal": "4/3"}
+
+
+def aspecto_dominante(rutas: list[Path]) -> str | None:
+    """El marco que menos recorta a este juego de fotos.
+
+    Vero (2026-08-16), sobre su propia pagina: "las fotos que yo subi eran
+    verticales y todas se ven mal porque salen cortadas". El marco estaba fijo
+    en 4/3 (horizontal), asi que a una foto vertical le cortaba media imagen — y
+    como el formulario no previsualiza, ella no tenia forma de saberlo antes.
+
+    En un carrusel todas las diapositivas comparten marco (si no, la pagina
+    salta de alto al deslizar), asi que se elige UNO: el de la orientacion con
+    mas fotos. Empate, o nada que se pueda medir, devuelve None y el diseno se
+    queda con su 4/3 de siempre.
+    """
+    cuenta = {"vertical": 0, "cuadrado": 0, "horizontal": 0}
+    for ruta in rutas:
+        medida = medir_imagen(ruta)
+        if not medida:
+            continue
+        ancho, alto = medida
+        if not ancho or not alto:
+            continue
+        razon = ancho / alto
+        if razon < 0.9:
+            cuenta["vertical"] += 1
+        elif razon > 1.1:
+            cuenta["horizontal"] += 1
+        else:
+            cuenta["cuadrado"] += 1
+    if not any(cuenta.values()):
+        return None
+    mayor = max(cuenta.values())
+    ganadoras = [forma for forma, n in cuenta.items() if n == mayor]
+    if len(ganadoras) != 1:
+        return None
+    return ASPECTOS[ganadoras[0]]
 
 
 def download_gallery_images(payload: dict, dest_dir: Path) -> list[str]:
@@ -1614,6 +1710,15 @@ def main() -> int:
            if lookbook_gallery
            else {"gallery_images": [{"url": f"{CLIENT_BASE_URL}/{slug}/assets/{filename}"}
                                     for filename in gallery_files]}),
+        # La FORMA del marco de la galeria, medida de las fotos que el negocio
+        # subio (ver aspecto_dominante). Se decide aqui, donde los archivos ya
+        # estan en disco: el generador no los tiene a mano cuando pinta. Vacio =
+        # el 4/3 de siempre, que es lo que pasa cuando no hay fotos o no se
+        # pueden medir.
+        **({"gallery_aspect": aspecto}
+           if (aspecto := aspecto_dominante(
+               [assets_dir / f for f in (lookbook_files if lookbook_gallery else gallery_files)]))
+           else {}),
         "whatsapp": str(payload.get("whatsapp", "")).strip() or None,
         "phone": str(payload.get("phone", "")).strip() or None,
         "public_email": str(payload.get("public_email", "")).strip() or None,

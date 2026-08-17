@@ -126,7 +126,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
   scrollbar-width:none}
 .figure__track::-webkit-scrollbar{display:none}
 .figure__slide{flex:0 0 100%;scroll-snap-align:center}
-.figure img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.figure img{width:100%;aspect-ratio:var(--figure-ratio,4/3);object-fit:cover}
 .gallery-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:42px;height:42px;
   border-radius:50%;border:1px solid var(--hair);background:rgba(255,255,255,.72);color:var(--base-ink);
   display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;cursor:pointer;

@@ -847,15 +847,26 @@ def _gallery_images(payload: dict) -> list[str]:
     return images[: cap + 1 if source_key == "lookbook_urls" else cap]
 
 
+# Las formas de marco que el motor acepta para la galeria. Espejo de ASPECTOS
+# en build_client_from_intake: lo que no este aqui no se escribe en el HTML.
+ASPECTOS_VALIDOS = {"3/4", "1/1", "4/3"}
+
+
 def build_hero_image(payload: dict, s: dict) -> str:
     """Optional full-width photo band under the hero; becomes a carousel at 2+ photos."""
     images = _gallery_images(payload)
     if not images:
         return ""
     alt = esc(payload.get("business_name"))
+    # El marco toma la forma de las fotos que el negocio subio. Lo mide
+    # build_client_from_intake (donde los archivos estan en disco) y lo deja en
+    # `gallery_aspect`. Sin ese dato, el 4/3 de siempre: asi ninguna pagina ya
+    # publicada cambia de forma sola.
+    aspecto = str(payload.get("gallery_aspect") or "").strip()
+    marco = f' style="--figure-ratio:{esc(aspecto)}"' if aspecto in ASPECTOS_VALIDOS else ""
     if len(images) == 1:
         return (
-            '<div class="shell figure" data-reveal>'
+            f'<div class="shell figure" data-reveal{marco}>'
             '<div class="figure__viewport">'
             f'<img class="figure__media" src="{images[0]}" alt="{alt}" loading="lazy">'
             '</div></div>'
@@ -876,7 +887,7 @@ def build_hero_image(payload: dict, s: dict) -> str:
             f'aria-label="{esc(s["gallery_photo"])} {i + 1}"></button>'
         )
     return (
-        '<div class="shell figure figure--carousel" data-reveal data-gallery>'
+        f'<div class="shell figure figure--carousel" data-reveal data-gallery{marco}>'
         '<div class="figure__viewport">'
         '<div class="figure__track">'
         f'{"".join(slides)}'
@@ -2278,6 +2289,10 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "logo_url",
             "primary_image_url",
             "gallery_images",
+            # La forma del marco de la galeria, medida de las fotos del negocio
+            # (build_client_from_intake::aspecto_dominante). Sin esta linea el
+            # dato se queda en el client.json y la pagina sigue recortando a 4/3.
+            "gallery_aspect",
             "lookbook_urls",
             "whatsapp",
             "phone",

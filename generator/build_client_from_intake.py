@@ -736,7 +736,15 @@ def parse_featured(featured_text: str) -> dict | None:
     parts = split_fields(name, maxsplit=1)
     if len(parts) == 2 and parts[0].strip():
         name, inline_description = parts[0].strip(), parts[1].strip()
-    description = " ".join(part for part in [inline_description, *lines[1:]] if part)
+    # Los renglones que escribio el negocio se CONSERVAN (Vero, 2026-08-16, sobre
+    # su propia pagina: "me asegure de poner en un renglon diferente 'Una tarjeta
+    # que no se queda obsoleta...' y no lo respeto el diseno"). Antes se pegaban
+    # con un espacio aqui, asi que el salto se perdia en el intake y ya no habia
+    # forma de recuperarlo al pintar. La descripcion en linea (lo que venia
+    # despues de la raya en el PRIMER renglon) sigue unida a la primera linea
+    # siguiente si ambas existen: son la misma frase partida por la raya, no dos
+    # renglones que el negocio separo.
+    description = "\n".join(part for part in [inline_description, *lines[1:]] if part)
     featured = {"name": name[:120], "description": description[:300]}
     if price_label:
         featured["price_label"] = price_label

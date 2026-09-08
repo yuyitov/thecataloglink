@@ -59,7 +59,7 @@
  */
 
 import { classifyStripeEvent } from './stripe-filter.mjs';
-import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
+import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fotosEnOrdenDeSubida, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
 // Mapa campo-público -> alias de título del intake de Tally, única fuente de
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
@@ -2481,6 +2481,13 @@ function answerFileUrl(answers, keys) {
 // buildPublicPayload. No se invierte aqui porque esta funcion tambien alimenta
 // las fotos de PRODUCTO del catalogo, donde cada foto se empareja con un
 // producto y el efecto de invertir no esta medido todavia.
+// Tope de fotos de galeria que se publican. Vivia como un 5 suelto en la
+// llamada; con nombre se ve que es una decision de producto y no el limite
+// tecnico de answerFileUrls.
+const GALERIA_MAX_FOTOS = 5;
+
+
+// `limit` 0 = sin recorte (quien llama ordena primero y recorta despues).
 function answerFileUrls(answers, keys, limit = 6) {
   for (const k of keys) {
     const v = getAnswer(answers, k);
@@ -2492,7 +2499,7 @@ function answerFileUrls(answers, keys, limit = 6) {
         return '';
       })
       .filter(Boolean)
-      .slice(0, limit);
+      .slice(0, limit > 0 ? limit : undefined);
   }
   return [];
 }
@@ -2644,12 +2651,13 @@ function buildPublicPayload(normalized, orderId, env) {
     policies_text: answerAny(a, fieldAliases('policies_text')),
     logo_url: answerFileUrl(a, fieldAliases('logo_url')),
     image_url: answerFileUrl(a, fieldAliases('image_url')),
-    // Al reves de como Tally las entrega, o sea en el orden en que la clienta
-    // las subio: es el unico que ella puede predecir. Vero, viendo su pagina el
-    // 2026-08-16: "la primera foto se muestra como la ultima". Se invierte
-    // ANTES del recorte (el limite va dentro de answerFileUrls sobre el orden
-    // de Tally), asi que aqui se pide el tope y se invierte lo que llegue.
-    gallery_image_urls: answerFileUrls(a, fieldAliases('gallery_image_urls'), 5).reverse(),
+    // En el orden en que la clienta las subio — el unico que ella puede
+    // predecir. Vero, viendo su pagina el 2026-08-16: "la primera foto se
+    // muestra como la ultima". Se piden TODAS (sin tope) y el recorte lo hace
+    // fotosEnOrdenDeSubida DESPUES de ordenarlas: al reves, el tope se quedaba
+    // con las mas nuevas y tiraba la PRIMERA que ella subio.
+    gallery_image_urls: fotosEnOrdenDeSubida(
+      answerFileUrls(a, fieldAliases('gallery_image_urls'), 0), GALERIA_MAX_FOTOS),
     location_1_name: answerAny(a, fieldAliases('location_1_name')),
     location_2_name: answerAny(a, fieldAliases('location_2_name')),
     location_2_address: answerAny(a, fieldAliases('location_2_address')),

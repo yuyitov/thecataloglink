@@ -338,6 +338,24 @@ export function validBrandStyles(env) {
 // desde ahora una línea en styles.aliases del vertical.yaml.
 // Formato: "alias:slug,alias:slug". Un alias que apunte a un slug fuera del
 // catálogo se ignora — no puede colar un estilo que la vertical no vende.
+// Las fotos de la galeria en el ORDEN EN QUE LA CLIENTA LAS SUBIO, recortadas
+// DESPUES de ordenarlas.
+//
+// Dos hechos que se juntan mal si no se cuidan:
+//   1. Tally entrega los archivos de una pregunta multi-subida en orden INVERSO
+//      al de subida (medido el 2026-08-16 con una respuesta real de HMU: seis
+//      archivos con la hora en el nombre, de 21:03 a 20:59).
+//   2. La galeria tiene un tope de fotos.
+// Si se recorta ANTES de invertir —como quedo del 2026-08-16 al 2026-09-08— el
+// tope se queda con las fotos MAS NUEVAS y tira la PRIMERA que la clienta subio,
+// que es justo la que ella puso al principio a proposito. Invertir primero y
+// recortar despues tira la ultima, que es lo que cualquiera espera.
+export function fotosEnOrdenDeSubida(urls, limite) {
+  const enOrden = [...(urls || [])].reverse();
+  return limite > 0 ? enOrden.slice(0, limite) : enOrden;
+}
+
+
 export function brandStyleAliases(env, styles) {
   const validos = styles || validBrandStyles(env || {});
   const fuera = {};

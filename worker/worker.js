@@ -2969,22 +2969,22 @@ function modificationCopy(env, es) {
   if (es) {
     return prefill
       ? {
-          open: 'verás tu información actual y editas solo lo que quieras cambiar',
-          openHere: 'Ábrela aquí y edita solo lo que quieras cambiar:'
+          open: 'verás tu información actual y editas todo lo que quieras — todo lo que mandes en ese envío cuenta como UNA modificación',
+          openHere: 'Ábrela aquí y cambia todo lo que necesites — todo lo que mandes en ese envío cuenta como UNA modificación:'
         }
       : {
-          open: 'nos escribes ahí qué quieres cambiar y nosotros lo aplicamos',
-          openHere: 'Ábrela aquí y escríbenos qué quieres cambiar:'
+          open: 'nos escribes ahí todos los cambios que quieras y nosotros los aplicamos — todo lo que mandes de una vez cuenta como UNA modificación',
+          openHere: 'Ábrela aquí y escríbenos todos los cambios que quieras — todo lo que mandes de una vez cuenta como UNA modificación:'
         };
   }
   return prefill
     ? {
-        open: 'you will see your current information and edit only what you want to change',
-        openHere: 'Open it here and edit only what you want to change:'
+        open: 'you will see your current information and change everything you need — everything you send in that submission counts as ONE modification',
+        openHere: 'Open it here and change everything you need — everything you send in that submission counts as ONE modification:'
       }
     : {
-        open: 'you tell us there what you want changed and we apply it',
-        openHere: 'Open it here and tell us what you want changed:'
+        open: 'you tell us there all the changes you want and we apply them — everything you send at once counts as ONE modification',
+        openHere: 'Open it here and tell us all the changes you want — everything you send at once counts as ONE modification:'
       };
 }
 

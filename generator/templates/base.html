@@ -87,7 +87,7 @@ html:not(.gsap-on) .intro{animation:introUp .9s cubic-bezier(.76,0,.24,1) 1.9s f
 .monogram{width:46px;height:46px;border:1px solid var(--hair);border-radius:50%;
   flex:none;display:flex;align-items:center;justify-content:center;
   font-family:var(--serif);font-size:20px;color:var(--accent)}
-img.monogram{object-fit:cover;border-color:var(--hair)}
+img.monogram{object-fit:contain;border:0;border-radius:12px;background:transparent;width:auto;height:58px;max-width:172px}
 .lang-switch{font-size:11px;letter-spacing:.14em;text-transform:uppercase}
 .lang-switch a{color:var(--soft);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:2px}
 .hero__body{flex:1;display:flex;flex-direction:column;justify-content:center;
@@ -163,9 +163,10 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 .mrow>div{min-width:0}
 .mrow__name{font-weight:400;font-size:15.5px}
 .mrow__desc{display:block;color:var(--soft);margin-top:3px;font-style:italic;
-  font-family:var(--serif);font-size:15px}
+  font-family:var(--serif);font-size:16.5px;line-height:1.5}
 .mrow__dots{flex:1;border-bottom:1px dotted var(--hair);transform:translateY(-4px);min-width:24px}
-.mrow__price{font-family:var(--serif);font-size:18px;color:var(--accent);white-space:nowrap}
+/* 24px: texto grande, asi el minimo de contraste es 3.0 y lo cumplen las 12 paletas. */
+.mrow__price{font-family:var(--serif);font-size:24px;color:var(--accent);white-space:nowrap}
 
 @media (max-width:560px){
   .mrow{display:block}

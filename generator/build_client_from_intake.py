@@ -598,13 +598,20 @@ _RANGO = (r"\$" + _CIFRA + r"\s*[-–—]\s*\$" + _CIFRA + r"(?:" + _MONEDA + r"
 # de valor" se convertiría en el precio del servicio. Con "$" el reconocedor ya
 # era greedy así; esto NO extiende esa greediness a la moneda escrita.
 _MONEDA_ESCRITA = _CIFRA + r"(?:" + _MONEDA + r")\b\s*$"
+# La moneda tambien va DELANTE: "MXN 1,200" es como escribe mucha gente, y
+# sin esto ese precio no se reconocia y DESAPARECIA de la pagina de un
+# negocio que esta vendiendo (medido el 2026-09-08 al revisar la pagina de
+# Vero; el defecto es anterior a ese dia). Mismo ancla al final que arriba y
+# por la misma razon: sin ella, "paga en MXN 200 pesos de deposito" seria el
+# precio del servicio.
+_MONEDA_DELANTE = r"(?:" + _MONEDA + r")\s*" + _CIFRA + r"\s*$"
 # Lo que el reconocedor ya aceptaba, intacto: ni una línea que hoy funciona
 # cambia de precio.
 _CON_SIMBOLO = (r"\$[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?(?:\s*(?:/|por|per)\s*[\w\s]+)?"
                 r"|(?:desde|from|starting at|starts at)\s+\$?[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?")
 _SIN_CIFRA = r"(?:consultar|cotizar|ask us|inquire|quote|varies)"
 PRICE_HINT_RE = re.compile(
-    "(?i)(?:" + _RANGO + "|" + _CON_SIMBOLO + "|" + _MONEDA_ESCRITA + "|" + _SIN_CIFRA + ")")
+    "(?i)(?:" + _RANGO + "|" + _CON_SIMBOLO + "|" + _MONEDA_ESCRITA + "|" + _MONEDA_DELANTE + "|" + _SIN_CIFRA + ")")
 
 
 # Hasta dónde puede llegar una etiqueta de precio antes de que deje de parecer
@@ -620,11 +627,40 @@ MAX_PRICE_LABEL = 60
 MAX_FEATURED_PRICE_LABEL = 120
 
 
+# Cuantas palabras puede tener un segmento para que una etiqueta SIN CIFRA
+# ("Consultar", "Cotizar", "Ask us") siga pareciendo un precio y no una frase.
+# "Consultar", "A consultar" y "Consultar precio" son precios; "Tus clientes
+# pueden consultar la misma pagina en ambos idiomas" es prosa.
+MAX_PALABRAS_PRECIO_SIN_CIFRA = 3
+_SEPARADORES_RE = re.compile(r"[-–—:|·•]")
+
+
+def _es_precio_valido(line: str, match: "re.Match") -> bool:
+    """Si el candidato no trae cifra, exige que su SEGMENTO sea corto.
+
+    Vero, 2026-09-08, mirando su propia pagina: escribio "Disponible en espanol
+    e ingles - Tus clientes pueden consultar la misma pagina en ambos idiomas" y
+    el motor corto en "consultar", dejando media frase pintada como PRECIO,
+    grande y en color de acento. En espanol "consultar" es palabra comunisima
+    ("puedes consultar disponibilidad", "consultar horarios"), asi que esto le
+    habria pasado a muchos clientes.
+
+    Lo que trae cifra o simbolo se reconoce donde aparezca: un "$350" o un
+    "MXN 1,200" no se confunden con prosa, y tocarlos habria sido cambiar algo
+    que funciona.
+    """
+    if not re.fullmatch(_SIN_CIFRA, match.group(0), re.I):
+        return True
+    segmento = _SEPARADORES_RE.split(line)[-1].strip()
+    return len(segmento.split()) <= MAX_PALABRAS_PRECIO_SIN_CIFRA
+
+
 def split_price_label(line: str, max_price_len: int = MAX_PRICE_LABEL) -> tuple[str, str | None]:
     """Split one service line into visible name and optional price label."""
     match = None
     for candidate in PRICE_HINT_RE.finditer(line):
-        match = candidate
+        if _es_precio_valido(line, candidate):
+            match = candidate
     if not match:
         return line, None
     name = TRAIL_SEP_RE.sub("", line[:match.start()]).strip()
@@ -773,7 +809,20 @@ def parse_policies(policies_text: str) -> list[str]:
 
 
 def _strip_qa_label(value: str) -> str:
-    return re.sub(r"(?i)^\s*(?:q|a|pregunta|respuesta|question|answer)\s*[:.-]\s*", "", value).strip()
+    """Quita la etiqueta con la que el negocio numera sus preguntas.
+
+    Vero, 2026-09-08, mirando su propia pagina: escribio "Pregunta 1: Tengo que
+    pagar una mensualidad?" y "/ Respuesta: No..." y la pagina publico esas
+    etiquetas tal cual, con la barra suelta incluida. El limpiador ya existia
+    pero no contemplaba dos cosas muy normales al numerar una FAQ: el NUMERO
+    entre la palabra y los dos puntos ("Pregunta 1:") y un separador delante
+    ("/ Respuesta:", "- Respuesta:"), que es como queda al escribir la pregunta
+    y la respuesta en el mismo renglon.
+    """
+    return re.sub(
+        r"(?i)^\s*[/|·•\-–—]?\s*(?:q|a|pregunta|respuesta|question|answer)"
+        r"\s*\d*\s*[:.\-]\s*",
+        "", value).strip()
 
 
 def parse_faq(faq_text: str) -> list[dict]:

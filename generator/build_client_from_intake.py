@@ -1032,6 +1032,10 @@ def normalize_business_type(value: str) -> str | None:
         ("creative", ("creative", "creativo", "photography", "fotografia", "photo", "photographer", "fotografo", "artist", "artista", "design", "diseno", "designer", "tattoo", "tattoos", "tatuaje", "tatuajes", "piercing", "arte")),
         ("wellness", ("wellness", "bienestar", "spa", "therapy", "terapia", "therapist", "terapeuta", "massage", "massages", "masaje", "masajes", "holistic", "holistico")),
         ("beauty", ("beauty", "belleza", "salon", "barbershop", "barber", "barberia", "nails", "unas", "lashes", "pestanas", "brows", "cejas", "hair", "cabello", "facial", "facials", "faciales", "estetica", "makeup", "maquillaje")),
+        # Página de UNA PERSONA (copy en primera persona, ver strings_base.PERSON_STRINGS).
+        # Palabras que solo trae la opción "Profesional independiente (mi perfil personal)"
+        # / "Independent professional (my own profile)": gana a "professional" por conteo.
+        ("person", ("independiente", "independent", "perfil", "profile", "freelance", "freelancer")),
         ("professional", ("professional", "profesional", "profesionales", "consulting", "consultant", "consultor", "consultora", "consultoria", "consult", "coach", "coaching", "clinic", "clinica", "lawyer", "abogado", "accountant", "contador")),
         ("retail", ("retail", "tienda", "store", "boutique", "shop", "producto", "products", "productos")),
     )

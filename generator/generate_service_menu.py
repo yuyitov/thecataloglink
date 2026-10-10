@@ -59,6 +59,7 @@ from blocks import block_enabled, fill_tokens
 # El botón que el negocio eligió: la tabla de alias es DATO compartido con el
 # worker, no una copia local (ver primary_cta.py — tres copias divergidas).
 from primary_cta import normalize_primary_cta
+from strings_base import PERSON_BUSINESS_TYPE, PERSON_STRINGS
 from vertical_config import (
     BLOCKS, BRAND_NAME, CATALOGS, DIRECTORY, DOMAIN, LEGAL, SCHEMA,
     STRINGS, STYLES_CATALOG, TEMPLATE_COMMENT_OVERRIDES, TYPOGRAPHY,
@@ -850,6 +851,16 @@ def _gallery_images(payload: dict) -> list[str]:
 # Las formas de marco que el motor acepta para la galeria. Espejo de ASPECTOS
 # en build_client_from_intake: lo que no este aqui no se escribe en el HTML.
 ASPECTOS_VALIDOS = {"3/4", "1/1", "4/3"}
+
+
+
+def page_strings(view: dict, lang: str) -> dict:
+    """STRINGS del idioma, con el copy en primera persona encima cuando la
+    pagina es de una PERSONA (`business_type: "person"`, ver strings_base).
+    Cualquier otro payload recibe el mismo dict de siempre (byte-identico)."""
+    if str(view.get("business_type") or "").strip() == PERSON_BUSINESS_TYPE:
+        return {**STRINGS[lang], **PERSON_STRINGS.get(lang, {})}
+    return STRINGS[lang]
 
 
 def build_hero_image(payload: dict, s: dict) -> str:
@@ -1999,6 +2010,88 @@ def without_motion_runtime(rendered: str) -> str:
         raise ValidationError("motion=none dejo una referencia al runtime de animacion.")
     return rendered
 
+
+# --------------------------------------------------------------------------- #
+# Movimiento SOLO CSS (Vero, 2026-09-19, HB-M2/HB-D1a del barrido)
+# --------------------------------------------------------------------------- #
+# Dr Link tenia `motion: none` (desvio B3) porque el unico movimiento del motor
+# era GSAP, y GSAP es un tercero que C1 prohibe en la pagina del paciente. Vero
+# pidio las mismas transiciones de entrada que HMU y la banda de categorias
+# deslizandose. Este modo las da SIN ninguna libreria: telon, entrada del hero,
+# revelado al hacer scroll y la banda, todo con CSS + un IntersectionObserver.
+# Se usa cuando la vertical tiene `motion` encendido y `third_party_assets`
+# APAGADO; con terceros encendidos (HMU, PawContact, ModaLink) sigue el camino
+# GSAP de siempre, byte a byte igual.
+CSS_MOTION_COMMENT = "Movimiento solo con CSS: cero librerias de terceros."
+CSS_MOTION_INTRO = (
+    ".intro{animation:introUp .9s cubic-bezier(.76,0,.24,1) 1.9s forwards}\n"
+    ".intro__brand span{animation:cssRise .8s cubic-bezier(.2,.8,.2,1) both}\n"
+    ".intro__brand span:nth-child(2){animation-delay:.09s}\n"
+    ".intro__brand span:nth-child(3){animation-delay:.18s}\n"
+    ".intro__brand span:nth-child(4){animation-delay:.27s}\n"
+    ".intro__sub{animation:cssFade .7s ease .5s both}\n"
+)
+CSS_MOTION_REVEALS = (
+    ".anim-on [data-reveal]{opacity:0;transform:translateY(36px);"
+    "transition:opacity .9s cubic-bezier(.2,.8,.2,1),transform .9s cubic-bezier(.2,.8,.2,1)}\n"
+    ".anim-on [data-reveal].is-in{opacity:1;transform:none}\n"
+    ".anim-on #ht .line>span{animation:cssLine 1.1s cubic-bezier(.2,.9,.2,1) 2.3s both}\n"
+    ".anim-on #ht .line:nth-child(2)>span{animation-delay:2.42s}\n"
+    ".anim-on #ht .line:nth-child(3)>span{animation-delay:2.54s}\n"
+    ".anim-on #hk,.anim-on #hl,.anim-on #hc,.anim-on .topbar,.anim-on .hero__scroll"
+    "{animation:cssRise .8s cubic-bezier(.2,.8,.2,1) 2.7s both}\n"
+    "@keyframes cssRise{from{opacity:0;transform:translateY(24px)}}\n"
+    "@keyframes cssFade{from{opacity:0}}\n"
+    "@keyframes cssLine{from{transform:translateY(110%)}}\n"
+)
+CSS_MOTION_SCRIPT = """<script>
+(function(){
+  var doc=document;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(!('IntersectionObserver' in window))return;
+  doc.documentElement.classList.add('anim-on');
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target)}
+    });
+  },{rootMargin:'0px 0px -14% 0px'});
+  doc.querySelectorAll('[data-reveal]').forEach(function(el){io.observe(el)});
+})();
+</script>"""
+
+
+def css_motion_runtime(rendered: str) -> str:
+    """El camino de movimiento SIN terceros.
+
+    Parte de la salida con movimiento (telon incluido y sin MOTION_OFF_CSS, asi
+    la banda de categorias se desliza) y cambia cada gancho de GSAP por su
+    equivalente en CSS. Revienta si queda una sola mencion de gsap: es
+    exactamente lo que mide C1 en Dr Link (scripts/verificar_t7.py).
+    """
+    pares = (
+        ("html:not(.gsap-on) .intro{animation:introUp .9s "
+         "cubic-bezier(.76,0,.24,1) 1.9s forwards}\n", CSS_MOTION_INTRO),
+        ("/* ---------- reveals (fallback CSS si no hay GSAP) ---------- */",
+         "/* ---------- reveals (solo CSS) ---------- */"),
+        (".gsap-on [data-reveal]{opacity:0;transform:translateY(36px)}\n", CSS_MOTION_REVEALS),
+        ("  html.gsap-on [data-reveal]{opacity:1;transform:none}\n",
+         "  html.anim-on [data-reveal]{opacity:1;transform:none}\n"),
+        (MOTION_COMMENT, CSS_MOTION_COMMENT),
+    )
+    for viejo, nuevo in pares:
+        if viejo not in rendered:
+            raise ValidationError(f"movimiento CSS: la plantilla cambio, no encontre {viejo[:40]!r}")
+        rendered = rendered.replace(viejo, nuevo)
+    start = rendered.rfind("<script>\n(function(){")
+    end = rendered.find("</script>", start)
+    if start < 0 or end < 0:
+        raise ValidationError("No se encontro el runtime de la plantilla para el movimiento CSS.")
+    rendered = (rendered[:start] + STATIC_RUNTIME_SCRIPT + "\n" + CSS_MOTION_SCRIPT
+                + rendered[end + len("</script>"):])
+    if re.search(r"gsap", rendered, flags=re.IGNORECASE):
+        raise ValidationError("el movimiento CSS dejo una referencia a GSAP (rompe C1).")
+    return rendered
+
 NOTICE_BOX_STYLE = (
     "border:1px solid var(--hair);border-radius:18px;padding:22px;"
     "background:var(--bg)"
@@ -2132,7 +2225,7 @@ def render_view(
     mismo `view` y `share_url`, y sus DOS puertas (bloque + interruptor de
     publicacion) viven donde se pueden auditar, no en la firma.
     """
-    s = STRINGS[lang]
+    s = page_strings(view, lang)
     brand = view["brand_style"]
     template_path = TEMPLATES_DIR / "base.html"
     if not template_path.exists():
@@ -2247,7 +2340,11 @@ def render_view(
     # Una sola pasada (hallazgo #17): un dato del negocio que contenga
     # literalmente otro token ya no se re-expande.
     rendered = fill_tokens(template, tokens)
-    return rendered if motion_on else without_motion_runtime(rendered)
+    if not motion_on:
+        return without_motion_runtime(rendered)
+    if not third_party_on:
+        return css_motion_runtime(rendered)
+    return rendered
 
 
 # --------------------------------------------------------------------------- #

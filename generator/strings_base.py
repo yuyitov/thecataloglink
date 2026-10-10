@@ -339,3 +339,57 @@ CATALOG_CATEGORY_EN = {
     "aromas": "Scents", "aroma": "Scent",
     "bisuteria": "Costume jewelry",
 }
+
+
+# --------------------------------------------------------------------------- #
+# Página de PERSONA (profesional independiente) — Vero, 2026-09-27
+# --------------------------------------------------------------------------- #
+# El copy base habla de un NEGOCIO ("Plan your visit", "Hours", "How we
+# work"). Una página de una persona —un operador de eventos, un abogado, un
+# contador, un freelancer— se lee en primera persona. Cuando el payload trae
+# `business_type: "person"` (opción "Profesional independiente (mi perfil
+# personal)" del formulario, ver normalize_business_type), estas llaves se
+# ponen ENCIMA de las del idioma. Solo cambia el copy: la estructura de la
+# página es la misma. Un payload sin "person" queda byte-idéntico.
+PERSON_BUSINESS_TYPE = "person"
+
+PERSON_STRINGS = {
+    "es": {
+        "title_suffix": "Perfil profesional",
+        "btn_whatsapp": "Escríbeme por WhatsApp",
+        "btn_booking": "Agendar reunión",
+        "view_menu": "Ver experiencia",
+        "services_eyebrow": "Experiencia",
+        "menu_title_html": "Lo que <em>hago</em>",
+        "services_fallback": "Experiencia",
+        "visit_eyebrow": "Detalles",
+        "visit_title_html": "Trabajemos <em>juntos</em>",
+        "hours_title": "Disponibilidad",
+        "client_care_title": "Cómo trabajo",
+        "reservations_title": "Agenda",
+        "address_title": "Dónde estoy",
+        "service_area_title": "Dónde trabajo",
+        "share_title_html": "Guarda mi <em>contacto</em>",
+        "share_lead": "Escanea el código, comparte el enlace o guárdame en tus contactos.",
+        "wallet_pass_open": "Abrir mi perfil",
+    },
+    "en": {
+        "title_suffix": "Professional profile",
+        "btn_whatsapp": "Message me on WhatsApp",
+        "btn_booking": "Book a meeting",
+        "view_menu": "See experience",
+        "services_eyebrow": "Experience",
+        "menu_title_html": "What I <em>do</em>",
+        "services_fallback": "Experience",
+        "visit_eyebrow": "Details",
+        "visit_title_html": "Work <em>with me</em>",
+        "hours_title": "Availability",
+        "client_care_title": "How I work",
+        "reservations_title": "Scheduling",
+        "address_title": "Where I'm based",
+        "service_area_title": "Where I work",
+        "share_title_html": "Save my <em>contact</em>",
+        "share_lead": "Scan the code, share the link or save me to your contacts.",
+        "wallet_pass_open": "Open my profile",
+    },
+}

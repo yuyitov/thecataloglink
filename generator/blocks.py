@@ -40,7 +40,7 @@ ENGINE_BLOCKS = {
         "enabled_for": ("food", "retail"),
     },
     "portfolio": {
-        "enabled_for": ("creative", "beauty", "wellness", "professional", "fitness"),
+        "enabled_for": ("creative", "beauty", "wellness", "professional", "person", "fitness"),
     },
     "lookbook": {
         "enabled_for": "all",

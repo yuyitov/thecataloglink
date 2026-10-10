@@ -343,6 +343,16 @@ export default {
         return await handleNotify(request, env);
       }
 
+      // Entrega de REGALO (Vero, 2026-09-27): una página publicada a mano, sin
+      // compra de Stripe, recibe el mismo correo de entrega y las mismas
+      // modificaciones gratis que un cliente que pagó. Autenticado con
+      // NOTIFY_SECRET; lo dispara el workflow manual `gift-delivery.yml`.
+      if (request.method === 'POST' && pathname === '/gift-delivery') {
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'gift', ip, minuteSlot), 5, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
+        return await handleGiftDelivery(request, env);
+      }
+
       // Correcciones: consumidos por la página estática /correct/ del sitio.
       if (request.method === 'GET' && pathname === '/correction-status') {
         const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'corrstatus', ip, minuteSlot), 30, 120);
@@ -1090,6 +1100,174 @@ async function handleNotify(request, env) {
     status: 'delivered',
     pageUrl
   });
+}
+
+/**
+ * Regalo en modo 'intake': orden `gift_<token>` en estado 'paid' y el MISMO
+ * correo post-pago que manda el webhook de Stripe (formulario con order_id +
+ * customer_email). Desde ahí todo es el camino normal. Idempotente por correo
+ * durante 7 días: un segundo disparo no crea otra orden ni manda otro correo.
+ */
+async function sendGiftIntake(env, { email, lang }) {
+  const dedupKey = kvKey(env, 'flag', `gift_intake:${email.toLowerCase()}`);
+  const already = await env.SERVICE_MENU_KV.get(dedupKey).catch(() => null);
+  if (already) {
+    return jsonResponse({ ok: true, idempotent: true, alreadySent: true, order_id: already });
+  }
+  const baseFormEN = (env.TALLY_FORM_URL_EN || '').trim();
+  const baseFormES = (env.TALLY_FORM_URL_ES || '').trim();
+  if (!baseFormEN || !baseFormES) {
+    return jsonResponse({ ok: false, error: 'TALLY_FORM_URL not configured' }, 500);
+  }
+  if (!secret(env, 'SENDGRID_API_KEY')) {
+    return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
+  }
+
+  const orderId = `gift_${generateSecureToken().slice(0, 20)}`;
+  try {
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
+      order_id: orderId,
+      source: 'gift',
+      customer_email: email,
+      amount: 0,
+      currency: lang === 'es' ? 'mxn' : 'usd',
+      status: 'paid',
+      created_at: new Date().toISOString()
+    }));
+  } catch (err) {
+    console.error('gift order save failed:', safeError(err));
+    return jsonResponse({ ok: false, error: 'Failed to save gift order' }, 500);
+  }
+
+  const formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(email)}`;
+  const formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(email)}`;
+  try {
+    await sendEmail({
+      env,
+      to: email,
+      subject: lang === 'es'
+        ? `Completa tu página ${brandName(env)} — solo falta un formulario`
+        : `Complete your ${brandName(env)} service menu — one form to go`,
+      html: buildPostPaymentEmail({ formUrlEN, formUrlES, lang, env }),
+      text: buildPostPaymentText({ formUrlEN, formUrlES, lang, env })
+    });
+  } catch (err) {
+    console.error('gift post-payment email failed:', safeError(err));
+    return jsonResponse({ ok: false, error: 'Failed to send gift email' }, 500);
+  }
+  await env.SERVICE_MENU_KV.put(dedupKey, orderId, { expirationTtl: 604800 }).catch(() => {});
+  return jsonResponse({ ok: true, status: 'intake_sent', order_id: orderId });
+}
+
+const GIFT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * POST /gift-delivery — body JSON {slug, email, lang, qr_png_base64?, prefill?}
+ * (o {mode:'intake', email, lang}: ver sendGiftIntake).
+ *
+ * Una página REGALADA (publicada a mano en data/clients/, sin pasar por Stripe
+ * ni Tally) no tiene orden en KV, así que /notify no podía entregarla: sin
+ * orden no hay correo de entrega ni enlace de modificación. Aquí se crea una
+ * orden sintética `gift_<slug>` (source: 'gift', amount 0) con el correo del
+ * dueño y la moneda que decide el idioma del correo (es -> mxn, en -> usd), y
+ * se entrega con EXACTAMENTE el mismo camino que un cliente que pagó
+ * (handleNotify): mismo correo, mismo enlace /correct/, mismas FREE_CHANGES.
+ *
+ * Idempotente: si la página ya tiene entrega, no manda nada otra vez.
+ */
+async function handleGiftDelivery(request, env) {
+  const notifySecret = (env.NOTIFY_SECRET || '').trim();
+  if (!notifySecret) {
+    return jsonResponse({ ok: false, error: 'NOTIFY_SECRET not configured' }, 500);
+  }
+  const authHeader = request.headers.get('authorization') || '';
+  const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!timingSafeEqual(provided, notifySecret)) {
+    return jsonResponse({ ok: false, error: 'Unauthorized' }, 401);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ ok: false, error: 'Invalid JSON' }, 400);
+  }
+
+  const slug = String(body?.slug || '').trim();
+  const email = String(body?.email || '').trim();
+  const lang = String(body?.lang || '').trim().toLowerCase() === 'es' ? 'es' : 'en';
+  if (!GIFT_EMAIL_RE.test(email) || email.length > 254) {
+    return jsonResponse({ ok: false, error: 'Invalid email' }, 400);
+  }
+  // mode 'intake': el regalo arranca DONDE ARRANCA UN CLIENTE QUE PAGA — el
+  // correo post-pago con su formulario. El dueño llena el cuestionario, la
+  // página se genera sola, le llega la entrega y sus modificaciones usan el
+  // formulario prellenado como las de cualquier cliente.
+  if (String(body?.mode || '').trim() === 'intake') {
+    return await sendGiftIntake(env, { email, lang });
+  }
+  if (!SLUG_RE.test(slug)) {
+    return jsonResponse({ ok: false, error: 'Invalid slug' }, 400);
+  }
+
+  const existingDelivery = await env.SERVICE_MENU_KV
+    .get(kvKey(env, 'delivery', slug), { type: 'json' }).catch(() => null);
+  if (existingDelivery && existingDelivery.status === 'delivered') {
+    return jsonResponse({ ok: true, slug, idempotent: true, alreadyDelivered: true });
+  }
+
+  const orderId = `gift_${slug}`;
+  // Prellenado del formulario de MODIFICACIÓN: {campo del intake -> texto}, con
+  // los mismos nombres que cableó cablear_prefill_en_tally.py (las claves de
+  // tally-field-aliases.json). Se guarda como la submission de esta orden, que
+  // es de donde bestModificationUrl lo lee para un cliente que sí llenó Tally.
+  // Así el dueño de una página hecha a mano recibe SU cuestionario con SUS
+  // datos, igual que cualquier cliente. Sin prefill: /correct/ de texto libre.
+  const prefill = {};
+  if (body?.prefill && typeof body.prefill === 'object' && !Array.isArray(body.prefill)) {
+    for (const [k, v] of Object.entries(body.prefill)) {
+      if (typeof k === 'string' && /^[a-z0-9_]{1,64}$/.test(k) && typeof v === 'string' && v.trim()) {
+        prefill[k] = v.slice(0, 3000);
+      }
+    }
+  }
+  const submissionId = Object.keys(prefill).length ? `gift_${slug}` : '';
+  try {
+    if (submissionId) {
+      await env.SERVICE_MENU_KV.put(kvKey(env, 'submission', submissionId), JSON.stringify({
+        submission_id: submissionId,
+        order_id: orderId,
+        customer_email: email,
+        slug,
+        prefill,
+        is_modification: false,
+        source: 'gift',
+        received_at: new Date().toISOString(),
+        status: 'gift'
+      }), { expirationTtl: 7776000 }); // 90 days, como una submission real
+    }
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
+      order_id: orderId,
+      source: 'gift',
+      customer_email: email,
+      amount: 0,
+      currency: lang === 'es' ? 'mxn' : 'usd',
+      slug,
+      ...(submissionId ? { submission_id: submissionId } : {}),
+      status: 'paid',
+      created_at: new Date().toISOString()
+    }));
+  } catch (err) {
+    console.error('gift order save failed:', safeError(err));
+    return jsonResponse({ ok: false, error: 'Failed to save gift order' }, 500);
+  }
+
+  // Mismo camino que un cliente que pagó: se reusa /notify tal cual.
+  return await handleNotify(new Request('https://internal/notify', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${notifySecret}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ slug, order_id: orderId, qr_png_base64: body?.qr_png_base64 || '' })
+  }), env);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2295,6 +2473,8 @@ async function sendEmail({ env, to, subject, html, text, attachments }) {
   return { ok: true, status: response.status };
 }
 
+const STABLE_FIELD_NAME_RE = /^[a-z][a-z0-9_]*$/;
+
 // Normalización de payload Tally — copiada del patrón probado de MyGuest.
 // Tally envía data.fields[] con {key, label, type, value}; los hidden fields
 // prefilled por URL llegan como fields con label "order_id". El objeto answers
@@ -2349,7 +2529,12 @@ function normalizeTallyPayload(payload) {
         answers[k] = value;
       }
     }
-    const name = typeof field?.name === 'string' ? field.name.trim() : '';
+    // El webhook de Tally ya no trae `name`: cuando la pregunta lo declara, lo
+    // manda en `label` (el título humano desaparece). Un label con forma de
+    // nombre estable (snake_case) es ese nombre.
+    const declaredName = typeof field?.name === 'string' ? field.name.trim() : '';
+    const label = typeof field?.label === 'string' ? field.label.trim() : '';
+    const name = declaredName || (STABLE_FIELD_NAME_RE.test(label) ? label : '');
     if (!isHidden && name && typeof value === 'string' && value !== '') {
       prefill[name] = value;
     }

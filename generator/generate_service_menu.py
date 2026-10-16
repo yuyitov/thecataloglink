@@ -852,6 +852,10 @@ def _gallery_images(payload: dict) -> list[str]:
 # en build_client_from_intake: lo que no este aqui no se escribe en el HTML.
 ASPECTOS_VALIDOS = {"3/4", "1/1", "4/3"}
 
+# Estilo de la leyenda de imagen ilustrativa (ver build_hero_image). En línea a
+# propósito: la plantilla base no se toca.
+CAPTION_STYLE = "margin:12px 0 0;color:var(--soft);font-size:12px;line-height:1.45;text-align:center"
+
 
 
 def page_strings(view: dict, lang: str) -> dict:
@@ -868,7 +872,17 @@ def build_hero_image(payload: dict, s: dict) -> str:
     images = _gallery_images(payload)
     if not images:
         return ""
-    alt = esc(payload.get("business_name"))
+    # `image_alt` / `image_note` (opcionales): rotulan imagen ILUSTRATIVA en los demos
+    # (p. ej. el de Dr Link: la foto es de stock, no del consultorio). Los pone Cory en
+    # el payload del demo; un cliente real no los trae y su pagina no cambia un byte.
+    # El estilo va EN LA LEYENDA, no en la plantilla base: asi las paginas sin leyenda
+    # siguen byte a byte igual (con CSS en base.html cambiaria la de TODOS los productos).
+    alt = esc(payload.get("image_alt") or payload.get("business_name"))
+    image_note = str(payload.get("image_note") or "").strip()
+    caption = (
+        f'<p class="figure__caption" style="{CAPTION_STYLE}">{esc(image_note)}</p>'
+        if image_note else ""
+    )
     # El marco toma la forma de las fotos que el negocio subio. Lo mide
     # build_client_from_intake (donde los archivos estan en disco) y lo deja en
     # `gallery_aspect`. Sin ese dato, el 4/3 de siempre: asi ninguna pagina ya
@@ -880,7 +894,7 @@ def build_hero_image(payload: dict, s: dict) -> str:
             f'<div class="shell figure" data-reveal{marco}>'
             '<div class="figure__viewport">'
             f'<img class="figure__media" src="{images[0]}" alt="{alt}" loading="lazy">'
-            '</div></div>'
+            f'</div>{caption}</div>'
         )
 
     slides = []
@@ -907,7 +921,7 @@ def build_hero_image(payload: dict, s: dict) -> str:
         f'<button class="gallery-btn gallery-btn--next" type="button" aria-label="{esc(s["gallery_next"])}">›</button>'
         '</div>'
         f'<div class="gallery-dots">{"".join(dots)}</div>'
-        '</div>'
+        f'{caption}</div>'
     )
 
 

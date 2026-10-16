@@ -1,0 +1,148 @@
+{
+  "_comment": "GENERADO por test/generar_crosswalk.mjs desde el inventario de los formularios vivos. No editar a mano.",
+  "snapshot_date": "2026-10-16",
+  "forms": {
+    "en": "kdX6L1",
+    "es": "Bzqkv5"
+  },
+  "questions": [
+    {
+      "en": "catalog_mode",
+      "es": "catalog_mode",
+      "options": [
+        {
+          "en": "Yes — I already saw my preview",
+          "es": "Sí — ya vi mi vista previa"
+        },
+        {
+          "en": "No — I am starting from scratch",
+          "es": "No — empiezo de cero"
+        }
+      ]
+    },
+    {
+      "en": "business_name",
+      "es": "business_name"
+    },
+    {
+      "en": "sale_button_kind",
+      "es": "sale_button_kind",
+      "options": [
+        {
+          "en": "WhatsApp — they message your chat",
+          "es": "WhatsApp — te escriben por chat"
+        },
+        {
+          "en": "Text message (SMS)",
+          "es": "Mensaje de texto (SMS)"
+        },
+        {
+          "en": "Phone call",
+          "es": "Llamada telefónica"
+        }
+      ]
+    },
+    {
+      "en": "sale_button_value",
+      "es": "sale_button_value"
+    },
+    {
+      "en": "default_language",
+      "es": "default_language",
+      "options": [
+        {
+          "en": "Spanish",
+          "es": "Español"
+        },
+        {
+          "en": "English",
+          "es": "Inglés"
+        }
+      ]
+    },
+    {
+      "en": "short_description",
+      "es": "short_description"
+    },
+    {
+      "en": "address",
+      "es": "address"
+    },
+    {
+      "en": "logo_url",
+      "es": "logo_url"
+    },
+    {
+      "en": "pick_your_style",
+      "es": "pick_your_style",
+      "options": [
+        {
+          "en": "Vitrina crema — bright grid, neutral",
+          "es": "Vitrina crema — rejilla luminosa, neutra"
+        },
+        {
+          "en": "Vitrina durazno — bright grid, warm",
+          "es": "Vitrina durazno — rejilla luminosa, cálida"
+        },
+        {
+          "en": "Vitrina rosa — bright grid, soft",
+          "es": "Vitrina rosa — rejilla luminosa, suave"
+        },
+        {
+          "en": "Vitrina salvia — bright grid, natural",
+          "es": "Vitrina salvia — rejilla luminosa, natural"
+        },
+        {
+          "en": "Revista crema — editorial, large photo",
+          "es": "Revista crema — editorial, foto grande"
+        },
+        {
+          "en": "Revista durazno — editorial, warm",
+          "es": "Revista durazno — editorial, cálida"
+        },
+        {
+          "en": "Revista rosa — editorial, floral",
+          "es": "Revista rosa — editorial, floral"
+        },
+        {
+          "en": "Revista salvia — editorial, natural",
+          "es": "Revista salvia — editorial, natural"
+        },
+        {
+          "en": "Elegante onix — dark, premium",
+          "es": "Elegante onix — oscuro, premium"
+        },
+        {
+          "en": "Elegante vino — dark, warm",
+          "es": "Elegante vino — oscuro, cálido"
+        },
+        {
+          "en": "Elegante esmeralda — dark, jewelry",
+          "es": "Elegante esmeralda — oscuro, joyería"
+        },
+        {
+          "en": "Elegante medianoche — dark, night",
+          "es": "Elegante medianoche — oscuro, nocturno"
+        }
+      ]
+    },
+    {
+      "en": "products_text",
+      "es": "products_text"
+    },
+    {
+      "en": "product_image_urls",
+      "es": "product_image_urls"
+    },
+    {
+      "en": "photo_rights_confirmed",
+      "es": "photo_rights_confirmed",
+      "options": [
+        {
+          "en": "Yes",
+          "es": "Sí"
+        }
+      ]
+    }
+  ]
+}

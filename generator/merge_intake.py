@@ -237,6 +237,13 @@ FIELD_SOURCES: dict[str, tuple[str, ...]] = {
     "primary_image_url": ("image_url",),
     "gallery_images": ("image_url", "gallery_image_urls"),
     "lookbook_urls": ("lookbook_urls",),
+    # La FORMA del marco de la galería (build_client_from_intake::aspecto_dominante)
+    # se mide de las fotos que se subieron; viaja con ELLAS. Si el cliente no subió
+    # fotos nuevas, sus fotos de antes se conservan y su forma también: sin esta
+    # línea la fusión la tomaba "del formulario" (que no trae fotos) y una
+    # modificación de texto devolvía el marco a 4/3 — recortando a la mitad las
+    # fotos verticales, que es justo lo que Vero reportó el 2026-08-16.
+    "gallery_aspect": ("image_url", "gallery_image_urls", "lookbook_urls"),
     # --- contacto y enlaces públicos ---
     "whatsapp": ("whatsapp",),
     "phone": ("phone",),

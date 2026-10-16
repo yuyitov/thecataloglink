@@ -414,17 +414,110 @@ export function prospectSlug(session) {
 //   rompería el link, así que es mejor prellenar de más a de menos sin pasarse.
 //   El orden de inserción del objeto define la prioridad (lo más útil primero).
 // Nunca lanza: ante cualquier entrada rara devuelve "".
-export function buildPrefillQuery(prefill, maxLen = 1500) {
+// `dropped` (opcional): arreglo donde se anotan los NOMBRES de los campos que no
+// cupieron, para que quien llama pueda avisar en vez de dejar un campo vacío en
+// silencio.
+export function buildPrefillQuery(prefill, maxLen = 1500, dropped = null) {
   if (!prefill || typeof prefill !== 'object') return '';
   let out = '';
   for (const [name, value] of Object.entries(prefill)) {
     if (typeof value !== 'string' || value === '') continue;
     if (typeof name !== 'string' || name === '') continue;
     const pair = `&${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
-    if (out.length + pair.length > maxLen) continue;
+    if (out.length + pair.length > maxLen) {
+      if (Array.isArray(dropped)) dropped.push(name);
+      continue;
+    }
     out += pair;
   }
   return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRELLENADO ENTRE IDIOMAS (form-crosswalk.json)
+//
+// El prellenado de una modificación guarda cada respuesta con el nombre de su
+// pregunta y, en las de opciones, con el TEXTO de la opción: ambos cambian con el
+// idioma del formulario donde se llenó. El cliente debe poder pedir su
+// modificación en el idioma que quiera sin importar en cuál llenó el original ni
+// en qué moneda pagó; por eso el prellenado se TRADUCE (nombres y opciones, no
+// los textos libres, que quedan como los escribió) con la tabla que genera
+// test/generar_crosswalk.mjs. Funciones puras: la tabla entra por parámetro.
+// ─────────────────────────────────────────────────────────────────────────────
+const normOpcion = (v) => String(v ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
+
+function indicePorIdioma(crosswalk, lang) {
+  const idx = new Map();
+  for (const par of (crosswalk && Array.isArray(crosswalk.questions) ? crosswalk.questions : [])) {
+    const nombre = par && par[lang];
+    if (nombre && !idx.has(nombre)) idx.set(nombre, par);
+  }
+  return idx;
+}
+
+// Idioma del formulario del que salió un prellenado, cuando el envío no guardó
+// form_id (los anteriores al 2026-10-16): gana el idioma cuyos nombres EXCLUSIVOS
+// (los que difieren entre ES y EN) aparezcan más. Empate o sin pistas → null.
+export function inferPrefillLang(prefill, crosswalk) {
+  if (!prefill || typeof prefill !== 'object') return null;
+  let en = 0;
+  let es = 0;
+  for (const par of (crosswalk && Array.isArray(crosswalk.questions) ? crosswalk.questions : [])) {
+    if (!par || par.en === par.es) continue;
+    if (Object.prototype.hasOwnProperty.call(prefill, par.en)) en += 1;
+    if (Object.prototype.hasOwnProperty.call(prefill, par.es)) es += 1;
+  }
+  if (en === es) return null;
+  return en > es ? 'en' : 'es';
+}
+
+// {nombre: valor} del formulario `from` → el del formulario `to`. Una opción que
+// no existe en el formulario (p. ej. un tipo de negocio escrito a mano) se OMITE:
+// prellenar un texto que no es opción deja el desplegable vacío de todos modos.
+// Lo que la tabla no conoce pasa tal cual (Tally descarta lo que no declara).
+export function translatePrefill(prefill, from, to, crosswalk) {
+  if (!prefill || typeof prefill !== 'object') return {};
+  if (!from || !to) return { ...prefill };
+  const idx = indicePorIdioma(crosswalk, from);
+  const out = {};
+  for (const [nombre, valor] of Object.entries(prefill)) {
+    const par = idx.get(nombre);
+    if (!par) { out[nombre] = valor; continue; }
+    let nuevo = valor;
+    if (Array.isArray(par.options) && par.options.length && typeof valor === 'string' && valor !== '') {
+      const op = par.options.find((o) => normOpcion(o[from]) === normOpcion(valor));
+      if (!op) continue;
+      nuevo = op[to];
+    }
+    out[par[to] || nombre] = nuevo;
+  }
+  return out;
+}
+
+// Las preguntas de OPCIONES cuya respuesta se PUBLICA tal cual en la página
+// (`client_care_text`, `reservations_text`): el generador la trata como texto
+// escrito en el idioma de la página y de ahí la traduce al otro. Pero el cliente
+// la contesta en el idioma de SU formulario, que no tiene por qué ser el de su
+// página: Vero llenó el formulario en inglés con página en español y su página
+// decía "Forma de trabajo: Both" (2026-10-16). Aquí la opción se lleva al idioma
+// de la página con la tabla ES↔EN. Un texto que no es opción pasa tal cual.
+export const OPTION_ANSWER_FIELDS = [
+  'client_care_text',
+  'reservations_text',
+  'q_do_you_work_with_clients_online_in_person_or_both',
+];
+
+export function localizeOptionAnswer(value, lang, crosswalk, enNames = OPTION_ANSWER_FIELDS) {
+  if (typeof value !== 'string') return value;
+  const v = value.trim();
+  if (!v || (lang !== 'es' && lang !== 'en')) return value;
+  const n = normOpcion(v);
+  for (const par of (crosswalk && Array.isArray(crosswalk.questions) ? crosswalk.questions : [])) {
+    if (!par || !Array.isArray(par.options) || !enNames.includes(par.en)) continue;
+    const op = par.options.find((o) => normOpcion(o.en) === n || normOpcion(o.es) === n);
+    if (op && op[lang]) return op[lang];
+  }
+  return value;
 }
 
 // ¿Esta vertical puede mandar al cliente a SU formulario de Tally prellenado

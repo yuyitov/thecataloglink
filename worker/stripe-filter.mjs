@@ -56,7 +56,12 @@ export function parsePaymentLinkAllowlist(rawValue) {
  * cerrado y no rescatar silenciosamente una lista singular vieja.
  */
 export function paymentLinkAllowlistValue(env) {
-  if (env && Object.prototype.hasOwnProperty.call(env, 'STRIPE_PAYMENT_LINK_IDS')) {
+  // `in` y NO hasOwnProperty: cuando una vertical usa un KV con nombre propio
+  // (KV_BINDING != SERVICE_MENU_KV), bindRuntimeEnv devuelve un entorno DERIVADO
+  // (`Object.create(env, ...)`) y las variables quedan HEREDADAS. hasOwnProperty no
+  // las ve: Dr Link creyó no tener lista de enlaces y alertó "IGNORANDO todos los
+  // pagos" el 2026-10-11 (el defecto venía de la reexportación del 2026-07-27).
+  if (env && typeof env === 'object' && 'STRIPE_PAYMENT_LINK_IDS' in env) {
     return env.STRIPE_PAYMENT_LINK_IDS;
   }
   return env?.STRIPE_PAYMENT_LINK_ID;

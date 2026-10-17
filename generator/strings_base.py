@@ -38,12 +38,12 @@ BASE_STRINGS = {
         "view_menu": "Ver servicios",
         "scroll_hint": "Desliza",
         "skip_to_content": "Saltar al contenido",
-        "services_eyebrow": "Servicios",
+        "services_eyebrow": "",  # Vero 2026-10-17: el titulo ya dice lo mismo; sin antetitulo
         "menu_title_html": "Nuestros <em>servicios</em>",
         "services_fallback": "Servicios",
         "price_ask": "Consultar",
         "featured_badge": "Destacado",
-        "visit_eyebrow": "Detalles",
+        "visit_eyebrow": "",  # Vero 2026-10-17: el titulo ya dice lo mismo; sin antetitulo
         "visit_title_html": "Planea tu <em>visita</em>",
         "hours_title": "Horarios",
         "client_care_title": "Atención",
@@ -173,12 +173,12 @@ BASE_STRINGS = {
         "view_menu": "See services",
         "scroll_hint": "Scroll",
         "skip_to_content": "Skip to content",
-        "services_eyebrow": "Services",
+        "services_eyebrow": "",  # Vero 2026-10-17: el titulo ya dice lo mismo; sin antetitulo
         "menu_title_html": "Our <em>services</em>",
         "services_fallback": "Services",
         "price_ask": "Ask us",
         "featured_badge": "Featured",
-        "visit_eyebrow": "Details",
+        "visit_eyebrow": "",  # Vero 2026-10-17: el titulo ya dice lo mismo; sin antetitulo
         "visit_title_html": "Plan your <em>visit</em>",
         "hours_title": "Hours",
         "client_care_title": "How we work",

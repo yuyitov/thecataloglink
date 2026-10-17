@@ -1064,8 +1064,8 @@ def build_services(payload: dict, s: dict) -> str:
 
     return (
         '<section class="section" id="menu" data-theme="base"><div class="shell">'
-        f'<p class="eyebrow" data-reveal>{s["services_eyebrow"]}</p>'
-        f'<h2 data-reveal>{s["menu_title_html"]}</h2>'
+        + (f'<p class="eyebrow" data-reveal>{s["services_eyebrow"]}</p>' if s["services_eyebrow"] else "")
+        + f'<h2 data-reveal>{s["menu_title_html"]}</h2>'
         + "".join(blocks)
         + "</div></section>"
     )
@@ -1575,8 +1575,8 @@ def build_info(payload: dict, s: dict, lang: str) -> str:
         return ""
     return (
         '<section class="section" data-theme="alt"><div class="shell">'
-        f'<p class="eyebrow" data-reveal>{s["visit_eyebrow"]}</p>'
-        f'<h2 data-reveal>{s["visit_title_html"]}</h2>'
+        + (f'<p class="eyebrow" data-reveal>{s["visit_eyebrow"]}</p>' if s["visit_eyebrow"] else "")
+        + f'<h2 data-reveal>{s["visit_title_html"]}</h2>'
         f'<div class="info-grid">{"".join(rows)}</div>'
         "</div></section>"
     )

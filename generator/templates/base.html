@@ -163,9 +163,13 @@ img.monogram{object-fit:contain;border:0;border-radius:12px;background:transpare
 .mrow{display:flex;align-items:baseline;gap:10px;padding:14px 0;border-bottom:1px solid var(--hair)}
 .mrow:last-child{border-bottom:0}
 .mrow>div{min-width:0}
-.mrow__name{font-weight:400;font-size:15.5px}
-.mrow__desc{display:block;color:var(--soft);margin-top:3px;font-style:italic;
-  font-family:var(--serif);font-size:16.5px;line-height:1.5}
+.mrow__name{font-weight:500;font-size:17px}
+/* Vero, 2026-10-17: la descripcion en cursiva de Cormorant (trazo finisimo, minuscula
+   chica) y en color translucido no se leia en el celular. Ahora va en la letra de los
+   nombres (sin cursiva), en el color de la tinta casi opaco; los titulos de categoria y
+   los precios conservan la serif. */
+.mrow__desc{display:block;color:var(--ink);opacity:.92;margin-top:4px;
+  font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.55}
 .mrow__dots{flex:1;border-bottom:1px dotted var(--hair);transform:translateY(-4px);min-width:24px}
 /* Del tamano de la descripcion (Vero, 2026-09-19: el precio no debe destacar mas que
    el servicio). A este tamano el contraste minimo es 4.5; la paleta cuyo acento no

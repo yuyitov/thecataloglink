@@ -279,7 +279,7 @@ export {
   // El enlace de MODIFICACIÓN (qué formulario abre y con qué prellenado).
   bestModificationUrl, modificationLinks, modificationEmailLinks, handleModifyRedirect,
   // Los correos que el cliente tiene que ENCONTRAR en su bandeja.
-  buildPostPaymentEmail, buildPostPaymentText
+  buildPostPaymentEmail, buildPostPaymentText, buildCorrectionPurchaseEmail, buildCorrectionPurchaseText, handleCorrectionPurchase
 };
 
 export default {
@@ -1978,7 +1978,14 @@ async function handleCorrectionPurchase(session, env) {
     return jsonResponse({ ok: false, error: 'Failed to save correction token' }, 500);
   }
 
-  const formUrl = correctionFormUrl(env, token, lang);
+  // Igual que las modificaciones incluidas: el cuestionario prellenado con SUS
+  // respuestas (enlace corto /modify) y, si se sabe, el del otro idioma. Antes se
+  // mandaba la página de texto libre /correct/ (visto el 2026-10-16 en la primera
+  // compra real de una corrección). Si la vertical no tiene prellenado, el enlace
+  // cae solo a /correct/ (modificationLinks).
+  const { url: formUrl, alt: formAlt } = await modificationEmailLinks(env, {
+    token, slug, lang, orderId: delivery.order_id || ''
+  });
   const pageUrl = `${(env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim()}/links/${slug}/`;
   try {
     await sendEmail({
@@ -1987,8 +1994,8 @@ async function handleCorrectionPurchase(session, env) {
       subject: lang === 'es'
         ? `Tu corrección adicional de ${brandName(env)} — pídela aquí`
         : `Your extra ${brandName(env)} correction — request it here`,
-      html: buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang, env }),
-      text: buildCorrectionPurchaseText({ formUrl, pageUrl, lang, env })
+      html: buildCorrectionPurchaseEmail({ formUrl, alt: formAlt, pageUrl, lang, env }),
+      text: buildCorrectionPurchaseText({ formUrl, alt: formAlt, pageUrl, lang, env })
     });
   } catch (err) {
     console.error('correction purchase email failed:', safeError(err));
@@ -3741,19 +3748,24 @@ function buildCorrectionManualText({ pageUrl, lang, env }) {
 }
 
 // Compra de corrección adicional: entrega el enlace con el token nuevo.
-function buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang, env }) {
+function buildCorrectionPurchaseEmail({ formUrl, alt, pageUrl, lang, env }) {
   const es = lang !== 'en';
+  const prefill = modificationFormPrefillEnabled(env);
   const t = es
     ? {
         heading: '¡Gracias por tu compra! ✏️',
-        intro: 'Ya puedes pedir tu corrección adicional. Usa este botón y descríbenos los cambios que quieres en tu página:',
+        intro: prefill
+          ? 'Ya puedes pedir tu corrección adicional. Usa este botón: verás tu información actual, cambia todo lo que necesites y envíala — todo lo que mandes en ese envío cuenta como UNA corrección:'
+          : 'Ya puedes pedir tu corrección adicional. Usa este botón y descríbenos los cambios que quieres en tu página:',
         btn: 'Pedir mi corrección',
         note: 'El enlace es de un solo uso y vence en 30 días. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.',
         label: 'Tu página:'
       }
     : {
         heading: 'Thanks for your purchase! ✏️',
-        intro: 'You can now request your extra correction. Use this button and describe the changes you want on your page:',
+        intro: prefill
+          ? 'You can now request your extra correction. Use this button: you will see your current information, change everything you need and send it — everything you send in that submission counts as ONE correction:'
+          : 'You can now request your extra correction. Use this button and describe the changes you want on your page:',
         btn: 'Request my correction',
         note: 'The link is single-use and expires in 30 days. To change photos or your logo, reply to this email with the files attached.',
         label: 'Your page:'
@@ -3762,21 +3774,26 @@ function buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang, env }) {
     <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
     <p>${t.intro}</p>
     <p style="margin: 25px 0;"><a href="${formUrl}" style="display: inline-block; background: #ffa934; color: #4a2c00; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.btn}</a></p>
+    ${altLanguageHtml(alt)}
     <p style="color: #888; font-size: 13px;">${t.note}</p>
     <p style="color: #666; font-size: 12px; margin-bottom: 4px;">${t.label}</p>
     <p style="margin-top: 0;"><a href="${pageUrl}" style="color: #00a0b5; word-break: break-all;">${pageUrl}</a></p>
   `, env);
 }
 
-function buildCorrectionPurchaseText({ formUrl, pageUrl, lang, env }) {
+function buildCorrectionPurchaseText({ formUrl, alt, pageUrl, lang, env }) {
   const es = lang !== 'en';
+  const prefill = modificationFormPrefillEnabled(env);
   return (es
     ? [
         '¡Gracias por tu compra!',
         '',
-        'Ya puedes pedir tu corrección adicional. Abre este enlace y descríbenos los cambios que quieres:',
+        prefill
+          ? 'Ya puedes pedir tu corrección adicional. Abre este enlace: verás tu información actual, cambia todo lo que necesites y envíala — todo lo que mandes en ese envío cuenta como UNA corrección:'
+          : 'Ya puedes pedir tu corrección adicional. Abre este enlace y descríbenos los cambios que quieres:',
         formUrl,
         '',
+        ...altLanguageText(alt),
         'El enlace es de un solo uso y vence en 30 días. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.',
         '',
         `Tu página: ${pageUrl}`,
@@ -3786,9 +3803,12 @@ function buildCorrectionPurchaseText({ formUrl, pageUrl, lang, env }) {
     : [
         'Thanks for your purchase!',
         '',
-        'You can now request your extra correction. Open this link and describe the changes you want:',
+        prefill
+          ? 'You can now request your extra correction. Open this link: you will see your current information, change everything you need and send it — everything you send in that submission counts as ONE correction:'
+          : 'You can now request your extra correction. Open this link and describe the changes you want:',
         formUrl,
         '',
+        ...altLanguageText(alt),
         'The link is single-use and expires in 30 days. To change photos or your logo, reply to this email with the files attached.',
         '',
         `Your page: ${pageUrl}`,
